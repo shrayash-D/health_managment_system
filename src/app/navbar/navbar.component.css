@@ -1,0 +1,38 @@
+/* Navbar aligns with your tokenized style system */
+.navbar,
+.navbar .nav-link {
+  font-weight: 500;
+}
+
+.navbar .nav-link {
+  color: var(--text-600);
+}
+.navbar .nav-link:hover {
+  color: var(--primary-600);
+  text-decoration: none;
+}
+
+.navbar-brand .brand-dot {
+  width: 14px;
+  height: 14px;
+  background-color: var(--primary);
+  border-radius: 50%;
+  box-shadow: var(--shadow-inset);
+}
+
+/* Toggler icon color tweak for light navbar */
+.navbar-toggler {
+  border-color: var(--blue-200);
+}
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.25rem rgba(10, 91, 143, 0.25);
+}
+.navbar-toggler-icon {
+  filter: invert(35%) sepia(13%) saturate(1231%) hue-rotate(170deg)
+    brightness(92%) contrast(92%);
+}
+
+/* Thin bottom border using your light token */
+.border-light-300 {
+  border-color: var(--text-300) !important;
+}

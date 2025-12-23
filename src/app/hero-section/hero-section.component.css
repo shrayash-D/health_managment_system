@@ -1,0 +1,23 @@
+/* Uses your tokens; no SCSS */
+.rounded-12 {
+  border-radius: var(--radius-12);
+}
+
+/* Ensure hero text contrasts well over gradient */
+.hero-banner h1,
+.hero-banner p {
+  color: var(--white);
+}
+
+/* Small button size variant (optional) */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Utility to fine‑tune band layout on small screens */
+@media (max-width: 576px) {
+  .hero-banner {
+    padding: var(--sp-6);
+  }
+}

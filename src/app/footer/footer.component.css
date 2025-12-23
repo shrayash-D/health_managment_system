@@ -1,0 +1,67 @@
+/* Distinct footer background using your palette */
+.bg-footer {
+  background: linear-gradient(180deg, var(--blue-900) 0%, var(--primary) 100%);
+  color: var(--white);
+}
+
+/* Subtle top separator band for clear page division */
+.footer-separator {
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--primary-400) 100%
+  );
+}
+
+/* Typography & links tuned for contrast */
+.footer-brand {
+  color: var(--white);
+}
+.footer-heading {
+  color: var(--white);
+}
+.footer-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.footer a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+}
+.footer a:hover {
+  color: var(--white);
+  text-decoration: underline;
+}
+
+/* Brand dot matches navbar aesthetic but inverted context */
+.footer .brand-dot {
+  width: 14px;
+  height: 14px;
+  background-color: var(--white);
+  border-radius: 50%;
+  box-shadow: var(--shadow-inset);
+}
+
+/* Divider tuned for dark background */
+.footer-hr {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Inputs/buttons remain readable over dark footer */
+.footer .form-control.input-brand {
+  background-color: var(--white);
+  color: var(--text-900);
+  border-color: var(--blue-300);
+}
+.footer .btn-brand {
+  /* already uses --primary; works well over dark backgrounds */
+}
+
+/* Responsive padding refinement */
+@media (max-width: 576px) {
+  .footer .container {
+    padding-left: var(--sp-4);
+    padding-right: var(--sp-4);
+  }
+}
