@@ -1,0 +1,61 @@
+<div class="page">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <h1>Login</h1>
+        <p>Welcome back. Please sign in to continue.</p>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <section class="card login-card">
+      <form class="form-grid" novalidate>
+        <div class="form-field span-2">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="name@example.com" />
+        </div>
+
+        <div class="form-field span-2">
+          <label for="role">Role</label>
+          <select id="role" name="role">
+            <option value="" disabled selected>Select your role</option>
+            <option value="doctor">Doctor</option>
+            <option value="patient">Patient</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="form-field span-2">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input
+              id="password"
+              [type]="passwordType"
+              placeholder="Enter password"
+            />
+            <button
+              type="button"
+              class="icon-btn eye"
+              (click)="togglePassword()"
+            >
+              {{ passwordVisible ? "🙈" : "👁️" }}
+            </button>
+          </div>
+        </div>
+
+        <div class="form-actions span-2">
+          <label class="checkbox">
+            <input type="checkbox" />
+            <span>Remember me</span>
+          </label>
+
+          <div class="buttons">
+            <a class="link" routerLink="/signup">Create account</a>
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,66 @@
+<div class="page">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <h1>Sign Up</h1>
+        <p>Create your account to manage appointments and records.</p>
+      </div>
+    </div>
+  </section>
+ 
+  <main class="container">
+    <section class="card signup-card">
+      <form class="form-grid" novalidate>
+        <div class="form-field">
+          <label for="name">Full Name</label>
+          <input id="name" type="text" placeholder="Your name" />
+        </div>
+ 
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="name@example.com" />
+        </div>
+ 
+        <div class="form-field">
+          <label for="phone">Phone</label>
+          <input id="phone" type="tel" placeholder="+91 XXXXX XXXXX" />
+        </div>
+ 
+        <div class="form-field">
+          <label for="dob">Date of Birth</label>
+          <input id="dob" type="date" />
+        </div>
+ 
+        <div class="form-field">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input id="password" [type]="passType" placeholder="Min 8 chars" />
+            <button type="button" class="icon-btn eye" (click)="toggle('pass')">{{ passVisible ? '🙈' : '👁️' }}</button>
+          </div>
+        </div>
+ 
+        <div class="form-field">
+          <label for="confirm">Confirm Password</label>
+          <div class="password-wrap">
+            <input id="confirm" [type]="confirmType" placeholder="Re-enter password" />
+            <button type="button" class="icon-btn eye" (click)="toggle('confirm')">{{ confirmVisible ? '🙈' : '👁️' }}</button>
+          </div>
+        </div>
+ 
+        <div class="form-field span-2">
+          <label class="checkbox">
+            <input type="checkbox" />
+            <span>I agree to the terms and privacy policy</span>
+          </label>
+        </div>
+ 
+        <div class="form-actions span-2">
+          <div class="buttons">
+            <a class="link" routerLink="/login">Already have an account?</a>
+            <button type="submit" class="btn btn-primary">Create Account</button>
+          </div>
+               </div>
+      </form>
+    </section>
+  </main>
+ 
