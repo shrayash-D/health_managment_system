@@ -1,0 +1,75 @@
+
+<div class="page">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <h1>Diagnosis Form</h1>
+        <p>Document patient complaints, findings, diagnosis codes, and plan.</p>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <!-- Patient & Encounter Card -->
+    <section class="card form-card">
+      <h2 class="form-title">Patient & Encounter</h2>
+
+      <form class="form-grid" novalidate>
+        <div class="form-field">
+          <label for="pid">Patient ID</label>
+          <input id="pid" type="text" placeholder="P123" />
+        </div>
+        <div class="form-field">
+          <label for="pname">Name</label>
+          <input id="pname" type="text" placeholder="Anita Deshmukh" />
+        </div>
+        <div class="form-field">
+          <label for="dob">DOB</label>
+          <input id="dob" type="date" />
+        </div>
+        <div class="form-field">
+          <label for="encDate">Encounter Date</label>
+          <input id="encDate" type="date" />
+        </div>
+
+        <div class="form-field span-2">
+          <label for="chief">Chief Complaint</label>
+          <input id="chief" type="text" placeholder="Short description…" />
+        </div>
+
+        <div class="form-field span-2">
+          <label for="history">History & Symptoms</label>
+          <textarea id="history" rows="6" placeholder="History of present illness, ROS…"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="diagnosis">Diagnosis (ICD‑10)</label>
+          <input id="diagnosis" type="text" placeholder="E11.9 (Type 2 diabetes mellitus)" />
+        </div>
+        <div class="form-field">
+          <label for="severity">Severity</label>
+          <select id="severity">
+            <option>Mild</option><option>Moderate</option><option>Severe</option><option>Critical</option>
+          </select>
+        </div>
+
+        <div class="form-field span-2">
+          <label for="plan">Assessment & Plan</label>
+          <textarea id="plan" rows="6" placeholder="Assessment, investigations, treatment plan…"></textarea>
+        </div>
+
+        <div class="form-actions span-2">
+          <div class="left">
+            <label class="checkbox">
+              <input type="checkbox" />
+              <span>Follow‑up required within 7 days</span>
+            </label>
+          </div>
+          <div class="buttons">
+            <button type="button" class="btn btn-outline">Save Draft</button>
+            <button type="submit" class="btn btn-primary">Finalize Diagnosis</button>
+          </div>
+        </div>
+      </form>
+       </section>
+  </main>

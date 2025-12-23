@@ -1,0 +1,217 @@
+
+
+<div class="page">
+  <!-- Hero: gradient + subtle glow -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <h1>Patient Dashboard</h1>
+        <p>Overview of patient details, vitals, appointments, labs, and billing.</p>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <!-- Patient Header Card -->
+    <section class="card header-card">
+      <div class="left">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="info">
+          <h2 class="name">Anita Deshmukh</h2>
+          <div class="meta">
+            <span class="chip">ID: P123</span>
+            <span class="chip">Age: 33</span>
+            <span class="chip">Blood Group: O+</span>
+          </div>
+          <div class="tags">
+            <span class="tag warn">Allergy: Penicillin</span>
+            <span class="tag">Primary Physician: Dr. Jon Miller</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary">New Appointment</button>
+        <button class="btn btn-outline">Update Details</button>
+      </div>
+    </section>
+
+    <!-- Cards Grid -->
+    <section class="cards-grid">
+      <!-- Vitals -->
+      <article class="card card-section vitals">
+        <div class="card-head">
+          <div class="title">
+            <span class="title-dot"></span>
+            <h3>Vitals</h3>
+          </div>
+          <button class="icon-btn" aria-label="Refresh">↻</button>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <span class="label">Blood Pressure</span>
+            <span class="value">118/76</span>
+            <span class="unit">mmHg</span>
+          </div>
+          <div class="metric">
+            <span class="label">Heart Rate</span>
+            <span class="value">78</span>
+            <span class="unit">bpm</span>
+          </div>
+          <div class="metric">
+            <span class="label">Temperature</span>
+            <span class="value">36.8</span>
+            <span class="unit">°C</span>
+          </div>
+          <div class="metric">
+            <span class="label">SpO₂</span>
+            <span class="value">98</span>
+            <span class="unit">%</span>
+          </div>
+        </div>
+
+        <div class="trend">
+          <div class="placeholder">Trend chart placeholder</div>
+        </div>
+      </article>
+
+      <!-- Appointments -->
+      <article class="card card-section appointments">
+        <div class="card-head">
+          <div class="title">
+            <span class="title-dot"></span>
+            <h3>Appointments</h3>
+          </div>
+          <button class="icon-btn" aria-label="Add">＋</button>
+        </div>
+
+        <ul class="list">
+          <li class="list-row">
+            <div class="row-left">
+              <strong>Dec 16, 2025 • 10:30 AM</strong>
+              <span>General Checkup</span>
+            </div>
+            <span class="badge badge-scheduled">Scheduled</span>
+          </li>
+          <li class="list-row">
+            <div class="row-left">
+              <strong>Dec 10, 2025 • 03:00 PM</strong>
+              <span>Follow‑up</span>
+            </div>
+            <span class="badge badge-success">Completed</span>
+          </li>
+        </ul>
+      </article>
+
+      <!-- Medications -->
+      <article class="card card-section medications">
+        <div class="card-head">
+          <div class="title">
+            <span class="title-dot"></span>
+            <h3>Medications</h3>
+          </div>
+          <button class="icon-btn" aria-label="Add">＋</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Drug</th>
+                <th>Dose</th>
+                <th>Route</th>
+                <th>Frequency</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Amoxicillin</td>
+                <td>500 mg</td>
+                <td>PO</td>
+                <td>BID</td>
+                <td><span class="badge badge-info">Active</span></td>
+              </tr>
+              <tr>
+                <td>Paracetamol</td>
+                <td>650 mg</td>
+                <td>PO</td>
+                <td>PRN</td>
+                <td><span class="badge badge-info">Active</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Labs -->
+      <article class="card card-section labs">
+        <div class="card-head">
+          <div class="title">
+            <span class="title-dot"></span>
+            <h3>Lab Results</h3>
+          </div>
+          <button class="icon-btn" aria-label="Refresh">↻</button>
+        </div>
+
+        <div class="labs-grid">
+          <div class="lab-card">
+            <div class="lab-title">CBC</div>
+            <div class="lab-sub">Normal</div>
+            <span class="badge badge-success">Completed</span>
+          </div>
+          <div class="lab-card">
+            <div class="lab-title">LFT</div>
+            <div class="lab-sub">Elevated ALT</div>
+            <span class="badge badge-warning">Abnormal</span>
+          </div>
+          <div class="lab-card">
+            <div class="lab-title">Creatinine</div>
+            <div class="lab-sub">Review urgently</div>
+            <span class="badge badge-danger">Critical</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Billing -->
+      <article class="card card-section billing">
+        <div class="card-head">
+          <div class="title">
+            <span class="title-dot"></span>
+            <h3>Billing</h3>
+          </div>
+          <button class="icon-btn" aria-label="More">⋯</button>
+        </div>
+
+        <div class="summary">
+          <div class="summary-tile">
+            <span class="label">Outstanding</span>
+            <span class="value">₹ 2,450</span>
+          </div>
+          <div class="summary-tile">
+            <span class="label">Paid</span>
+            <span class="value">₹ 8,300</span>
+          </div>
+          <div class="summary-tile">
+            <span class="label">Insurance</span>
+            <span class="value">MediCare Pvt.</span>
+          </div>
+        </div>
+
+        <div class="invoice-list">
+          <div class="invoice-row">
+            <span>#INV‑10021</span>
+            <span>₹ 1,200</span>
+            <span class="badge badge-unpaid">Unpaid</span>
+          </div>
+          <div class="invoice-row">
+            <span>#INV‑10018</span>
+            <span>₹ 2,050</span>
+            <span class="badge badge-paid">Paid</span>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>

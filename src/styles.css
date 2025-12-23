@@ -1,1 +1,49 @@
 /* You can add global styles to this file, and also import other style files */
+/* You can add global styles to this file, and also import other style files */
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+
+:root{
+  /* Palette */
+  --primary:#0A5B8F;
+  --primary-600:#1D6EA7;
+  --primary-400:#2C89C7;
+
+  --blue-900:#0A3963;
+  --blue-700:#1767A3;
+  --blue-300:#BFD6E6;
+  --blue-200:#E6EFF6;
+  --blue-100:#F3F7FA;
+
+  --text-900:#15181C;
+  --text-600:#374151;
+  --text-500:#6B7280;
+  --text-300:#D1D5DB;
+  --white:#ffffff;
+
+  --success:#27AE60;
+  --warning:#FFB020;
+  --danger:#E74C3C;
+  --info:#1D4ED8;
+
+  /* Gradient */
+  --grad-ocean-cyan:linear-gradient(90deg,#0A5B8F 0%,#3DDC97 100%);
+
+  /* Spacing */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-7:28px; --sp-8:32px; --sp-9:36px; --sp-10:40px;
+
+  /* Elevation & radius */
+  --radius-8:8px;
+  --radius-12:12px;
+  --shadow-1:0 1px 2px rgba(10,91,143,0.08), 0 6px 18px rgba(10,91,143,0.12);
+  --shadow-inset:inset 0 1px 0 rgba(255,255,255,.6);
+}
+
+/* Optional: base font to make sure it’s applied app-wide */
+body{
+  font-family: Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-900);
+  background: linear-gradient(180deg,#F6FAFD 0%, #F2F7FB 100%);
+  margin: 0;
+}

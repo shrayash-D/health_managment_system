@@ -1,0 +1,73 @@
+
+<div class="page">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <h1>Contact Us</h1>
+        <p>Reach out for appointments, support, or general queries.</p>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <section class="card form-card">
+      <h2 class="form-title">Send us a message</h2>
+
+      <form class="form-grid" novalidate>
+        <div class="form-field">
+          <label for="fullName">Full Name</label>
+          <input id="fullName" type="text" placeholder="Enter your full name" />
+        </div>
+
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="name@example.com" />
+        </div>
+
+        <div class="form-field">
+          <label for="phone">Phone</label>
+          <input id="phone" type="tel" placeholder="+91 XXXXX XXXXX" />
+        </div>
+
+        <div class="form-field">
+          <label for="subject">Subject</label>
+          <input id="subject" type="text" placeholder="Query subject" />
+        </div>
+
+        <div class="form-field span-2">
+          <label for="message">Message</label>
+          <textarea id="message" rows="6" placeholder="Write your message..."></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="contactMethod">Preferred Contact</label>
+          <select id="contactMethod">
+            <option>Email</option>
+            <option>Phone</option>
+            <option>SMS</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="urgency">Urgency</label>
+          <select id="urgency">
+            <option>Normal</option>
+            <option>High</option>
+            <option>Critical</option>
+          </select>
+        </div>
+
+        <div class="form-actions span-2">
+          <label class="checkbox">
+            <input type="checkbox" />
+            <span>I agree to be contacted regarding my query</span>
+          </label>
+
+          <div class="buttons">
+                       <button type="button" class="btn btn-outline">Reset</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
