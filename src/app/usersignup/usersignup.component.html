@@ -35,7 +35,7 @@
           <label for="password">Password</label>
           <div class="password-wrap">
             <input id="password" [type]="passType" placeholder="Min 8 chars" />
-            <button type="button" class="icon-btn eye" (click)="toggle('pass')">{{ passVisible ? '🙈' : '👁️' }}</button>
+            <!-- <button type="button" class="icon-btn eye" (click)="toggle('pass')">{{ passVisible ? '🙈' : '👁️' }}</button> -->
           </div>
         </div>
  
@@ -43,7 +43,7 @@
           <label for="confirm">Confirm Password</label>
           <div class="password-wrap">
             <input id="confirm" [type]="confirmType" placeholder="Re-enter password" />
-            <button type="button" class="icon-btn eye" (click)="toggle('confirm')">{{ confirmVisible ? '🙈' : '👁️' }}</button>
+            <!-- <button type="button" class="icon-btn eye" (click)="toggle('confirm')">{{ confirmVisible ? '🙈' : '👁️' }}</button> -->
           </div>
         </div>
  
@@ -56,7 +56,7 @@
  
         <div class="form-actions span-2">
           <div class="buttons">
-            <a class="link" routerLink="/login">Already have an account?</a>
+            <a class="link" routerLink="/login" >Already have an account?</a>
             <button type="submit" class="btn btn-primary">Create Account</button>
           </div>
                </div>
