@@ -1,12 +1,12 @@
-
-
 <div class="page">
   <!-- Hero: gradient + subtle glow -->
   <section class="hero">
     <div class="container">
       <div class="hero-inner">
         <h1>Patient Dashboard</h1>
-        <p>Overview of patient details, vitals, appointments, labs, and billing.</p>
+        <p>
+          Overview of patient details, vitals, appointments, labs, and billing.
+        </p>
       </div>
     </div>
   </section>
@@ -48,7 +48,7 @@
           <button class="icon-btn" aria-label="Refresh">↻</button>
         </div>
 
-        <div class="metrics">
+        <!-- <div class="metrics">
           <div class="metric">
             <span class="label">Blood Pressure</span>
             <span class="value">118/76</span>
@@ -69,10 +69,14 @@
             <span class="value">98</span>
             <span class="unit">%</span>
           </div>
-        </div>
+        </div> -->
 
-        <div class="trend">
-          <div class="placeholder">Trend chart placeholder</div>
+        <div class="metrics" *ngIf="vitals$ | async as vital">
+          <div class="metric" *ngFor="let v of vital">
+            <span class="label">{{ v.label }}</span>
+            <span class="value">{{ v.value }}</span>
+            <span class="unit">{{ v.unit }}</span>
+          </div>
         </div>
       </article>
 
@@ -83,23 +87,25 @@
             <span class="title-dot"></span>
             <h3>Appointments</h3>
           </div>
-          <button class="icon-btn" aria-label="Add">＋</button>
         </div>
 
         <ul class="list">
-          <li class="list-row">
+          <li class="list-row" *ngFor="let appt of appointments$ | async">
             <div class="row-left">
-              <strong>Dec 16, 2025 • 10:30 AM</strong>
-              <span>General Checkup</span>
+              <strong>{{ appt.date | date : "MMM d, y • hh:mm a" }}</strong>
+              <span>{{ appt.reason }}</span>
             </div>
-            <span class="badge badge-scheduled">Scheduled</span>
-          </li>
-          <li class="list-row">
-            <div class="row-left">
-              <strong>Dec 10, 2025 • 03:00 PM</strong>
-              <span>Follow‑up</span>
-            </div>
-            <span class="badge badge-success">Completed</span>
+            <span
+              class="badge"
+              [ngClass]="{
+        'badge-scheduled': appt.status === 'Scheduled',
+        'badge-success': appt.status === 'Completed',
+        'badge-cancelled': appt.status === 'Cancelled',
+        'badge-warning': appt.status === 'Rescheduled',
+      }"
+            >
+              {{ appt.status }}
+            </span>
           </li>
         </ul>
       </article>
@@ -111,7 +117,6 @@
             <span class="title-dot"></span>
             <h3>Medications</h3>
           </div>
-          <button class="icon-btn" aria-label="Add">＋</button>
         </div>
 
         <div class="table-wrap">
@@ -126,19 +131,24 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Amoxicillin</td>
-                <td>500 mg</td>
-                <td>PO</td>
-                <td>BID</td>
-                <td><span class="badge badge-info">Active</span></td>
-              </tr>
-              <tr>
-                <td>Paracetamol</td>
-                <td>650 mg</td>
-                <td>PO</td>
-                <td>PRN</td>
-                <td><span class="badge badge-info">Active</span></td>
+              <tr *ngFor="let m of medication$ | async">
+                <td>{{ m.drug }}</td>
+                <td>{{ m.dose }}</td>
+                <td>{{ m.route }}</td>
+                <td>{{ m.frequency }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [ngClass]="{
+                      'badge-info': m.status === 'Active',
+                      'badge-paused': m.status === 'On Hold',
+                      'badge-success': m.status === 'Completed',
+                      'badge-warning': m.status === 'Pending'
+                    }"
+                  >
+                    {{ m.status }}
+                  </span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -156,20 +166,10 @@
         </div>
 
         <div class="labs-grid">
-          <div class="lab-card">
-            <div class="lab-title">CBC</div>
-            <div class="lab-sub">Normal</div>
-            <span class="badge badge-success">Completed</span>
-          </div>
-          <div class="lab-card">
-            <div class="lab-title">LFT</div>
-            <div class="lab-sub">Elevated ALT</div>
-            <span class="badge badge-warning">Abnormal</span>
-          </div>
-          <div class="lab-card">
-            <div class="lab-title">Creatinine</div>
-            <div class="lab-sub">Review urgently</div>
-            <span class="badge badge-danger">Critical</span>
+          <div class="lab-card" *ngFor="let l of labResults$ | async">
+            <div class="lab-title">{{ l.title }}</div>
+            <div class="lab-sub">{{ l.note }}</div>
+            <span class="badge badge-success">{{ l.status }}</span>
           </div>
         </div>
       </article>
@@ -185,30 +185,31 @@
         </div>
 
         <div class="summary">
-          <div class="summary-tile">
-            <span class="label">Outstanding</span>
-            <span class="value">₹ 2,450</span>
-          </div>
-          <div class="summary-tile">
-            <span class="label">Paid</span>
-            <span class="value">₹ 8,300</span>
-          </div>
-          <div class="summary-tile">
-            <span class="label">Insurance</span>
-            <span class="value">MediCare Pvt.</span>
+          <div class="summary-tile" *ngFor="let s of billings$ | async">
+            <span class="label">{{ s.label }}</span>
+            <span class="value">
+              <ng-container *ngIf="typeof s.value === 'number'; else textValue">
+                ₹ {{ s.value | number : "1.0-0" }}
+              </ng-container>
+              <ng-template #textValue>{{ s.value }}</ng-template>
+            </span>
           </div>
         </div>
 
         <div class="invoice-list">
-          <div class="invoice-row">
-            <span>#INV‑10021</span>
-            <span>₹ 1,200</span>
-            <span class="badge badge-unpaid">Unpaid</span>
-          </div>
-          <div class="invoice-row">
-            <span>#INV‑10018</span>
-            <span>₹ 2,050</span>
-            <span class="badge badge-paid">Paid</span>
+          <div class="invoice-row" *ngFor="let inv of invoice$ | async">
+            <span>{{ inv.number }}</span>
+            <span>₹ {{ inv.amount | number : "1.0-0" }}</span>
+            <span
+              class="badge"
+              [ngClass]="{
+                'badge-unpaid': inv.status === 'Unpaid',
+                'badge-paid': inv.status === 'Paid',
+                'badge-overdue': inv.status === 'Overdue'
+              }"
+            >
+              {{ inv.status }}
+            </span>
           </div>
         </div>
       </article>

@@ -150,29 +150,35 @@ body{
 .icon-btn:hover{ background:#F6FAFD }
 
 /* Vitals */
-.metrics{
-  display:grid; gap:var(--sp-3);
-  grid-template-columns:repeat(2,minmax(0,1fr));
+
+.metrics {
+  display: flex;            /* Use flex for easy stacking */
+  flex-direction: column;   /* Stack items top to bottom */
+  gap: var(--sp-3);         /* Keep spacing between metrics */
 }
-@media (min-width:992px){
-  .metrics{ grid-template-columns:repeat(4,minmax(0,1fr)) }
+
+.metric {
+  padding: var(--sp-4);
+  border: 1px solid var(--blue-300);
+  border-radius: 10px;
+  background: linear-gradient(180deg,#F8FBFF 0%, #F3F7FA 100%);
 }
-.metric{
-  padding:var(--sp-4);
-  border:1px solid var(--blue-300);
-  border-radius:10px;
-  background:linear-gradient(180deg,#F8FBFF 0%, #F3F7FA 100%);
+
+.metric .label { color: var(--text-500); font-size: .8125rem; }
+.metric .value { color: var(--blue-900); font-weight: 700; font-size: clamp(1rem,1.6vw,1.2rem); }
+.metric .unit  { color: var(--text-500); font-size: .75rem; }
+
+.trend .placeholder {
+  margin-top: var(--sp-4);
+  height: clamp(110px,20vw,160px);
+  border: 1px dashed var(--blue-300);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--text-500);
+  background: repeating-linear-gradient(90deg,#F8FBFF 0 6px,#F3F7FA 6px 12px);
 }
-.metric .label{ color:var(--text-500); font-size:.8125rem }
-.metric .value{ color:var(--blue-900); font-weight:700; font-size:clamp(1rem,1.6vw,1.2rem) }
-.metric .unit{ color:var(--text-500); font-size:.75rem }
-.trend .placeholder{
-  margin-top:var(--sp-4);
-  height:clamp(110px,20vw,160px);
-  border:1px dashed var(--blue-300); border-radius:10px;
-  display:grid; place-items:center; color:var(--text-500);
-  background:repeating-linear-gradient(90deg,#F8FBFF 0 6px,#F3F7FA 6px 12px);
-}
+
 
 /* Appointments */
 .list{

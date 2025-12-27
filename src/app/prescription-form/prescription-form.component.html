@@ -1,10 +1,12 @@
-
 <div class="page">
   <section class="hero">
     <div class="container">
       <div class="hero-inner">
         <h1>Prescription</h1>
-        <p>Create patient prescriptions with dose, route, frequency, and instructions.</p>
+        <p>
+          Create patient prescriptions with dose, route, frequency, and
+          instructions.
+        </p>
       </div>
     </div>
   </section>
@@ -12,34 +14,64 @@
   <main class="container">
     <!-- Patient & Doctor Header -->
     <section class="card form-card">
-      <h2 class="form-title">Patient & Prescriber</h2>
+      <h2 class="form-title">Patient &amp; Prescriber</h2>
 
-      <form class="form-grid" novalidate>
+      <form
+        class="form-grid"
+        [formGroup]="form"
+        (ngSubmit)="onSubmit()"
+        novalidate
+      >
         <div class="form-field">
           <label for="pid">Patient ID</label>
-          <input id="pid" type="text" placeholder="P123" />
+          <input
+            id="pid"
+            type="text"
+            formControlName="pid"
+            placeholder="P123"
+          />
         </div>
+
         <div class="form-field">
           <label for="pname">Patient Name</label>
-          <input id="pname" type="text" placeholder="Anita Deshmukh" />
+          <input
+            id="pname"
+            type="text"
+            formControlName="pname"
+            placeholder="Anita Deshmukh"
+          />
         </div>
+
         <div class="form-field">
           <label for="doctor">Prescribing Doctor</label>
-          <input id="doctor" type="text" placeholder="Dr. Jon Miller" />
+          <input
+            id="doctor"
+            type="text"
+            formControlName="doctor"
+            placeholder="Dr. Jon Miller"
+          />
         </div>
+
         <div class="form-field">
           <label for="license">License / Reg. No.</label>
-          <input id="license" type="text" placeholder="MMC/123456" />
+          <input
+            id="license"
+            type="text"
+            formControlName="license"
+            placeholder="MMC/123456"
+          />
         </div>
 
         <!-- Rx table -->
         <div class="span-2">
           <div class="rx-head">
             <h3>Medications</h3>
-            <button type="button" class="icon-btn">＋</button>
+            <button type="button" class="icon-btn" (click)="addMedication()">
+              ＋
+            </button>
           </div>
 
-          <div class="table-wrap">
+          <div class="table-wrap" [formArrayName]="'medications'">
             <table class="table rx-table">
               <thead>
                 <tr>
@@ -54,29 +86,68 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td><input type="text" placeholder="Amoxicillin" /></td>
-                  <td><input type="text" placeholder="500 mg" /></td>
+                <tr
+                  *ngFor="let row of medications.controls; let i = index"
+                  [formGroupName]="i"
+                >
                   <td>
-                    <select><option>PO</option><option>IV</option><option>IM</option><option>Topical</option></select>
+                    <input
+                      type="text"
+                      formControlName="drug"
+                      placeholder="Amoxicillin"
+                    />
                   </td>
-                  <td><input type="text" placeholder="BID" /></td>
-                  <td><input type="text" placeholder="5 days" /></td>
-                  <td><input type="number" placeholder="10" /></td>
-                  <td><input type="number" placeholder="0" /></td>
-                  <td><input type="text" placeholder="After meals" /></td>
-                </tr>
-                <tr>
-                  <td><input type="text" placeholder="Paracetamol" /></td>
-                  <td><input type="text" placeholder="650 mg" /></td>
                   <td>
-                    <select><option>PO</option><option>IV</option><option>IM</option><option>Topical</option></select>
+                    <input
+                      type="text"
+                      formControlName="dose"
+                      placeholder="500 mg"
+                    />
                   </td>
-                  <td><input type="text" placeholder="PRN" /></td>
-                  <td><input type="text" placeholder="As needed" /></td>
-                  <td><input type="number" placeholder="15" /></td>
-                  <td><input type="number" placeholder="0" /></td>
-                  <td><input type="text" placeholder="If fever > 100°F" /></td>
+                  <td>
+                    <select formControlName="route">
+                      <option value="">--</option>
+                      <option value="PO">PO</option>
+                      <option value="IV">IV</option>
+                      <option value="IM">IM</option>
+                      <option value="Topical">Topical</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      formControlName="frequency"
+                      placeholder="BID"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      formControlName="duration"
+                      placeholder="5 days"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      formControlName="qty"
+                      placeholder="10"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      formControlName="refills"
+                      placeholder="0"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      formControlName="instructions"
+                      placeholder="After meals"
+                    />
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -85,19 +156,32 @@
 
         <div class="form-field span-2">
           <label for="notes">General Notes</label>
-          <textarea id="notes" rows="6" placeholder="Precautions, advice, follow-up…"></textarea>
+          <textarea
+            id="notes"
+            rows="6"
+            formControlName="notes"
+            placeholder="Precautions, advice, follow-up…"
+          ></textarea>
         </div>
 
         <div class="form-actions span-2">
           <div class="left">
             <label class="checkbox">
-              <input type="checkbox" />
+              <input type="checkbox" formControlName="allowGeneric" />
               <span>Allow generic substitution</span>
             </label>
           </div>
           <div class="buttons">
-            <button type="button" class="btn btn-outline">Preview</button>
-            <button type="submit" class="btn btn-primary">Save & Print</button>
+            <button type="button" class="btn btn-outline" (click)="onPreview()">
+              Preview
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="form.invalid || submitting"
+            >
+              Save &amp; Print
+            </button>
           </div>
         </div>
       </form>
