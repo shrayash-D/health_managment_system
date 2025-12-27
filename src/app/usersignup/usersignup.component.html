@@ -4,37 +4,54 @@
       <div class="hero-inner">
         <h1>Sign Up</h1>
         <p>Create your account to manage appointments and records.</p>
+        <!-- 🔔 Bell Alert -->
+        <!-- 🔔 Bell Icon -->
+        <div class="alert-bell" (click)="togglePopup()">
+          <span class="bell-icon">🔔</span>
+          <span class="badge">{{ invalidCount }}</span>
+        </div>
+        <!-- Popup panel -->
+        <div class="popup" *ngIf="popupVisible">
+          <ul>
+            <li
+              *ngFor="let field of signupForm.controls | keyvalue"
+              [class.invalid]="field.value.invalid"
+            >
+              {{ field.key }} is {{ field.value.invalid ? "invalid" : "valid" }}
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
  
   <main class="container">
     <section class="card signup-card">
-      <form class="form-grid" novalidate>
+      <form class="form-grid" [formGroup]="signupForm" (ngSubmit)="onSubmit()" novalidate>
         <div class="form-field">
           <label for="name">Full Name</label>
-          <input id="name" type="text" placeholder="Your name" />
+          <input id="name" type="text" placeholder="Your name" formControlName="name" />
         </div>
  
         <div class="form-field">
           <label for="email">Email</label>
-          <input id="email" type="email" placeholder="name@example.com" />
+          <input id="email" type="email" placeholder="name@example.com" formControlName="email"  />
         </div>
  
         <div class="form-field">
           <label for="phone">Phone</label>
-          <input id="phone" type="tel" placeholder="+91 XXXXX XXXXX" />
+          <input id="phone" type="tel" placeholder="+91 XXXXX XXXXX" formControlName="phone" />
         </div>
  
         <div class="form-field">
           <label for="dob">Date of Birth</label>
-          <input id="dob" type="date" />
+          <input id="dob" type="date" formControlName="dob" />
         </div>
  
         <div class="form-field">
           <label for="password">Password</label>
           <div class="password-wrap">
-            <input id="password" [type]="passType" placeholder="Min 8 chars" />
+            <input id="password" [type]="passType" placeholder="Min 8 chars" formControlName="password" />
             <!-- <button type="button" class="icon-btn eye" (click)="toggle('pass')">{{ passVisible ? '🙈' : '👁️' }}</button> -->
           </div>
         </div>
@@ -42,7 +59,7 @@
         <div class="form-field">
           <label for="confirm">Confirm Password</label>
           <div class="password-wrap">
-            <input id="confirm" [type]="confirmType" placeholder="Re-enter password" />
+            <input id="confirm" [type]="confirmType" placeholder="Re-enter password" formControlName="confirm" />
             <!-- <button type="button" class="icon-btn eye" (click)="toggle('confirm')">{{ confirmVisible ? '🙈' : '👁️' }}</button> -->
           </div>
         </div>
@@ -63,4 +80,4 @@
       </form>
     </section>
   </main>
- 
+ <router-outlet></router-outlet>

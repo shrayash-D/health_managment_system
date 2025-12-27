@@ -1,22 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router ,RouterLink} from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
-  AbstractControl
+  AbstractControl,
+  FormControl,
 } from '@angular/forms';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule,RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterOutlet],
   templateUrl: './usersignup.component.html',
-  styleUrls: ['./usersignup.component.css']
+  styleUrls: ['./usersignup.component.css'],
 })
-export class SignupComponent implements OnInit {
+export class UsersignupComponent implements OnInit {
   signupForm!: FormGroup;
 
   passVisible = false;
@@ -33,24 +34,21 @@ export class SignupComponent implements OnInit {
   constructor(private fb: FormBuilder, private router: Router) {}
 
   ngOnInit(): void {
-    this.signupForm = this.fb.group(
-      {
-        name: ['', [Validators.required, Validators.minLength(3)]],
-        email: ['', [Validators.required, Validators.email]],
-        phone: [
-          '',
-          [
-            Validators.required,
-            Validators.pattern(/^\+91\s\d{5}\s\d{5}$/) // +91 XXXXX XXXXX
-          ]
-        ],
-        dob: ['', Validators.required],
-        password: ['', [Validators.required, Validators.minLength(8)]],
-        confirm: ['', Validators.required],
-        terms: [false, Validators.requiredTrue]
-      },
-      { validators: this.passwordMatchValidator }
-    );
+    this.signupForm = new FormGroup({
+      name: new FormControl('', [Validators.required]),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      phone: new FormControl('', [
+        Validators.required,
+        // Validators.pattern(/^\+91\s\d{5}\s\d{5}$/) // +91 XXXXX XXXXX
+      ]),
+      dob: new FormControl('', Validators.required),
+      password: new FormControl('', [Validators.required]),
+      confirm: new FormControl('', Validators.required),
+      terms: new FormControl(false),
+    });
+    this.signupForm.statusChanges.subscribe(() => this.updateInvalidCount());
+    this.signupForm.valueChanges.subscribe(() => this.updateInvalidCount());
+    this.updateInvalidCount();
   }
 
   // ✅ Custom validator for password confirmation
@@ -81,7 +79,19 @@ export class SignupComponent implements OnInit {
       console.log('Form Submitted:', this.signupForm.value);
       this.router.navigate(['/login']);
     } else {
+      console.log('Form is invalid');
+      console.log(this.signupForm.errors);
       this.signupForm.markAllAsTouched();
     }
+  }
+  popupVisible = false;
+  invalidCount = 0;
+
+  togglePopup(): void {
+    this.popupVisible = !this.popupVisible;
+  }
+  private updateInvalidCount(): void {
+    const controls = this.signupForm.controls;
+    this.invalidCount = Object.values(controls).filter((c) => c.invalid).length;
   }
 }

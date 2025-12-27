@@ -56,4 +56,4 @@
 .form-field select option[value="patient"] { color: #e76f51; }
 .form-field select option[value="admin"] { color: #264653; }
 
-.link{ color:var(--primary)};
+.link{ color:var(--primary)}
