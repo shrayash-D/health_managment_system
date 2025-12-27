@@ -2,12 +2,41 @@
   <section class="hero">
     <div class="container">
       <div class="hero-inner">
-        <h1>User Profile</h1>
-        <p>View and update your account information.</p>
+        
+        <!-- Left side content -->
+        <div>
+          <h1>User Profile</h1>
+          <p>View and update your account information.</p>
+        </div>
+
+        <!-- Bell moved to the end so it sits on the right -->
+        <div class="notification-wrapper">
+          <div class="bell-container" (click)="togglePopup()">
+            <span class="bell-emoji">🔔</span>
+            <span class="badge">🔴 </span>
+          </div>
+
+          @if (isPopupVisible) {
+          <div class="alert-popup">
+            <div class="popup-header">
+              <strong>Notifications</strong>
+              <button (click)="togglePopup()">×</button>
+            </div>
+            <div class="popup-body">
+              <p>You have a new message!</p>
+              <p>Your password expires in 2 days.</p>
+              <p>New appointment scheduled for tomorrow.</p>
+            </div>
+          </div>
+          }
+        </div>
+
       </div>
     </div>
   </section>
- 
+</div>
+
+
   <main class="container">
     <!-- Profile Header -->
     <section class="card profile-header">
@@ -26,7 +55,7 @@
         <button class="btn btn-primary">Edit Profile</button>
       </div>
     </section>
- 
+
     <!-- Profile Details (2-column responsive form) -->
     <section class="card form-card">
       <h2 class="form-title">Account Details</h2>
@@ -47,12 +76,16 @@
           <label for="dob">Date of Birth</label>
           <input id="dob" type="date" />
         </div>
- 
+
         <div class="form-field span-2">
           <label for="address">Address</label>
-          <textarea id="address" rows="3" placeholder="Street, City, State, PIN"></textarea>
+          <textarea
+            id="address"
+            rows="3"
+            placeholder="Street, City, State, PIN"
+          ></textarea>
         </div>
- 
+
         <div class="form-actions span-2">
           <div class="buttons">
             <button type="button" class="btn btn-outline">Cancel</button>
@@ -61,7 +94,7 @@
         </div>
       </form>
     </section>
- 
+
     <!-- Security Card -->
     <section class="card form-card">
       <h2 class="form-title">Security</h2>
@@ -76,7 +109,11 @@
         </div>
         <div class="form-field">
           <label for="confirmPass">Confirm New Password</label>
-          <input id="confirmPass" type="password" placeholder="Re-enter password" />
+          <input
+            id="confirmPass"
+            type="password"
+            placeholder="Re-enter password"
+          />
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Update Password</button>
@@ -84,4 +121,4 @@
       </form>
     </section>
   </main>
-</div>
+

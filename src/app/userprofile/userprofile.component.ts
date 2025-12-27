@@ -12,5 +12,11 @@ togglePassword() {
 throw new Error('Method not implemented.');
 }
 passwordType: any;
+// Flag to control popup visibility
+  isPopupVisible: boolean = false;
+
+togglePopup() {
+    this.isPopupVisible = !this.isPopupVisible;
+}
 
 }
