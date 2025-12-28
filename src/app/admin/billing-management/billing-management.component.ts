@@ -72,6 +72,8 @@ export class BillingManagementComponent implements OnInit {
       description: '',
       items: [],
     };
+    // Refresh patients list before opening modal so newly added patients are available
+    this.patients$ = this.patientService.getAllPatients();
     this.showAddModal = true;
   }
 
@@ -91,12 +93,21 @@ export class BillingManagementComponent implements OnInit {
 
   generateInvoice(): void {
     if (this.newInvoice.patientId && this.newInvoice.amount) {
-      this.billingService
-        .generateInvoice(this.newInvoice as Invoice)
-        .subscribe(() => {
+      // Ensure we include the patient's name on the invoice so the list shows it immediately
+      const pid = Number(this.newInvoice.patientId);
+      this.patientService.getPatientById(pid).subscribe((patient) => {
+        const invoiceToCreate: Invoice = {
+          ...(this.newInvoice as Invoice),
+          patientId: pid,
+          patientName:
+            patient?.name || (this.newInvoice as any).patientName || '',
+        };
+
+        this.billingService.generateInvoice(invoiceToCreate).subscribe(() => {
           this.loadData();
           this.closeAddModal();
         });
+      });
     }
   }
 
