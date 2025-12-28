@@ -1,0 +1,188 @@
+<div class="appointment-management">
+    <!-- Header -->
+    <div class="page-header">
+        <h2>Appointment Management</h2>
+        <button class="btn btn-primary" (click)="openAddModal()">+ Create Appointment</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <input type="text" class="form-control input-brand" placeholder="Search by patient, doctor, or reason..."
+            [(ngModel)]="searchTerm" />
+        <select class="form-control input-brand" [(ngModel)]="statusFilter">
+            <option value="ALL">All Status</option>
+            <option value="BOOKED">Booked</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+        </select>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="table-container" *ngIf="appointments$ | async as appointments">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let appointment of getFilteredAppointments(appointments)">
+                    <td>{{ appointment.id }}</td>
+                    <td><strong>{{ appointment.patientName }}</strong></td>
+                    <td>{{ appointment.doctorName }}</td>
+                    <td>{{ appointment.date }}</td>
+                    <td>{{ appointment.time }}</td>
+                    <td>{{ appointment.reason || '-' }}</td>
+                    <td>
+                        <span *ngIf="appointment.status" [ngClass]="getStatusBadgeClass(appointment.status)">
+                            {{ appointment.status }}
+                        </span>
+                        <span *ngIf="!appointment.status" class="badge">N/A</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary"
+                                (click)="openEditModal(appointment)">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger" *ngIf="appointment.status === 'BOOKED'"
+                                (click)="cancelAppointment(appointment.id)">Cancel</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="getFilteredAppointments(appointments).length === 0">
+                    <td colspan="8" class="text-center text-muted-500">No appointments found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Appointment Modal -->
+    <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Create New Appointment</h3>
+                <button class="btn-close" (click)="closeAddModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Patient *</label>
+                        <select class="form-control input-brand" [(ngModel)]="newAppointment.patientId" name="patientId"
+                            required>
+                            <option value="0">Select Patient</option>
+                            <option *ngFor="let patient of patients$ | async" [value]="patient.id">{{ patient.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor *</label>
+                        <select class="form-control input-brand" [(ngModel)]="newAppointment.doctorId" name="doctorId"
+                            required>
+                            <option value="0">Select Doctor</option>
+                            <option *ngFor="let doctor of doctors$ | async" [value]="doctor.id">{{ doctor.name }} - {{
+                                doctor.specialization }}</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" class="form-control input-brand" [(ngModel)]="newAppointment.date"
+                                name="date" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Time *</label>
+                            <input type="time" class="form-control input-brand" [(ngModel)]="newAppointment.time"
+                                name="time" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newAppointment.reason"
+                            name="reason" />
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea class="form-control input-brand" [(ngModel)]="newAppointment.notes" name="notes"
+                            rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeAddModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="createAppointment()">Create Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Appointment Modal -->
+    <div class="modal-overlay" *ngIf="showEditModal && selectedAppointment" (click)="closeEditModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Edit Appointment</h3>
+                <button class="btn-close" (click)="closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Patient *</label>
+                        <select class="form-control input-brand" [(ngModel)]="selectedAppointment.patientId"
+                            name="patientId" required>
+                            <option *ngFor="let patient of patients$ | async" [value]="patient.id"
+                                [selected]="patient.id === selectedAppointment.patientId">{{ patient.name }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor *</label>
+                        <select class="form-control input-brand" [(ngModel)]="selectedAppointment.doctorId"
+                            name="doctorId" required>
+                            <option *ngFor="let doctor of doctors$ | async" [value]="doctor.id"
+                                [selected]="doctor.id === selectedAppointment.doctorId">{{ doctor.name }} - {{
+                                doctor.specialization }}</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" class="form-control input-brand" [(ngModel)]="selectedAppointment.date"
+                                name="date" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Time *</label>
+                            <input type="time" class="form-control input-brand" [(ngModel)]="selectedAppointment.time"
+                                name="time" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select class="form-control input-brand" [(ngModel)]="selectedAppointment.status" name="status"
+                            required>
+                            <option value="BOOKED">Booked</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedAppointment.reason"
+                            name="reason" />
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea class="form-control input-brand" [(ngModel)]="selectedAppointment.notes" name="notes"
+                            rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="updateAppointment()">Update Appointment</button>
+            </div>
+        </div>
+    </div>
+</div>

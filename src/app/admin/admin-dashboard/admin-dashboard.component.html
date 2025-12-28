@@ -1,0 +1,140 @@
+<div class="admin-dashboard">
+    <!-- Metrics Cards -->
+    <div class="metrics-grid" *ngIf="metrics$ | async as metrics">
+        <!-- Total Patients -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-icon">👥</span>
+                <span class="metric-label">Total Patients</span>
+            </div>
+            <div class="metric-value">{{ metrics.totalPatients }}</div>
+        </div>
+
+        <!-- Total Appointments -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-icon">📅</span>
+                <span class="metric-label">Total Appointments</span>
+            </div>
+            <div class="metric-value">{{ metrics.totalAppointments }}</div>
+            <div class="metric-sub">Today: {{ metrics.todayAppointments }}</div>
+        </div>
+
+        <!-- Pending Appointments -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-icon">⏳</span>
+                <span class="metric-label">Pending Appointments</span>
+            </div>
+            <div class="metric-value">{{ metrics.pendingAppointments }}</div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-icon">💰</span>
+                <span class="metric-label">Total Revenue</span>
+            </div>
+            <div class="metric-value">{{ formatCurrency(metrics.totalRevenue) }}</div>
+            <div class="metric-sub">Today: {{ formatCurrency(metrics.todayRevenue) }}</div>
+        </div>
+
+        <!-- Pending Payments -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-icon">💳</span>
+                <span class="metric-label">Pending Payments</span>
+            </div>
+            <div class="metric-value">{{ formatCurrency(metrics.pendingPayments) }}</div>
+        </div>
+
+        <!-- Active Doctors -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-icon">👨‍⚕️</span>
+                <span class="metric-label">Active Doctors</span>
+            </div>
+            <div class="metric-value">{{ metrics.activeDoctors }}</div>
+        </div>
+    </div>
+
+    <!-- Analytics Charts Section -->
+    <div class="analytics-section">
+        <div class="section-header">
+            <h3>Analytics & Insights</h3>
+        </div>
+
+        <div class="charts-grid">
+            <!-- Revenue Trend Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4>Revenue Trend</h4>
+                    <span class="chart-subtitle">Last 7 Days</span>
+                </div>
+                <div class="chart-container">
+                    <canvas #revenueChart></canvas>
+                </div>
+            </div>
+
+            <!-- Monthly Revenue Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4>Monthly Revenue</h4>
+                    <span class="chart-subtitle">Last 6 Months</span>
+                </div>
+                <div class="chart-container">
+                    <canvas #monthlyRevenueChart></canvas>
+                </div>
+            </div>
+
+            <!-- Appointment Status Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4>Appointment Status</h4>
+                    <span class="chart-subtitle">Distribution</span>
+                </div>
+                <div class="chart-container">
+                    <canvas #appointmentStatusChart></canvas>
+                </div>
+            </div>
+
+            <!-- Payment Status Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4>Payment Status</h4>
+                    <span class="chart-subtitle">Overview</span>
+                </div>
+                <div class="chart-container">
+                    <canvas #paymentStatusChart></canvas>
+                </div>
+            </div>
+
+            <!-- Doctor Workload Chart -->
+            <div class="chart-card chart-card-wide">
+                <div class="chart-header">
+                    <h4>Doctor Workload</h4>
+                    <span class="chart-subtitle">Appointments per Doctor</span>
+                </div>
+                <div class="chart-container">
+                    <canvas #doctorWorkloadChart></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="activity-section" *ngIf="metrics$ | async as metrics">
+        <div class="section-header">
+            <h3>Recent Activity</h3>
+        </div>
+        <div class="activity-list">
+            <div class="activity-item" *ngFor="let activity of metrics.recentActivity">
+                <div class="activity-icon">{{ getActivityIcon(activity.type) }}</div>
+                <div class="activity-content">
+                    <div class="activity-description">{{ activity.description }}</div>
+                    <div class="activity-time">{{ formatActivityTime(activity.timestamp) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

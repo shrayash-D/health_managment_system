@@ -1,0 +1,200 @@
+<div class="doctor-management">
+    <!-- Header -->
+    <div class="page-header">
+        <h2>Doctor Management</h2>
+        <button class="btn btn-primary" (click)="openAddModal()">+ Add Doctor</button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" class="form-control input-brand"
+            placeholder="Search doctors by name, specialization, department, or email..." [(ngModel)]="searchTerm" />
+    </div>
+
+    <!-- Doctors Table -->
+    <div class="table-container" *ngIf="doctors$ | async as doctors">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th>Department</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let doctor of getFilteredDoctors(doctors)">
+                    <td>{{ doctor.id }}</td>
+                    <td><strong>{{ doctor.name }}</strong></td>
+                    <td>{{ doctor.specialization }}</td>
+                    <td>{{ doctor.department || '-' }}</td>
+                    <td>{{ doctor.contactInfo }}</td>
+                    <td>{{ doctor.email || '-' }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(doctor)">Edit</button>
+                            <button class="btn btn-sm btn-outline-success"
+                                (click)="openAccountModal(doctor)">Account</button>
+                            <button class="btn btn-sm btn-outline-danger"
+                                (click)="deleteDoctor(doctor.id)">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="getFilteredDoctors(doctors).length === 0">
+                    <td colspan="7" class="text-center text-muted-500">No doctors found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Doctor Modal -->
+    <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Add New Doctor</h3>
+                <button class="btn-close" (click)="closeAddModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <h4 class="section-title">Doctor Information</h4>
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newDoctor.name" name="name"
+                            required />
+                    </div>
+                    <div class="form-group">
+                        <label>Specialization *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newDoctor.specialization"
+                            name="specialization" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newDoctor.department"
+                            name="department" />
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newDoctor.contactInfo"
+                            name="contactInfo" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control input-brand" [(ngModel)]="newDoctor.email"
+                            name="email" />
+                    </div>
+
+                    <h4 class="section-title">Create User Account (Optional)</h4>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newUser.username"
+                            name="username" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control input-brand" [(ngModel)]="newUser.password"
+                            name="password" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeAddModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="addDoctor()">Add Doctor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Doctor Modal -->
+    <div class="modal-overlay" *ngIf="showEditModal && selectedDoctor" (click)="closeEditModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Edit Doctor</h3>
+                <button class="btn-close" (click)="closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedDoctor.name"
+                            name="name" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Specialization *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedDoctor.specialization"
+                            name="specialization" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedDoctor.department"
+                            name="department" />
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedDoctor.contactInfo"
+                            name="contactInfo" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control input-brand" [(ngModel)]="selectedDoctor.email"
+                            name="email" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="updateDoctor()">Update Doctor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Management Modal -->
+    <div class="modal-overlay" *ngIf="showAccountModal && selectedDoctor && selectedDoctorUser"
+        (click)="closeAccountModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Manage Account - {{ selectedDoctor.name }}</h3>
+                <button class="btn-close" (click)="closeAccountModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedDoctorUser.username"
+                            name="username" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control input-brand" [(ngModel)]="selectedDoctorUser.email"
+                            name="email" />
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select class="form-control input-brand" [(ngModel)]="selectedDoctorUser.role" name="role"
+                            disabled>
+                            <option value="DOCTOR">Doctor</option>
+                        </select>
+                    </div>
+                    <div class="form-group" *ngIf="selectedDoctorUser.id !== 0">
+                        <label>Password</label>
+                        <div class="password-reset">
+                            <input type="password" class="form-control input-brand" value="••••••••" disabled />
+                            <button type="button" class="btn btn-sm btn-outline-primary" (click)="resetPassword()">Reset
+                                Password</button>
+                        </div>
+                    </div>
+                    <div class="form-group" *ngIf="selectedDoctorUser.id === 0">
+                        <label>Password *</label>
+                        <input type="password" class="form-control input-brand"
+                            [(ngModel)]="selectedDoctorUser.password" name="password" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeAccountModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="saveAccount()">Save Account</button>
+            </div>
+        </div>
+    </div>
+</div>

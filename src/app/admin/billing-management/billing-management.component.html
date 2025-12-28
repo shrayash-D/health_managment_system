@@ -1,0 +1,146 @@
+<div class="billing-management">
+    <!-- Header -->
+    <div class="page-header">
+        <h2>Billing Management</h2>
+        <button class="btn btn-primary" (click)="openAddModal()">+ Generate Invoice</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <input type="text" class="form-control input-brand"
+            placeholder="Search by invoice number, patient, or description..." [(ngModel)]="searchTerm" />
+        <select class="form-control input-brand" [(ngModel)]="statusFilter">
+            <option value="ALL">All Status</option>
+            <option value="PAID">Paid</option>
+            <option value="UNPAID">Unpaid</option>
+        </select>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="table-container" *ngIf="invoices$ | async as invoices">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Patient</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let invoice of getFilteredInvoices(invoices)">
+                    <td><strong>{{ invoice.invoiceNumber }}</strong></td>
+                    <td>{{ invoice.patientName }}</td>
+                    <td>{{ invoice.date }}</td>
+                    <td><strong>{{ formatCurrency(invoice.amount) }}</strong></td>
+                    <td>
+                        <span [ngClass]="getStatusBadgeClass(invoice.paymentStatus)">{{ invoice.paymentStatus }}</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary"
+                                (click)="openViewModal(invoice)">View</button>
+                            <button class="btn btn-sm btn-outline-success" *ngIf="invoice.paymentStatus === 'UNPAID'"
+                                (click)="markAsPaid(invoice.id)">Mark Paid</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="getFilteredInvoices(invoices).length === 0">
+                    <td colspan="6" class="text-center text-muted-500">No invoices found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Generate Invoice Modal -->
+    <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Generate New Invoice</h3>
+                <button class="btn-close" (click)="closeAddModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Patient *</label>
+                        <select class="form-control input-brand" [(ngModel)]="newInvoice.patientId" name="patientId"
+                            required>
+                            <option value="0">Select Patient</option>
+                            <option *ngFor="let patient of patients$ | async" [value]="patient.id">{{ patient.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" class="form-control input-brand" [(ngModel)]="newInvoice.date" name="date"
+                            required />
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (₹) *</label>
+                        <input type="number" class="form-control input-brand" [(ngModel)]="newInvoice.amount"
+                            name="amount" min="0" step="0.01" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea class="form-control input-brand" [(ngModel)]="newInvoice.description"
+                            name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Status</label>
+                        <select class="form-control input-brand" [(ngModel)]="newInvoice.paymentStatus"
+                            name="paymentStatus">
+                            <option value="UNPAID">Unpaid</option>
+                            <option value="PAID">Paid</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeAddModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="generateInvoice()">Generate Invoice</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Invoice Modal -->
+    <div class="modal-overlay" *ngIf="showViewModal && selectedInvoice" (click)="closeViewModal()">
+        <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Invoice Details - {{ selectedInvoice.invoiceNumber }}</h3>
+                <button class="btn-close" (click)="closeViewModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="invoice-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Patient:</span>
+                        <span class="detail-value">{{ selectedInvoice.patientName }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Date:</span>
+                        <span class="detail-value">{{ selectedInvoice.date }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span [ngClass]="getStatusBadgeClass(selectedInvoice.paymentStatus)">{{
+                            selectedInvoice.paymentStatus }}</span>
+                    </div>
+                    <div class="detail-row" *ngIf="selectedInvoice.description">
+                        <span class="detail-label">Description:</span>
+                        <span class="detail-value">{{ selectedInvoice.description }}</span>
+                    </div>
+                    <div class="invoice-total">
+                        <span class="total-label">Total Amount:</span>
+                        <span class="total-value">{{ formatCurrency(selectedInvoice.amount) }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeViewModal()">Close</button>
+                <button class="btn btn-primary" *ngIf="selectedInvoice.paymentStatus === 'UNPAID'"
+                    (click)="markAsPaid(selectedInvoice.id); closeViewModal()">Mark as Paid</button>
+            </div>
+        </div>
+    </div>
+</div>
