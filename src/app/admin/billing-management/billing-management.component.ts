@@ -48,12 +48,16 @@ export class BillingManagementComponent implements OnInit {
       this.patientService.getAllPatients(),
     ]).pipe(
       map(([invoices, patients]) => {
-        return invoices.map((inv) => ({
-          ...inv,
-          patientName:
-            patients.find((p) => p.id === inv.patientId)?.name ||
-            inv.patientName,
-        }));
+        return invoices.map((inv) => {
+          // coerce inv.patientId to number when matching to handle cases
+          // where the incoming invoice has patientId as a string
+          const pid = Number((inv as any).patientId);
+          return {
+            ...inv,
+            patientName:
+              patients.find((p) => p.id === pid)?.name || inv.patientName,
+          } as typeof inv;
+        });
       })
     );
     this.patients$ = this.patientService.getAllPatients();

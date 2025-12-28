@@ -45,6 +45,31 @@
   min-width: 700px;
 }
 
+/* Badges (color-coded) - copied to match other sections so status is visible */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: 1px solid var(--blue-300);
+  background: var(--blue-100);
+  color: var(--blue-900);
+  text-transform: capitalize;
+}
+.badge-paid {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+.badge-unpaid {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
 .table th,
 .table td {
   border-bottom: 1px solid var(--blue-300);
