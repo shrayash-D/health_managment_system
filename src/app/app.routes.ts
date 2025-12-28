@@ -6,7 +6,7 @@ export const routes: Routes = [
     path: 'doctor/profile',
     loadComponent: () =>
       import('./doctor/doctor-profile/doctor-profile.component').then(
-        (m) => m.DoctorProfileComponent
+        m => m.DoctorProfileComponent
       ),
   },
 
@@ -15,7 +15,7 @@ export const routes: Routes = [
     path: 'doctor/dashboard',
     loadComponent: () =>
       import('./doctor/doctor-dashboard/doctor-dashboard.component').then(
-        (m) => m.DoctorDashboardComponent
+        m => m.DoctorDashboardComponent
       ),
   },
 
@@ -24,7 +24,7 @@ export const routes: Routes = [
     path: 'doctor/tasks',
     loadComponent: () =>
       import('./doctor/task-management/task-management.component').then(
-        (m) => m.TaskManagementComponent
+        m => m.TaskManagementComponent
       ),
   },
 
@@ -33,7 +33,7 @@ export const routes: Routes = [
     path: 'doctor/invoices',
     loadComponent: () =>
       import('./doctor/invoice-list/invoice-list.component').then(
-        (m) => m.InvoiceListComponent
+        m => m.InvoiceListComponent
       ),
   },
 
@@ -42,7 +42,23 @@ export const routes: Routes = [
     path: 'doctor/appointment',
     loadComponent: () =>
       import('./doctor/appointment/appointment.component').then(
-        (m) => m.AppointmentComponent
+        m => m.AppointmentComponent
+      ),
+  },
+
+  // Doctor EMR
+  {
+    path: 'doctor/emr',
+    loadComponent: () =>
+      import('./doctor/emr/emr.component').then(m => m.EmrComponent),
+  },
+
+  // Doctor patients
+  {
+    path: 'doctor/patients',
+    loadComponent: () =>
+      import('./doctor/patient-list/patient-list.component').then(
+        m => m.PatientListComponent
       ),
   },
 

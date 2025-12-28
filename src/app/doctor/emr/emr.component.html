@@ -1,0 +1,131 @@
+<div class="d-flex">
+  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+  <div class="container-fluid p-2">
+  <div class="page">
+    <!-- Hero Banner -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-inner">
+          <h1>Electronic Medical Record</h1>
+          <p>View and manage patient consultations.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Consultations Table -->
+    <section class="card">
+      <h2 class="form-title">Recent Consultations</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Diagnosis</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let consultation of consultations">
+            <td>{{ consultation.patientName }}</td>
+            <td>{{ consultation.date }}</td>
+            <td>
+              <strong>{{ consultation.diagnosis }}</strong>
+              <div *ngIf="consultation.previousDiagnosis" class="prev-diagnosis">
+                <small>Previous: {{ consultation.previousDiagnosis }}</small>
+              </div>
+              <div *ngIf="consultation.prescriptionImage" class="prescription-thumb">
+                <img [src]="consultation.prescriptionImage" alt="Prescription" style="max-width:80px; border-radius:6px; margin-top:4px;" />
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-primary" (click)="viewEMR(consultation)">View EMR</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- EMR Modal -->
+    <main class="container">
+      <div *ngIf="showEMRModal" class="modal-overlay" (click)="closeEMRModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <h3>Electronic Medical Record</h3>
+          <div *ngIf="selectedConsultation">
+            <div class="profile-details">
+              <div class="form-group">
+                <label>Patient:</label>
+                <p>{{ selectedConsultation.patientName }}</p>
+              </div>
+              <div class="form-group">
+                <label>Date:</label>
+                <p>{{ selectedConsultation.date }}</p>
+              </div>
+              <div class="form-group">
+                <label>Diagnosis:</label>
+                <p>
+                  <strong>Current:</strong> {{ selectedConsultation.diagnosis }}
+                  <br *ngIf="selectedConsultation.previousDiagnosis" />
+                  <span *ngIf="selectedConsultation.previousDiagnosis">
+                    <strong>Previous:</strong> {{ selectedConsultation.previousDiagnosis }}
+                  </span>
+                </p>
+              </div>
+              <div class="form-group">
+                <label>Prescriptions:</label>
+                <ul>
+                  <li *ngFor="let prescription of selectedConsultation.prescriptions">
+                    {{ prescription }}
+                  </li>
+                </ul>
+              </div>
+              <div class="form-group">
+                <label>Lab Results:</label>
+                <ul>
+                  <li *ngFor="let result of selectedConsultation.labResults">
+                    {{ result }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Uploaded Prescription Preview -->
+              <div *ngIf="selectedConsultation.prescriptionImage" class="form-group">
+                <label>Uploaded Prescription:</label>
+                <img [src]="selectedConsultation.prescriptionImage" alt="Prescription" style="max-width:100%; border:1px solid #ccc; border-radius:8px; margin-top:8px;" />
+              </div>
+            </div>
+
+            <!-- Hidden file input for prescription upload -->
+            <input
+              type="file"
+              id="prescriptionInput"
+              accept="image/*"
+              style="display:none"
+              (change)="onPrescriptionUpload($event)"
+            />
+
+            <!-- Modal Actions -->
+            <div class="modal-actions">
+              <button class="btn btn-secondary" (click)="startAddDiagnosis()">Add Diagnosis</button>
+              <button class="btn btn-secondary" (click)="uploadPrescription()">Upload Prescription</button>
+              <button class="btn btn-secondary" (click)="closeEMRModal()">Close</button>
+            </div>
+
+            <!-- Add Diagnosis Form -->
+            <div *ngIf="addingDiagnosis" class="form-card">
+              <h4 class="form-title">Add New Diagnosis</h4>
+              <div class="form-field">
+                <label for="diagnosis">Diagnosis</label>
+                <input id="diagnosis" [(ngModel)]="newDiagnosis" placeholder="Enter diagnosis" />
+              </div>
+              <div class="modal-actions">
+                <button class="btn btn-primary" (click)="saveDiagnosis()">Save</button>
+                <button class="btn btn-secondary" (click)="cancelDiagnosis()">Cancel</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

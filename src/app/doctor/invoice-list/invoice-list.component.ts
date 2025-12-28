@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DoctorDataService, Invoice } from '../../services/doctor-data.service';
 import { ProfileSidebarComponent } from '../profile-sidebar/profile-sidebar.component';
-import { DoctorRoutingModule } from "../doctor-routing.module";
+
 import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-invoice-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileSidebarComponent, DoctorRoutingModule],
+  imports: [CommonModule, FormsModule, ProfileSidebarComponent],
   templateUrl: './invoice-list.component.html',
   styleUrls: ['./invoice-list.component.css'],
 })
@@ -26,7 +26,9 @@ export class InvoiceListComponent implements OnInit {
   constructor(private doctorService: DoctorDataService) {}
 
   ngOnInit(): void {
-    this.invoices = this.doctorService.getInvoices();
+    this.doctorService.invoices$.subscribe(invoices => {
+      this.invoices = invoices;
+    });
   }
 
   get filteredInvoices() {
@@ -128,7 +130,7 @@ createInvoice() {
     this.newInvoice.medicineFee +
     this.newInvoice.otherCharges;
 
-  const invoice = {
+  const invoice: Invoice = {
     id: 'INV' + (this.invoices.length + 1).toString().padStart(3, '0'),
     patientId: this.newInvoice.patientId,
     patientName: this.newInvoice.patientName,
@@ -139,14 +141,14 @@ createInvoice() {
     otherCharges: this.newInvoice.otherCharges,
     subtotal: subtotal,
     amount: subtotal,
-   paymentStatus: 'PENDING' as 'PENDING' | 'PAID' | 'OVERDUE',
+    paymentStatus: 'PENDING' as 'PENDING' | 'PAID' | 'OVERDUE',
     issueDate: new Date().toISOString().split('T')[0],
     dueDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0],
     paymentMethod: this.newInvoice.paymentMethod,
     transactionId: 'TXN' + Math.floor(Math.random() * 1000000)
   };
 
-  this.invoices.push(invoice);
+  this.doctorService.addInvoice(invoice);
   this.closeCreateInvoiceModal();
 }
 

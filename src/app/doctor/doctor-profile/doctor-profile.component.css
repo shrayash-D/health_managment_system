@@ -1,15 +1,4 @@
 /* --- Layout --- */
-.profile-content {
-  margin-left: 220px;
-  padding: 2rem;
-  min-height: 100vh;
-  background: #f9fbff;
-  transition: margin-left 0.3s ease;
-}
-
-.profile-sidebar.collapsed ~ .profile-content {
-  margin-left: 70px;
-}
 
 /* --- Top Panel --- */
 .top-panel {
@@ -322,15 +311,5 @@
   }
 }
 
-.profile-content {
-  margin-left: 220px;
-  padding: 2rem;
-  min-height: 100vh;
-  background: #f9fbff;
-  transition: margin-left 0.3s ease;
-}
 
-.profile-sidebar.collapsed ~ .profile-content {
-  margin-left: 70px;
-}
 

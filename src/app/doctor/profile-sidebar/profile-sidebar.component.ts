@@ -2,7 +2,7 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-profile-sidebar',
   standalone: true,
@@ -19,4 +19,13 @@ export class ProfileSidebarComponent {
     this.collapsed = !this.collapsed;
     this.collapsedChange.emit(this.collapsed);
   }
+  constructor(private router: Router) {}
+
+  logout() {
+  
+  localStorage.clear();
+  
+  this.router.navigate(['/login']);
+}
+
 }

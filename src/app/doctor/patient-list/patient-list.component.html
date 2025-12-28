@@ -1,0 +1,85 @@
+<div class="d-flex">
+  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+  <div class="container-fluid p-2">
+    <div class="page">
+      
+
+      <!-- Search Bar -->
+      <section class="search-section mb-4">
+        <div class="row">
+          <div class="col-md-6">
+            <input type="text" placeholder="Search patients..." class="form-control" [(ngModel)]="searchQuery">
+          </div>
+        </div>
+      </section>
+
+      <!-- Patient Cards -->
+      <section class="patients-section">
+        <h2 class="form-title">My Patients</h2>
+        <div class="row">
+          <div class="col-md-4 mb-4" *ngFor="let patient of filteredPatients.slice(0, 3)">
+            <div class="card patient-card h-100">
+              <div class="card-body">
+                <div class="patient-header text-center mb-3">
+                    <h5 class="card-title">{{ patient.name }}</h5>
+                  <div class="patient-ids">
+                    <small class="text-muted">ID: {{ patient.id }} | MRN: {{ patient.mrn }}</small>
+                  </div>
+                </div>
+
+                <div class="patient-details">
+                  <div class="row mb-2">
+                    <div class="col-6">
+                      <strong>Age:</strong> {{ calculateAge(patient.dob) }} years
+                    </div>
+                    <div class="col-6">
+                      <strong>Sex:</strong> {{ patient.sex }}
+                    </div>
+                  </div>
+
+                  <div class="mb-2">
+                    <strong>DOB:</strong> {{ patient.dob }}
+                  </div>
+
+                  <div class="mb-2">
+                    <strong>Diagnosis:</strong> {{ patient.diagnosis }}
+                  </div>
+
+                  <div class="mb-2">
+                    <strong>Treatment:</strong> {{ patient.ongoingTreatment }}
+                  </div>
+
+                  <div class="row mb-2">
+                    <div class="col-6">
+                      <strong>Last Appt:</strong><br>
+                      <small>{{ patient.lastAppointment }}</small>
+                    </div>
+                    <div class="col-6">
+                      <strong>Next Appt:</strong><br>
+                      <small>{{ patient.nextAppointment }}</small>
+                    </div>
+                  </div>
+
+                  <div class="row mb-2">
+                    <div class="col-6">
+                      <strong>Doctor:</strong><br>
+                      <small>{{ patient.assignedDoctor }}</small>
+                    </div>
+                    <div class="col-6">
+                      <strong>Dept:</strong><br>
+                      <small>{{ patient.department }}</small>
+                    </div>
+                  </div>
+
+                  <div class="mb-0">
+                    <strong>Contact:</strong> {{ patient.contact }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

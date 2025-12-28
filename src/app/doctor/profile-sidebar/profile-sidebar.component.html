@@ -1,5 +1,5 @@
 <!-- profile-sidebar.component.html -->
-<aside class="profile-sidebar" [class.collapsed]="collapsed">
+<aside class="sidebar" [class.collapsed]="collapsed">
   <div class="sidebar-header">
     <div class="avatar">
       <img src="assets/images/OIP.jpg" alt="Doctor Avatar" />
@@ -42,8 +42,30 @@
         </a>
       </li>
 
-      <li> <a routerLink="/doctor/invoices" routerLinkActive="active"> <i>💳</i> <span *ngIf="!collapsed">Invoice</span> </a> </li>
+      <li>
+        <a routerLink="/doctor/invoices" routerLinkActive="active">
+          <i>💳</i> <span *ngIf="!collapsed">Invoice</span>
+        </a>
+      </li>
 
+      <li>
+        <a
+          routerLink="/doctor/patients"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <i>👥</i> <span *ngIf="!collapsed">Patients</span>
+        </a>
+      </li>
+
+      <li>
+        <a
+          routerLink="/doctor/emr"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+<i>🩺</i> <span *ngIf="!collapsed">EMR</span>        </a>
+      </li>
 
       <li>
         <a
@@ -64,10 +86,15 @@
           <i>⚙️</i> <span *ngIf="!collapsed">Settings</span>
         </a>
       </li>
+      <li> <a (click)="logout()" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" > <i>🚪</i> <span *ngIf="!collapsed">Logout</span> </a> </li>
     </ul>
   </nav>
 
-  <button class="toggle-btn" (click)="toggleSidebar()" aria-label="Toggle sidebar">
-    {{ collapsed ? '➡️' : '⬅️' }}
+  <button
+    class="toggle-btn"
+    (click)="toggleSidebar()"
+    aria-label="Toggle sidebar"
+  >
+    {{ collapsed ? "➡️" : "⬅️" }}
   </button>
 </aside>

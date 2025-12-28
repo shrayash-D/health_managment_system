@@ -1,6 +1,6 @@
-<app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
-
-<div class="profile-content" [class.collapsed]="sidebarCollapsed">
+<div class="d-flex">
+  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+  <div class="container-fluid p-2">
   <section class="table-scroll card">
     <h2 class="form-title">Upcoming Appointments</h2>
 

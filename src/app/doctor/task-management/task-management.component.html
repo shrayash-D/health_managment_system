@@ -1,9 +1,9 @@
 <form (ngSubmit)="addTask()" class="task-form">
  
 
- <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
-
-<div class="profile-content" [class.collapsed]="sidebarCollapsed">
+<div class="d-flex">
+  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+  <div class="container-fluid p-2">
   <div class="page">
     <!-- Hero Banner -->
     <section class="hero">
@@ -59,19 +59,18 @@
               <label>
                 <input
                   type="checkbox"
-                  [checked]="task.completed"
+                  [checked]="task.status === 'Completed'"
                   (change)="toggleTask(task)"
                 />
-                <span [class.completed]="task.completed">{{ task.title }}</span>
+                <span [class.completed]="task.status === 'Completed'">{{ task.description }}</span>
               </label>
-              <p *ngIf="task.description">{{ task.description }}</p>
-              <small *ngIf="task.dueDate">Due: {{ task.dueDate }}</small>
-              <span class="chip" [ngClass]="task.priority?.toLowerCase()">
-                {{ task.priority }}
+              <small>Staff: {{ task.staff }}</small>
+              <span class="chip" [ngClass]="task.status.toLowerCase()">
+                {{ task.status }}
               </span>
             </div>
             <button class="btn btn-outline" (click)="deleteTask(task.id)">
-              ❌ Delete 
+              ❌ Delete
             </button>
           </li>
         </ul>
@@ -82,4 +81,3 @@
 
 
   
-</form>

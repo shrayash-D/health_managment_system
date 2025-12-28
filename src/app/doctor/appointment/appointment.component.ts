@@ -22,6 +22,7 @@ export class AppointmentComponent implements OnInit {
     date: '',
     time: '',
     status: '',
+    type: 'new',
   };
 
   constructor(private doctorService: DoctorDataService) {}
@@ -55,6 +56,7 @@ export class AppointmentComponent implements OnInit {
   cancelAppointment(id: number) {
     this.doctorService.cancelAppointment(id);
   }
+  
   scheduleAppointment() {
     if (
       this.newAppointment.patientName &&
@@ -69,6 +71,7 @@ export class AppointmentComponent implements OnInit {
         date: '',
         time: '',
         status: '',
+        type: 'new',
       };
     }
   }

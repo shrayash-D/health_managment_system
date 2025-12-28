@@ -1,16 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProfileSidebarComponent } from '../profile-sidebar/profile-sidebar.component';
-
-interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  dueDate?: string;
-  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
-  completed: boolean;
-}
+import { DoctorDataService, Task } from '../../services/doctor-data.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-task-management',
@@ -19,20 +12,31 @@ interface Task {
   templateUrl: './task-management.component.html',
   styleUrls: ['./task-management.component.css'],
 })
-export class TaskManagementComponent {
+export class TaskManagementComponent implements OnInit, OnDestroy {
   sidebarCollapsed = false;
+  private subscriptions: Subscription = new Subscription();
 
-  tasks: Task[] = [
-    { id: 1, title: 'Review patient reports', description: 'Check lab results', dueDate: '2025-12-28', priority: 'HIGH', completed: false },
-    { id: 2, title: 'Approve prescriptions', description: 'Pending approvals', dueDate: '2025-12-29', priority: 'MEDIUM', completed: true },
-    { id: 3, title: 'Schedule follow-up calls', description: 'Call patients for updates', dueDate: '2025-12-30', priority: 'LOW', completed: false },
-  ];
+  tasks: Task[] = [];
 
   // Form fields
   newTaskTitle = '';
   newTaskDescription = '';
   newTaskDate = '';
   newTaskPriority: 'LOW' | 'MEDIUM' | 'HIGH' = 'MEDIUM';
+
+  constructor(private doctorService: DoctorDataService) {}
+
+  ngOnInit() {
+    this.subscriptions.add(
+      this.doctorService.tasks$.subscribe(tasks => {
+        this.tasks = tasks;
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
 
   onSidebarCollapse(collapsed: boolean) {
     this.sidebarCollapsed = collapsed;
@@ -42,15 +46,13 @@ export class TaskManagementComponent {
     if (!this.newTaskTitle.trim()) return;
 
     const newTask: Task = {
-      id: this.tasks.length + 1,
-      title: this.newTaskTitle,
-      description: this.newTaskDescription,
-      dueDate: this.newTaskDate,
-      priority: this.newTaskPriority,
-      completed: false,
+      id: Date.now(),
+      description: this.newTaskTitle.trim() + (this.newTaskDescription ? ' - ' + this.newTaskDescription.trim() : ''),
+      staff: 'Doctor', // Default staff
+      status: 'Pending'
     };
 
-    this.tasks.push(newTask);
+    this.doctorService.addTask(newTask);
 
     // Reset form
     this.newTaskTitle = '';
@@ -60,10 +62,11 @@ export class TaskManagementComponent {
   }
 
   toggleTask(task: Task) {
-    task.completed = !task.completed;
+    const updatedTask = { ...task, status: task.status === 'Completed' ? 'Pending' as const : 'Completed' as const };
+    this.doctorService.updateTask(updatedTask);
   }
 
   deleteTask(taskId: number) {
-    this.tasks = this.tasks.filter(t => t.id !== taskId);
+    this.doctorService.deleteTask(taskId);
   }
 }

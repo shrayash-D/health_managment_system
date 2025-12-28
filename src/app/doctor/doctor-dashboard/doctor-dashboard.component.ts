@@ -1,110 +1,76 @@
-// doctor-dashboard.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { DoctorDataService, Appointment, Patient, Consultation, Invoice } from '../../services/doctor-data.service';
-
-import { ProfileSidebarComponent } from '../profile-sidebar/profile-sidebar.component';
+import { Appointment } from'../../services/doctor-data.service';
+import { ChartData, ChartOptions } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
+import { ProfileSidebarComponent } from "../profile-sidebar/profile-sidebar.component";
 
 @Component({
   selector: 'app-doctor-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ProfileSidebarComponent],
   templateUrl: './doctor-dashboard.component.html',
-  styleUrls: ['./doctor-dashboard.component.css']
+  styleUrls: ['./doctor-dashboard.component.css'],
+  imports: [CommonModule, NgChartsModule, ProfileSidebarComponent]
 })
 export class DoctorDashboardComponent implements OnInit {
-  doctor: any;
-  showTasks = false;
   sidebarCollapsed = false;
+
   appointments: Appointment[] = [];
-  appointmentFilterDate = '';
-  appointmentFilterStatus = '';
-  patientSearchQuery = '';
-  searchResults: Patient[] = [];
-  selectedPatient: Patient | null = null;
-  showPatientProfile = false;
-  consultations: Consultation[] = [];
-  invoices: Invoice[] = [];
-  selectedConsultation: Consultation | null = null;
-  showEMRModal = false;
+  invoices: any[] = [];
 
-  doctors = [ { id: 'shrayash', fullName: 'Dr. Shrayash Desai', photoUrl: 'assets/images/shrayash.jpg', role: 'Cardiologist', specialization: 'Cardiology', experience: '12 years', memberSince: '2018' },  ];
+  pieChartData: ChartData<'pie'> = {
+    labels: ['New Patients', 'Old Patients'],
+    datasets: [
+      {
+        data: [120, 80],
+        backgroundColor: ['#007bff', '#28a745']
+      }
+    ]
+  };
 
-  constructor(private doctorService: DoctorDataService) {}
-
-  ngOnInit(): void {
-    this.doctorService.doctor$.subscribe(data => {
-      this.doctor = data; // 🔑 updates automatically when profile changes
-    });
-    this.doctorService.appointments$.subscribe(data => {
-      this.appointments = data;
-    });
-    this.consultations = this.doctorService.getConsultations();
-    this.invoices = this.doctorService.getInvoices();
-  }
-
-  
-  completeAppointment(id: number) {
-    this.doctorService.completeAppointment(id);
-  }
-
-  cancelAppointment(id: number) {
-    this.doctorService.cancelAppointment(id);
-  }
-
-  searchPatients() {
-    if (this.patientSearchQuery.trim()) {
-      this.searchResults = this.doctorService.searchPatients(this.patientSearchQuery);
-    } else {
-      this.searchResults = [];
+  pieChartOptions: ChartOptions<'pie'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom' }
     }
-  }
+  };
 
-  viewPatientProfile(patient: Patient) {
-    this.selectedPatient = { ...patient };
-    this.showPatientProfile = true;
-  }
+  todayAppointments = [
+    { name: 'M.J. Mical', diagnosis: 'Health Checkup', status: 'On Going' },
+    { name: 'Sanath Deo', diagnosis: 'Health Checkup', status: '12:30 PM' },
+    { name: 'Loeara Phanj', diagnosis: 'Report', status: '01:00 PM' },
+    { name: 'Komola Haris', diagnosis: 'Common Cold', status: '01:30 PM' }
+  ];
 
-  closePatientProfile() {
-    this.showPatientProfile = false;
-    this.selectedPatient = null;
-  }
-
-  updatePatientProfile() {
-    if (this.selectedPatient) {
-      this.doctorService.updatePatient(this.selectedPatient);
-      this.closePatientProfile();
-    }
-  }
-
-  viewEMR(consultation: Consultation) {
-    this.selectedConsultation = consultation;
-    this.showEMRModal = true;
-  }
-
-  closeEMRModal() {
-    this.showEMRModal = false;
-    this.selectedConsultation = null;
-  }
-
-  addDiagnosis() {
-    // Placeholder for adding diagnosis functionality
-    alert('Add Diagnosis functionality would be implemented here');
-  }
-
-  uploadPrescription() {
-    // Placeholder for uploading prescription functionality
-    alert('Upload Prescription functionality would be implemented here');
-  }
-
-  viewInvoice(invoice: Invoice) {
-    // Placeholder for viewing invoice functionality
-    alert(`Viewing invoice ${invoice.id} for ${invoice.patientName}`);
-  }
+  nextPatient = {
+    name: 'Sanath Deo',
+    diagnosis: 'Health Checkup',
+    id: '0220092200005',
+    dob: '15 Jan 1989',
+    sex: 'Male',
+    weight: '59 Kg',
+    height: '172 cm',
+    lastAppointment: '15 Dec 2021',
+    history: ['Asthma', 'Hypertension', 'Fever'],
+    contact: '(088) 555-0102'
+  };
 
   onSidebarCollapse(collapsed: boolean) {
     this.sidebarCollapsed = collapsed;
+  }
+
+  ngOnInit(): void {
+    // Initialization logic if needed
+  }
+
+  calculateAge(dob: string): number {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
   }
 }

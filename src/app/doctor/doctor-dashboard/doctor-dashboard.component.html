@@ -1,245 +1,141 @@
-<app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
-<div class="profile-content" [class.collapsed]="sidebarCollapsed">
-<div class="page">
-  <!-- Hero Banner -->
-  <section class="hero">
-    <div class="container">
-      <div class="hero-inner">
-        <h1>Dashboard</h1>
-        <p>Overview of your hospital activities and patient records.</p>
-      </div>
-    </div>
-  </section>
+<div class="d-flex">
+  <!-- Sidebar -->
+  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
 
-  <main class="container">
-    <!-- Dashboard Header -->
-    <section class="card profile-header">
-      <div class="left">
-       <div *ngFor="let doctor of doctors">
-  <a [routerLink]="['/doctor', doctor.id]">
-    <img [src]="doctor.photoUrl" alt="Doctor Photo" />
-  </a>
-  
-</div>
+  <!-- Dashboard Content -->
+  <div class="container-fluid p-2" [class.collapsed]="sidebarCollapsed">
+    <div class="page">
+      <!-- Header -->
+      <section class="hero mb-4">
+        <div class="container">
+          <div class="hero-inner">
+            <h1>Doctor Dashboard</h1>
+            <p>Welcome back, Dr. Marttin Deo</p>
+          </div>
+        </div>
+      </section>
 
-
-
-        <div class="info">
-          <h2 class="name">{{ doctor.fullName }}</h2>
-          <div class="meta">
-            <span class="chip">Role: {{ doctor.role }}</span>
-            <span class="chip">Department: {{ doctor.specialization }}</span>
-            <span class="chip">Experience: {{ doctor.experience }}</span>
-            <span class="chip">Member since: {{ doctor.memberSince }}</span>
+      <!-- Summary Cards -->
+      <div class="row text-center mb-3">
+        <div class="col-md-4 mb-2">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Total Patients</h5>
+              <h3 class="text-primary">2000+</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Today Patients</h5>
+              <h3 class="text-success">68</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Appointments</h5>
+              <h3 class="text-warning">85</h3>
+            </div>
           </div>
         </div>
       </div>
-      <div class="actions">
-        <button class="btn btn-outline">+ New Record</button>
-        <button class="btn btn-primary">Manage Tasks</button>
-        <button class="btn btn-outline" routerLink="/doctor/invoices">View Invoices</button>
-      </div>
-    </section>
 
-
-
-    <!-- Quick Stats -->
-    <section class="card">
-      <h2 class="form-title">Quick Stats</h2>
-      <div class="stats-grid">
-        <div class="stat-card">Avg. Consultation Time <strong>64 mins</strong> <span class="trend up">+24%</span></div>
-        <div class="stat-card">Patient Avg. Stay <strong>4.3 days</strong> <span class="trend down">-54%</span></div>
-        <div class="stat-card">Pending Reports <strong>54</strong> <span class="trend up">+79%</span></div>
-        <div class="stat-card">Overdue Tasks <strong>7</strong> <span class="trend up">+32%</span></div>
-      </div>
-      <div class="search-section">
-        <br>
-        <input type="text"
-               [(ngModel)]="patientSearchQuery"
-               placeholder="Search by patient ID or name"
-               (input)="searchPatients()">
-      </div>
-       <section class="card">
-      
-      
-      <div *ngIf="searchResults.length > 0" class="search-results">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>DOB</th>
-              <th>Contact</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let patient of searchResults">
-              <td>{{ patient.id }}</td>
-              <td>{{ patient.name }}</td>
-              <td>{{ patient.dob }}</td>
-              <td>{{ patient.contact }}</td>
-              <td>
-                <button class="btn btn-primary" (click)="viewPatientProfile(patient)">View Profile</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-    </section>
-
-    <!-- Patient Records -->
-    <section class="card">
-      <h2 class="form-title">Recently Accessed Patient Records</h2>
-      
-      <table>
-        <thead><tr><th>Name</th><th>Age</th><th>Bed</th><th>Alerts</th></tr></thead>
-        <tbody>
-          <tr><td>Candice Wu</td><td>58</td><td>302</td><td>1 alert</td></tr>
-          <tr><td>Liam Chen</td><td>39</td><td>303</td><td>2 alerts</td></tr>
-          <tr><td>Sophia Patel</td><td>24</td><td>304</td><td>7 alerts</td></tr>
-          <tr><td>Noah Kim</td><td>20</td><td>306</td><td>3 alerts</td></tr>
-          <tr><td>Emma Johnson</td><td>56</td><td>308</td><td>3 alerts</td></tr>
-          <tr><td>Emma Johnson</td><td>21</td><td>309</td><td>3 alerts</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- Diagnostic Test Status -->
-    <section class="card">
-      <h2 class="form-title">Radiology Test Status</h2>
-      <table>
-        <thead><tr><th>Test</th><th>Requested</th><th>Completed</th></tr></thead>
-        <tbody>
-          <tr><td>PET/CT Brain</td><td>12/15/2026</td><td>12/15/2026</td></tr>
-          <tr><td>Shoulder Ultrasound</td><td>03/22/2027</td><td>03/22/2027</td></tr>
-          <tr><td>Arterial Doppler Ultrasound</td><td>07/09/2028</td><td>07/09/2028</td></tr>
-          <tr><td>PET/CT Brain</td><td>11/30/2029</td><td>11/30/2029</td></tr>
-          <tr><td>PET/CT Brain</td><td>05/14/2030</td><td>05/14/2030</td></tr>
-          <tr><td>Shoulder Ultrasound</td><td>08/19/2031</td><td>08/19/2031</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- Clinical Modules -->
-    <section class="card">
-      <h2 class="form-title">Recently Accessed Modules</h2>
-      <table>
-        <thead><tr><th>Module</th><th>Date</th><th>Action</th></tr></thead>
-        <tbody>
-          <tr><td>Maternity</td><td>12/15/2026</td><td><button class="btn btn-primary">See Details</button></td></tr>
-          <tr><td>Outpatients</td><td>03/22/2027</td><td><button class="btn btn-primary">See Details</button></td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- Recent Tasks -->
-    <section class="card">
-      <h2 class="form-title">Recent Tasks</h2>
-      <ul>
-        <li>Approve SMB documents — <strong>Dr. A. Thompson</strong></li>
-        <li>Review patient discharge summaries — <strong>Dr. L. Rivera</strong></li>
-      </ul>
-    </section>
-
-    <!-- Appointment Management -->
-    
-    <!-- Medical Records Viewer -->
-    <section class="card">
-      <h2 class="form-title">Recent Consultations</h2>
-      <table>
-        <thead><tr><th>Patient</th><th>Date</th><th>Diagnosis</th><th>Actions</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let consultation of consultations">
-            <td>{{ consultation.patientName }}</td>
-            <td>{{ consultation.date }}</td>
-            <td>{{ consultation.diagnosis }}</td>
-            <td>
-              <button class="btn btn-primary" (click)="viewEMR(consultation)">View EMR</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-   
-
-  
-   
-
-    <!-- Patient Profile Modal -->
-    <div *ngIf="showPatientProfile && selectedPatient" class="modal-overlay" (click)="closePatientProfile()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <h3>Patient Profile</h3>
-        <div class="profile-details">
-          <div class="form-group">
-            <label>ID:</label>
-            <span>{{ selectedPatient.id }}</span>
-          </div>
-          <div class="form-group">
-            <label>Name:</label>
-            <input [(ngModel)]="selectedPatient.name" type="text">
-          </div>
-          <div class="form-group">
-            <label>Date of Birth:</label>
-            <input [(ngModel)]="selectedPatient.dob" type="date">
-          </div>
-          <div class="form-group">
-            <label>Contact:</label>
-            <input [(ngModel)]="selectedPatient.contact" type="email">
-          </div>
-          <div class="form-group">
-            <label>Medical History:</label>
-            <textarea [(ngModel)]="selectedPatient.medicalHistory"></textarea>
+      <!-- Middle Section -->
+      <div class="row mb-3">
+        <!-- Pie Chart -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Patients Summary</div>
+            <div class="card-body">
+              <canvas baseChart
+                      [data]="pieChartData"
+                      [options]="pieChartOptions"
+                      [type]="'pie'">
+              </canvas>
+            </div>
           </div>
         </div>
-        <div class="modal-actions">
-          <button class="btn btn-success" (click)="updatePatientProfile()">Update Profile</button>
-          <button class="btn btn-secondary" (click)="closePatientProfile()">Close</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- EMR Modal -->
-    <div *ngIf="showEMRModal" class="modal-overlay" (click)="closeEMRModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <h3>Electronic Medical Record</h3>
-        <div *ngIf="selectedConsultation">
-          <div class="profile-details">
-            <div class="form-group">
-              <label>Patient:</label>
-              <p>{{ selectedConsultation.patientName }}</p>
-            </div>
-            <div class="form-group">
-              <label>Date:</label>
-              <p>{{ selectedConsultation.date }}</p>
-            </div>
-            <div class="form-group">
-              <label>Diagnosis:</label>
-              <p>{{ selectedConsultation.diagnosis }}</p>
-            </div>
-            <div class="form-group">
-              <label>Prescriptions:</label>
-              <ul>
-                <li *ngFor="let prescription of selectedConsultation.prescriptions">{{ prescription }}</li>
-              </ul>
-            </div>
-            <div class="form-group">
-              <label>Lab Results:</label>
-              <ul>
-                <li *ngFor="let result of selectedConsultation.labResults">{{ result }}</li>
-              </ul>
+        <!-- Today Appointments -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Today Appointments</div>
+            <ul class="list-group list-group-flush">
+              <li *ngFor="let appt of todayAppointments"
+                  class="list-group-item d-flex justify-content-between align-items-center">
+                {{ appt.name }} – {{ appt.diagnosis }}
+                <span class="badge bg-info">{{ appt.status }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Next Patient -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Next Patient</div>
+            <div class="card-body">
+              <h5>{{ nextPatient.name }}</h5>
+              <p><strong>Diagnosis:</strong> {{ nextPatient.diagnosis }}</p>
+              <p><strong>ID:</strong> {{ nextPatient.id }}</p>
+              <p><strong>DOB:</strong> {{ nextPatient.dob }}</p>
+              <p><strong>Sex:</strong> {{ nextPatient.sex }}</p>
+              <p><strong>Weight:</strong> {{ nextPatient.weight }}</p>
+              <p><strong>Height:</strong> {{ nextPatient.height }}</p>
+              <p><strong>Last Appointment:</strong> {{ nextPatient.lastAppointment }}</p>
+              <p><strong>History:</strong> {{ nextPatient.history.join(', ') }}</p>
+              <p><strong>Contact:</strong> {{ nextPatient.contact }}</p>
             </div>
           </div>
-          <div class="modal-actions">
-            <button class="btn btn-secondary" (click)="addDiagnosis()">Add Diagnosis</button>
-            <button class="btn btn-secondary" (click)="uploadPrescription()">Upload Prescription</button>
-            <button class="btn btn-secondary" (click)="closeEMRModal()">Close</button>
+        </div>
+      </div>
+
+      <!-- Bottom Section -->
+      <div class="row">
+        <!-- Patients Review -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Patients Review</div>
+            <div class="card-body review-bar">
+              <p>Excellent: <span class="text-warning">★★★★★</span></p>
+              <p>Great: <span class="text-warning">★★★★</span></p>
+              <p>Good: <span class="text-warning">★★★</span></p>
+              <p>Average: <span class="text-warning">★★</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appointment Requests -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Appointment Requests</div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                Maria Sarafat – Cold
+                <button class="btn btn-sm btn-success">Accept</button>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                Jhon Deo – Over sweating
+                <button class="btn btn-sm btn-danger">Reject</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Calendar</div>
+            <div class="card-body text-center">
+              <h5>December 2025</h5>
+              <p><span class="badge bg-primary">28</span></p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </main>
-</div>
+  </div>
 </div>

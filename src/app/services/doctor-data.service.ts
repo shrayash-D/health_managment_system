@@ -13,8 +13,10 @@ export interface Appointment {
   patientName: string;
   date: string;
   time: string;
+  type: 'new' | 'followup';
   status: 'BOOKED' | 'COMPLETED' | 'CANCELLED' | '';
 }
+
 
 export interface Patient {
   id: number;
@@ -22,6 +24,15 @@ export interface Patient {
   dob: string;
   contact: string;
   medicalHistory: string;
+  mrn: string;
+  sex: 'Male' | 'Female' | 'Other';
+  diagnosis: string;
+  ongoingTreatment: string;
+  lastAppointment: string;
+  nextAppointment: string;
+  assignedDoctor: string;
+  department: string;
+  avatar?: string;
 }
 
 export interface Consultation {
@@ -116,9 +127,9 @@ export class DoctorDataService {
 
   // 🔹 Appointment management
   private appointmentsSubject = new BehaviorSubject<Appointment[]>([
-    { id: 1, patientName: 'John Doe', date: '2023-10-15', time: '10:00 AM', status: 'BOOKED' },
-    { id: 2, patientName: 'Jane Smith', date: '2023-10-16', time: '2:00 PM', status: 'COMPLETED' },
-    { id: 3, patientName: 'Bob Johnson', date: '2023-10-17', time: '11:00 AM', status: 'CANCELLED' }
+    { id: 1, patientName: 'John Doe', date: '2023-10-15', time: '10:00 AM', status: 'BOOKED', type: 'new' },
+    { id: 2, patientName: 'Jane Smith', date: '2023-10-16', time: '2:00 PM', status: 'COMPLETED', type: 'followup' },
+    { id: 3, patientName: 'Bob Johnson', date: '2023-10-17', time: '11:00 AM', status: 'CANCELLED', type: 'new' }
   ]);
 
   appointments$ = this.appointmentsSubject.asObservable();
@@ -143,12 +154,102 @@ export class DoctorDataService {
 
   // 🔹 Patient management
   private patientsSubject = new BehaviorSubject<Patient[]>([
-    { id: 1, name: 'Candice Wu', dob: '1975-03-15', contact: 'candice.wu@example.com', medicalHistory: 'Hypertension, Diabetes' },
-    { id: 2, name: 'Liam Chen', dob: '1985-07-22', contact: 'liam.chen@example.com', medicalHistory: 'Asthma' },
-    { id: 3, name: 'Sophia Patel', dob: '1990-11-08', contact: 'sophia.patel@example.com', medicalHistory: 'Migraine' },
-    { id: 4, name: 'Noah Kim', dob: '1995-01-30', contact: 'noah.kim@example.com', medicalHistory: 'Allergies' },
-    { id: 5, name: 'Emma Johnson', dob: '1978-05-12', contact: 'emma.johnson@example.com', medicalHistory: 'Arthritis' },
-    { id: 6, name: 'Emma Johnson', dob: '2000-09-25', contact: 'emma.johnson2@example.com', medicalHistory: 'None' }
+    {
+      id: 1,
+      name: 'Candice Wu',
+      dob: '1975-03-15',
+      contact: 'candice.wu@example.com',
+      medicalHistory: 'Hypertension, Diabetes',
+      mrn: 'MRN001',
+      sex: 'Female',
+      diagnosis: 'Hypertension & Diabetes',
+      ongoingTreatment: 'Lisinopril 10mg daily, Metformin 500mg twice daily',
+      lastAppointment: '2023-10-10',
+      nextAppointment: '2023-11-10',
+      assignedDoctor: 'Dr. Shrayash Desai',
+      department: 'Cardiology',
+      avatar: 'assets/images/OIP.jpg'
+    },
+    {
+      id: 2,
+      name: 'Liam Chen',
+      dob: '1985-07-22',
+      contact: 'liam.chen@example.com',
+      medicalHistory: 'Asthma',
+      mrn: 'MRN002',
+      sex: 'Male',
+      diagnosis: 'Asthma',
+      ongoingTreatment: 'Albuterol inhaler as needed',
+      lastAppointment: '2023-10-12',
+      nextAppointment: '2023-11-12',
+      assignedDoctor: 'Dr. Shrayash Desai',
+      department: 'Pulmonology',
+      avatar: 'assets/images/OIP (1).jpg'
+    },
+    {
+      id: 3,
+      name: 'Sophia Patel',
+      dob: '1990-11-08',
+      contact: 'sophia.patel@example.com',
+      medicalHistory: 'Migraine',
+      mrn: 'MRN003',
+      sex: 'Female',
+      diagnosis: 'Chronic Migraine',
+      ongoingTreatment: 'Sumatriptan 50mg as needed',
+      lastAppointment: '2023-10-14',
+      nextAppointment: '2023-11-14',
+      assignedDoctor: 'Dr. Shrayash Desai',
+      department: 'Neurology',
+      avatar: 'assets/images/OIP.jpg'
+    },
+    {
+      id: 4,
+      name: 'Noah Kim',
+      dob: '1995-01-30',
+      contact: 'noah.kim@example.com',
+      medicalHistory: 'Allergies',
+      mrn: 'MRN004',
+      sex: 'Male',
+      diagnosis: 'Allergic Rhinitis',
+      ongoingTreatment: 'Loratadine 10mg daily',
+      lastAppointment: '2023-10-16',
+      nextAppointment: '2023-11-16',
+      assignedDoctor: 'Dr. Shrayash Desai',
+      department: 'Allergy & Immunology',
+      avatar: 'assets/images/OIP (1).jpg'
+    },
+    {
+      id: 5,
+      name: 'Emma Johnson',
+      dob: '1978-05-12',
+      contact: 'emma.johnson@example.com',
+      medicalHistory: 'Arthritis',
+      mrn: 'MRN005',
+      sex: 'Female',
+      diagnosis: 'Rheumatoid Arthritis',
+      ongoingTreatment: 'Methotrexate 15mg weekly',
+      lastAppointment: '2023-10-18',
+      nextAppointment: '2023-11-18',
+      assignedDoctor: 'Dr. Shrayash Desai',
+      department: 'Rheumatology',
+      avatar: 'assets/images/OIP.jpg'
+    },
+    {
+      id: 6,
+      name: 'Alex Rodriguez',
+      dob: '2000-09-25',
+      contact: 'alex.rodriguez@example.com',
+      medicalHistory: 'None',
+      mrn: 'MRN006',
+      sex: 'Male',
+      diagnosis: 'Healthy',
+      ongoingTreatment: 'None',
+      lastAppointment: '2023-10-20',
+      nextAppointment: '2024-04-20',
+      assignedDoctor: 'Dr. Shrayash Desai',
+      department: 'General Medicine',
+      avatar: 'assets/images/OIP (1).jpg'
+    }
   ]);
 
   patients$ = this.patientsSubject.asObservable();
@@ -257,6 +358,16 @@ export class DoctorDataService {
   }
   getInvoiceById(id: string|number): Invoice | undefined {
     return this.invoicesSubject.value.find((inv: Invoice) => inv.id === id);
+  }
+
+  addInvoice(invoice: Invoice) {
+    this.invoicesSubject.next([...this.invoicesSubject.value, invoice]);
+  }
+
+  updateInvoice(updated: Invoice) {
+    this.invoicesSubject.next(
+      this.invoicesSubject.value.map(inv => inv.id === updated.id ? updated : inv)
+    );
   }
 
 }
