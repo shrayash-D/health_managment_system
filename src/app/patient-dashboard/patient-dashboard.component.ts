@@ -3,10 +3,11 @@ import { Component } from '@angular/core';
 import { PatientDashboardService } from '../services/patient-dashboard.services';
 import { Appointment, BillingSummary, Invoice, LabResult, Medication, Vital } from '../models/patient-dashboard.models';
 import { Observable } from 'rxjs';
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-patient-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   standalone: true,
   templateUrl: './patient-dashboard.component.html',
   styleUrl: './patient-dashboard.component.css',

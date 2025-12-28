@@ -31,8 +31,10 @@
       </div>
 
       <div class="actions">
-        <button class="btn btn-primary">New Appointment</button>
-        <button class="btn btn-outline">Update Details</button>
+        <button class="btn btn-primary" routerLink="/appointment">
+          New Appointment
+        </button>
+        <button class="btn btn-outline" routerLink="/profile">Update Details</button>
       </div>
     </section>
 
@@ -47,29 +49,6 @@
           </div>
           <button class="icon-btn" aria-label="Refresh">↻</button>
         </div>
-
-        <!-- <div class="metrics">
-          <div class="metric">
-            <span class="label">Blood Pressure</span>
-            <span class="value">118/76</span>
-            <span class="unit">mmHg</span>
-          </div>
-          <div class="metric">
-            <span class="label">Heart Rate</span>
-            <span class="value">78</span>
-            <span class="unit">bpm</span>
-          </div>
-          <div class="metric">
-            <span class="label">Temperature</span>
-            <span class="value">36.8</span>
-            <span class="unit">°C</span>
-          </div>
-          <div class="metric">
-            <span class="label">SpO₂</span>
-            <span class="value">98</span>
-            <span class="unit">%</span>
-          </div>
-        </div> -->
 
         <div class="metrics" *ngIf="vitals$ | async as vital">
           <div class="metric" *ngFor="let v of vital">

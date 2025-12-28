@@ -1,0 +1,97 @@
+<div class="page">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <h1>Appointment</h1>
+        <p>Book, reschedule, or cancel appointments.</p>
+      </div>
+    </div>
+  </section>
+ 
+  <main class="container">
+    <section class="card form-card">
+      <h2 class="form-title">Appointment Details</h2>
+ 
+      <form class="form-grid" novalidate>
+        <!-- Patient & Clinician -->
+        <div class="form-field">
+          <label for="patientId">Patient ID</label>
+          <input id="patientId" type="text" placeholder="P123" />
+        </div>
+        <div class="form-field">
+          <label for="patientName">Patient Name</label>
+          <input id="patientName" type="text" placeholder="Anita Deshmukh" />
+        </div>
+        <div class="form-field">
+          <label for="clinician">Clinician</label>
+          <select id="clinician">
+            <option>Dr. Jon Miller</option>
+            <option>Dr. Priya Nair</option>
+            <option>Dr. Rahul Kulkarni</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="dept">Department</label>
+          <select id="dept">
+            <option>General Medicine</option>
+            <option>Cardiology</option>
+            <option>Orthopedics</option>
+            <option>Pediatrics</option>
+          </select>
+        </div>
+ 
+        <!-- Date & time -->
+        <div class="form-field">
+          <label for="date">Date</label>
+          <input id="date" type="date" />
+        </div>
+        <div class="form-field">
+          <label for="time">Time</label>
+          <input id="time" type="time" />
+        </div>
+ 
+        <!-- Reason & type -->
+        <div class="form-field span-2">
+          <label for="reason">Reason</label>
+          <input id="reason" type="text" placeholder="Short description…" />
+        </div>
+        <div class="form-field">
+          <label for="type">Visit Type</label>
+          <select id="type">
+            <option>In‑person</option>
+            <option>Tele‑consult</option>
+            <option>Follow‑up</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="status">Status</label>
+          <select id="status">
+            <option>Scheduled</option>
+            <option>Completed</option>
+            <option>Cancelled</option>
+            <option>No‑show</option>
+          </select>
+        </div>
+ 
+        <!-- Notes -->
+        <div class="form-field span-2">
+          <label for="notes">Notes</label>
+          <textarea id="notes" rows="5" placeholder="Any special instructions…"></textarea>
+        </div>
+ 
+        <!-- Actions -->
+        <div class="form-actions span-2">
+          <label class="checkbox">
+            <input type="checkbox" />
+            <span>Send confirmation via Email/SMS</span>
+          </label>
+ 
+          <div class="buttons">
+            <button type="button" class="btn btn-outline">Cancel</button>
+            <button type="submit" class="btn btn-primary">Book Appointment</button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>
