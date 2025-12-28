@@ -1,3 +1,4 @@
+<app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
 <div class="card">
   <h3>Manage Tasks</h3>
 
@@ -29,5 +30,5 @@
 
   <!-- Task Form embedded below the list -->
   <app-doctor-task-form></app-doctor-task-form>
-  
+  <router-outlet></router-outlet>
 </div>

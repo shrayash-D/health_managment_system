@@ -13,7 +13,7 @@ export interface Appointment {
   patientName: string;
   date: string;
   time: string;
-  status: 'BOOKED' | 'COMPLETED' | 'CANCELLED';
+  status: 'BOOKED' | 'COMPLETED' | 'CANCELLED' | '';
 }
 
 export interface Patient {
@@ -40,8 +40,22 @@ export interface Invoice {
   patientName: string;
   amount: number;
   paymentStatus: 'PAID' | 'PENDING' | 'OVERDUE';
-  date: string;
+
+  // NEW fields
+  issueDate?: string;
+  dueDate?: string;
+  paidDate?: string;
+  paymentMethod: string;
+  transactionId: string;
+  consultationType: string;
+
+  consultationFee: number;
+  labFee: number;
+  medicineFee: number;
+  otherCharges: number;
+  subtotal: number;
 }
+
 
 @Injectable({
   providedIn: 'root'
@@ -183,15 +197,66 @@ export class DoctorDataService {
 
   // 🔹 Billing management
   private invoicesSubject = new BehaviorSubject<Invoice[]>([
-    { id: 'INV001', patientId: 1, patientName: 'Candice Wu', amount: 150.00, paymentStatus: 'PAID', date: '2023-10-01' },
-    { id: 'INV002', patientId: 2, patientName: 'Liam Chen', amount: 200.00, paymentStatus: 'PENDING', date: '2023-10-05' },
-    { id: 'INV003', patientId: 3, patientName: 'Sophia Patel', amount: 120.00, paymentStatus: 'OVERDUE', date: '2023-09-20' },
-    { id: 'INV004', patientId: 4, patientName: 'Noah Kim', amount: 180.00, paymentStatus: 'PAID', date: '2023-10-10' }
-  ]);
+  {
+    id: 'INV001',
+    patientId: 1,
+    patientName: 'Candice Wu',
+    amount: 150.00,
+    paymentStatus: 'PAID',
+    paidDate: '2023-10-01',
+    paymentMethod: 'Credit Card',
+    transactionId: 'TXN12345',
+    consultationType: 'Cardiology Consultation',
+    consultationFee: 100,
+    labFee: 30,
+    medicineFee: 20,
+    otherCharges: 0,
+    subtotal: 150
+  },
+  {
+    id: 'INV002',
+    patientId: 2,
+    patientName: 'Liam Chen',
+    amount: 200.00,
+    paymentStatus: 'PENDING',
+    issueDate: '2023-10-05',
+    dueDate: '2023-10-15',
+    paymentMethod: 'Cash',
+    transactionId: 'TXN67890',
+    consultationType: 'Asthma Follow-up',
+    consultationFee: 120,
+    labFee: 50,
+    medicineFee: 20,
+    otherCharges: 10,
+    subtotal: 200
+  },
+  {
+    id: 'INV003',
+    patientId: 3,
+    patientName: 'Sophia Patel',
+    amount: 120.00,
+    paymentStatus: 'OVERDUE',
+    issueDate: '2023-09-20',
+    dueDate: '2023-09-30',
+    paymentMethod: 'UPI',
+    transactionId: 'TXN54321',
+    consultationType: 'Neurology Consultation',
+    consultationFee: 80,
+    labFee: 20,
+    medicineFee: 10,
+    otherCharges: 10,
+    subtotal: 120
+  }
+]);
+
 
   invoices$ = this.invoicesSubject.asObservable();
 
   getInvoices(): Invoice[] {
     return this.invoicesSubject.value;
   }
+  getInvoiceById(id: string|number): Invoice | undefined {
+    return this.invoicesSubject.value.find((inv: Invoice) => inv.id === id);
+  }
+
 }

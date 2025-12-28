@@ -1,18 +1,40 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { DoctorDashboardComponent } from './doctor-dashboard/doctor-dashboard.component';
-import { DoctorProfileComponent } from './doctor-profile/doctor-profile.component';
-import { InvoiceListComponent } from './invoice-list/invoice-list.component';
 
 const routes: Routes = [
-  { path: 'dashboard', component: DoctorDashboardComponent },
-  { path: 'profile', component: DoctorProfileComponent },
-  { path: 'invoices', component: InvoiceListComponent },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./doctor-dashboard/doctor-dashboard.component').then(
+        (m) => m.DoctorDashboardComponent
+      ),
+  },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./doctor-profile/doctor-profile.component').then(
+        (m) => m.DoctorProfileComponent
+      ),
+  },
+  {
+    path: 'tasks',
+    loadComponent: () =>
+      import('./task-management/task-management.component').then(
+        (m) => m.TaskManagementComponent
+      ),
+  },
+  {
+    path: 'appointment',
+    loadComponent: () =>
+      import('./appointment/appointment.component').then(
+        (m) => m.AppointmentComponent
+      ),
+  },
+  { path: '', redirectTo: 'profile', pathMatch: 'full' },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class DoctorRoutingModule {}

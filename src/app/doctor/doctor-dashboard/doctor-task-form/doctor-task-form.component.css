@@ -71,3 +71,8 @@
   transform: translateY(0);
 }
 
+.profile-sidebar.collapsed ~ .profile-content {
+  margin-left: 70px;
+}
+
+.edit-profile-container { display: flex; justify-content: center; margin-top: 20px; }

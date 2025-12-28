@@ -1,3 +1,5 @@
+<app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+<div class="profile-content" [class.collapsed]="sidebarCollapsed">
 <div class="page">
   <!-- Hero Banner -->
   <section class="hero">
@@ -39,7 +41,7 @@
       </div>
     </section>
 
-    <section> <app-doctor-task-list></app-doctor-task-list></section>
+
 
     <!-- Quick Stats -->
     <section class="card">
@@ -142,46 +144,7 @@
     </section>
 
     <!-- Appointment Management -->
-    <section class="card">
-      <h2 class="form-title">Upcoming Appointments</h2>
-      <div class="filters">
-        <input type="date" [(ngModel)]="appointmentFilterDate" placeholder="Filter by date">
-        <select [(ngModel)]="appointmentFilterStatus">
-          <option value="">All Status</option>
-          <option value="BOOKED">BOOKED</option>
-          <option value="COMPLETED">COMPLETED</option>
-          <option value="CANCELLED">CANCELLED</option>
-        </select>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Patient Name</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let appointment of filteredAppointments">
-            <td>{{ appointment.patientName }}</td>
-            <td>{{ appointment.date }}</td>
-            <td>{{ appointment.time }}</td>
-            <td>{{ appointment.status }}</td>
-            <td>
-              <button class="btn btn-success"
-                      (click)="completeAppointment(appointment.id)"
-                      [disabled]="appointment.status !== 'BOOKED'">Mark as Completed</button>
-              <button class="btn btn-danger"
-                      (click)="cancelAppointment(appointment.id)"
-                      [disabled]="appointment.status !== 'BOOKED'">Cancel Appointment</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
+    
     <!-- Medical Records Viewer -->
     <section class="card">
       <h2 class="form-title">Recent Consultations</h2>
@@ -278,4 +241,5 @@
       </div>
     </div>
   </main>
+</div>
 </div>

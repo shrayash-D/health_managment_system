@@ -5,10 +5,11 @@ import { DoctorDataService } from '../../services/doctor-data.service';
 import { RouterModule } from '@angular/router';
 import { inject } from '@angular/core';
 import { Location } from '@angular/common';
+import { ProfileSidebarComponent } from "../profile-sidebar/profile-sidebar.component";
 @Component({
   selector: 'app-doctor-profile',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, ProfileSidebarComponent],
   templateUrl: './doctor-profile.component.html',
   styleUrls: ['./doctor-profile.component.css']
 })
@@ -20,7 +21,7 @@ export class DoctorProfileComponent implements OnInit {
   showSavePhotoBtn = false;
   doctor: any;
  private location = inject(Location);
- 
+ sidebarCollapsed = false;
  
   countryCodes = [
     { code: '+91', country: 'India' },
@@ -47,7 +48,8 @@ export class DoctorProfileComponent implements OnInit {
 
   goBack() { this.location.back();}
 
-
+  onSidebarCollapse(state: boolean)
+   { this.sidebarCollapsed = state; }
   ngOnInit() {
     this.photoUrl = this.doctor.photoUrl;
   }

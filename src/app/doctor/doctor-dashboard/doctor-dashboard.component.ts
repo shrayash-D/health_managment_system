@@ -4,18 +4,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DoctorDataService, Appointment, Patient, Consultation, Invoice } from '../../services/doctor-data.service';
-import { DoctorTaskListComponent } from "./doctor-task-list/doctor-task-list.component";
+
+import { ProfileSidebarComponent } from '../profile-sidebar/profile-sidebar.component';
 
 @Component({
   selector: 'app-doctor-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, DoctorTaskListComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ProfileSidebarComponent],
   templateUrl: './doctor-dashboard.component.html',
   styleUrls: ['./doctor-dashboard.component.css']
 })
 export class DoctorDashboardComponent implements OnInit {
   doctor: any;
   showTasks = false;
+  sidebarCollapsed = false;
   appointments: Appointment[] = [];
   appointmentFilterDate = '';
   appointmentFilterStatus = '';
@@ -43,14 +45,7 @@ export class DoctorDashboardComponent implements OnInit {
     this.invoices = this.doctorService.getInvoices();
   }
 
-  get filteredAppointments() {
-    return this.appointments.filter(appointment => {
-      const dateMatch = !this.appointmentFilterDate || appointment.date === this.appointmentFilterDate;
-      const statusMatch = !this.appointmentFilterStatus || appointment.status === this.appointmentFilterStatus;
-      return dateMatch && statusMatch;
-    });
-  }
-
+  
   completeAppointment(id: number) {
     this.doctorService.completeAppointment(id);
   }
@@ -107,5 +102,9 @@ export class DoctorDashboardComponent implements OnInit {
   viewInvoice(invoice: Invoice) {
     // Placeholder for viewing invoice functionality
     alert(`Viewing invoice ${invoice.id} for ${invoice.patientName}`);
+  }
+
+  onSidebarCollapse(collapsed: boolean) {
+    this.sidebarCollapsed = collapsed;
   }
 }

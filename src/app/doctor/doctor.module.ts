@@ -5,9 +5,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { DoctorRoutingModule } from './doctor-routing.module';
 import { DoctorDashboardComponent } from './doctor-dashboard/doctor-dashboard.component';
 import { DoctorProfileComponent } from './doctor-profile/doctor-profile.component';
-import { DoctorTaskListComponent } from '../../../src/app/doctor/doctor-dashboard/doctor-task-list/doctor-task-list.component';
-import { DoctorTaskFormComponent } from '../../../src/app/doctor/doctor-dashboard/doctor-task-form/doctor-task-form.component';
+import { DoctorTaskListComponent } from './doctor-dashboard/doctor-task-list/doctor-task-list.component';
+import { DoctorTaskFormComponent } from './doctor-dashboard/doctor-task-form/doctor-task-form.component';
+import { TaskManagementComponent } from './task-management/task-management.component';
 import { RouterModule } from '@angular/router';
+import { AppointmentComponent } from './appointment/appointment.component';
 
 
 @NgModule({
@@ -20,8 +22,12 @@ import { RouterModule } from '@angular/router';
     DoctorRoutingModule,
     DoctorTaskFormComponent,
     DoctorTaskListComponent,
+    //TaskManagementComponent,
     DoctorDashboardComponent,
-    DoctorProfileComponent
+    DoctorProfileComponent,
+    AppointmentComponent,
+
+    
   ],
   exports: [
     DoctorDashboardComponent,

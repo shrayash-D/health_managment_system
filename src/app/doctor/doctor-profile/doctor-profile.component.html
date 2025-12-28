@@ -1,18 +1,11 @@
+<app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+<div class="profile-content" [class.collapsed]="sidebarCollapsed">
 <div class="page">
   <!-- Hero Banner -->
   <section class="hero">
     <div class="container">
       <div class="hero-inner">
-        <h1>Doctor Profile</h1>
-        <p>View and update your professional information.</p>
-         
-      </div>
-    </div>
-  </section>
-
-  <main class="container">
-    <!-- Profile Header -->
-    <section class="card profile-header">
+         <section class="card profile-header">
       <div class="left">
         <div class="avatar" aria-hidden="true">
           <img *ngIf="photoUrl" [src]="photoUrl" alt="Doctor Photo" />
@@ -31,13 +24,20 @@
       </div>
       <div class="actions">
         <input type="file" accept="image/*" #photoInput (change)="onPhotoSelected($event)" hidden />
-        <button class="btn btn-primary" (click)="goBack()"> ← Back</button>
-        <button class="btn btn-primary" (click)="enableEdit()" *ngIf="!isEditing">Edit Profile</button>
+       
+       
         <button class="btn btn-outline" (click)="photoInput.click()">Change photo</button>
         <button class="btn btn-primary" *ngIf="showSavePhotoBtn" (click)="savePhoto()">Save Photo</button>
         
       </div>
     </section>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <!-- Profile Header -->
+   
 
     <!-- Edit Profile Form -->
     <section class="card form-card">
@@ -83,12 +83,16 @@
           <label for="bio">Bio</label>
           <textarea id="bio" rows="4" formControlName="bio" [readonly]="!isEditing"></textarea>
         </div>
-
+        <div class="edit-profile-container">
+        <button class="btn btn-primary" (click)="enableEdit()" *ngIf="!isEditing">Edit Profile</button>
+        </div>
         <div class="form-actions span-2" *ngIf="isEditing">
           <button type="button" class="btn btn-outline" (click)="cancelEdit()">Cancel</button>
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
       </form>
     </section>
+    <router-outlet></router-outlet>
   </main>
+</div>
 </div>

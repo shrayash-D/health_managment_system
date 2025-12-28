@@ -3,15 +3,19 @@ import { DoctorDataService, Task } from '../../../services/doctor-data.service';
 import { DoctorTaskFormComponent } from "../doctor-task-form/doctor-task-form.component";
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ProfileSidebarComponent } from "../../profile-sidebar/profile-sidebar.component";
+import { RouterOutlet } from '@angular/router';
+
 @Component({
   selector: 'app-doctor-task-list',
   templateUrl: './doctor-task-list.component.html',
   styleUrls: ['./doctor-task-list.component.css'],
   standalone: true,
-  imports: [FormsModule, CommonModule, DoctorTaskFormComponent]
+  imports: [FormsModule, CommonModule, DoctorTaskFormComponent, ProfileSidebarComponent, RouterOutlet]
 })
 export class DoctorTaskListComponent implements OnInit {
   tasks: Task[] = [];
+  sidebarCollapsed = false;
 
   constructor(private doctorService: DoctorDataService) {}
 
@@ -25,5 +29,9 @@ export class DoctorTaskListComponent implements OnInit {
 
   deleteTask(id: number) {
     this.doctorService.deleteTask(id);
+  }
+
+   onSidebarCollapse(collapsed: boolean) {
+    this.sidebarCollapsed = collapsed;
   }
 }
