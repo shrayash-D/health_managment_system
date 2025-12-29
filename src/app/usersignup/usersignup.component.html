@@ -7,60 +7,110 @@
       </div>
     </div>
   </section>
- 
+
   <main class="container">
     <section class="card signup-card">
-      <form class="form-grid" [formGroup]="signupForm" (ngSubmit)="onSubmit()" novalidate>
+      <form
+        class="form-grid"
+        [formGroup]="signupForm"
+        (ngSubmit)="onSubmit()"
+        novalidate
+      >
         <div class="form-field">
           <label for="name">Full Name</label>
-          <input id="name" type="text" placeholder="Your name" formControlName="name" />
+          <input
+            id="name"
+            type="text"
+            placeholder="Your name"
+            formControlName="name"
+          />
         </div>
- 
+
         <div class="form-field">
           <label for="email">Email</label>
-          <input id="email" type="email" placeholder="name@example.com" formControlName="email"  />
+          <input
+            id="email"
+            type="email"
+            placeholder="name@example.com"
+            formControlName="email"
+          />
         </div>
- 
+
         <div class="form-field">
           <label for="phone">Phone</label>
-          <input id="phone" type="tel" placeholder="+91 XXXXX XXXXX" formControlName="phone" />
+          <input
+            id="phone"
+            type="tel"
+            placeholder="+91 XXXXX XXXXX"
+            formControlName="phone"
+          />
         </div>
- 
+
         <div class="form-field">
           <label for="dob">Date of Birth</label>
           <input id="dob" type="date" formControlName="dob" />
         </div>
- 
+
+        <div class="form-field">
+          <label for="role">Register as</label>
+          <select id="role" formControlName="role">
+            <option value="" disabled selected>Select role</option>
+            <option value="PATIENT">Patient</option>
+            <option value="DOCTOR">Doctor</option>
+          </select>
+          <div
+            class="error"
+            *ngIf="
+              signupForm.get('role')?.invalid && signupForm.get('role')?.touched
+            "
+          >
+            Role is required.
+          </div>
+        </div>
+
         <div class="form-field">
           <label for="password">Password</label>
           <div class="password-wrap">
-            <input id="password" [type]="passType" placeholder="Min 8 chars" formControlName="password" />
+            <input
+              id="password"
+              [type]="passType"
+              placeholder="Min 8 chars"
+              formControlName="password"
+            />
             <!-- <button type="button" class="icon-btn eye" (click)="toggle('pass')">{{ passVisible ? '🙈' : '👁️' }}</button> -->
           </div>
         </div>
- 
+
         <div class="form-field">
           <label for="confirm">Confirm Password</label>
           <div class="password-wrap">
-            <input id="confirm" [type]="confirmType" placeholder="Re-enter password" formControlName="confirm" />
+            <input
+              id="confirm"
+              [type]="confirmType"
+              placeholder="Re-enter password"
+              formControlName="confirm"
+            />
             <!-- <button type="button" class="icon-btn eye" (click)="toggle('confirm')">{{ confirmVisible ? '🙈' : '👁️' }}</button> -->
           </div>
         </div>
- 
+
         <div class="form-field span-2">
           <label class="checkbox">
             <input type="checkbox" />
             <span>I agree to the terms and privacy policy</span>
           </label>
         </div>
- 
+
         <div class="form-actions span-2">
           <div class="buttons">
-            <a class="link" routerLink="/login" >Already have an account?</a>
-            <button type="submit" class="btn btn-primary">Create Account</button>
+            <a class="link" routerLink="/login">Already have an account?</a>
+            <button type="submit" class="btn btn-primary">
+              Create Account
+            </button>
           </div>
-               </div>
+        </div>
       </form>
     </section>
   </main>
- <router-outlet></router-outlet>
+  <router-outlet></router-outlet>
+</div>

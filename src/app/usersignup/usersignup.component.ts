@@ -9,6 +9,10 @@ import {
   AbstractControl,
   FormControl,
 } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
+import { User } from '../models/user.interface';
+
+
 
 @Component({
   selector: 'app-signup',
@@ -31,24 +35,29 @@ export class UsersignupComponent implements OnInit {
     return this.confirmVisible ? 'text' : 'password';
   }
 
-  constructor(private fb: FormBuilder, private router: Router) {}
+  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {}
 
   ngOnInit(): void {
-    this.signupForm = new FormGroup({
-      name: new FormControl('', [Validators.required]),
-      email: new FormControl('', [Validators.required, Validators.email]),
-      phone: new FormControl('', [
-        Validators.required,
-        // Validators.pattern(/^\+91\s\d{5}\s\d{5}$/) // +91 XXXXX XXXXX
-      ]),
-      dob: new FormControl('', Validators.required),
-      password: new FormControl('', [Validators.required]),
-      confirm: new FormControl('', Validators.required),
-      terms: new FormControl(false),
-    });
-    this.signupForm.statusChanges.subscribe(() => this.updateInvalidCount());
-    this.signupForm.valueChanges.subscribe(() => this.updateInvalidCount());
-    this.updateInvalidCount();
+    // add 'role' control and attach the password match validator to the group
+    this.signupForm = new FormGroup(
+      {
+        name: new FormControl('', [Validators.required]),
+        email: new FormControl('', [Validators.required, Validators.email]),
+        phone: new FormControl('', [
+          Validators.required,
+          // Validators.pattern(/^\+91\s\d{5}\s\d{5}$/) // +91 XXXXX XXXXX
+        ]),
+        dob: new FormControl('', Validators.required),
+        role: new FormControl('', Validators.required), 
+        password: new FormControl('', [
+          Validators.required,
+          Validators.minLength(8),
+        ]),
+        confirm: new FormControl('', Validators.required),
+        terms: new FormControl(false),
+      },
+      { validators: this.passwordMatchValidator }
+    );
   }
 
   // ✅ Custom validator for password confirmation
@@ -67,31 +76,38 @@ export class UsersignupComponent implements OnInit {
     }
   }
 
-  // ✅ Helper for showing errors in template
-  isInvalid(field: string): boolean {
-    const control = this.signupForm.get(field);
-    return !!(control && control.touched && control.invalid);
-  }
+
+   signup() {
+      console.log('Attempting signup...');
+      const fv = this.signupForm.value;
+      const user: User = {
+        email: fv.email ?? '',
+        role: fv.role ?? '',
+      };
+      this.authService.signup(user);
+    }
 
   // ✅ Handle form submission
   onSubmit() {
     if (this.signupForm.valid) {
       console.log('Form Submitted:', this.signupForm.value);
-      this.router.navigate(['/login']);
+
+
+       if (this.signupForm.valid) {
+      this.signup();
+      const role = this.signupForm.value.role;
+      if (role === 'admin') this.router.navigate(['/admin']);
+      else if (role === 'patient') this.router.navigate(['/patient']);
+      else if (role === 'doctor') this.router.navigate(['/doctor']);
+    } else {
+      this.signupForm.markAllAsTouched();
+    }
+
+
     } else {
       console.log('Form is invalid');
       console.log(this.signupForm.errors);
       this.signupForm.markAllAsTouched();
     }
-  }
-  popupVisible = false;
-  invalidCount = 0;
-
-  togglePopup(): void {
-    this.popupVisible = !this.popupVisible;
-  }
-  private updateInvalidCount(): void {
-    const controls = this.signupForm.controls;
-    this.invalidCount = Object.values(controls).filter((c) => c.invalid).length;
   }
 }

@@ -1,12 +1,6 @@
 import { Injectable } from '@angular/core';
+import { User } from '../models/user.interface';
 import { BehaviorSubject, Observable } from 'rxjs';
-
-export interface User {
-  email: string;
-  role: string;
-  name?: string;
-  token?: string;
-}
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +16,12 @@ export class AuthService {
       stored ? (JSON.parse(stored) as User) : null
     );
     this.currentUser$ = this.currentUserSubject.asObservable();
+  }
+
+  signup(user: User): void {
+    console.log('Signing up user:', user);
+    localStorage.setItem(this.storageKey, JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
   // Call this after a successful login
