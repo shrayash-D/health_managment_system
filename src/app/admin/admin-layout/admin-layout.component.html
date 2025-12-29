@@ -1,98 +1,94 @@
 <div class="admin-layout">
-    <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <div class="sidebar-header">
-            <a routerLink="/" class="brand-logo" style="text-decoration: none; color: inherit;">
-                <span class="brand-dot"></span>
-                <span class="brand-text">HealthConnect</span>
-            </a>
-            <div class="admin-badge">Admin</div>
-        </div>
-
-        <nav class="sidebar-nav">
-            <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
-                <span class="nav-icon">📊</span>
-                <span class="nav-text">Dashboard</span>
-            </a>
-            <a routerLink="/admin/patients" routerLinkActive="active" class="nav-item">
-                <span class="nav-icon">👥</span>
-                <span class="nav-text">Patients</span>
-            </a>
-            <a routerLink="/admin/appointments" routerLinkActive="active" class="nav-item">
-                <span class="nav-icon">📅</span>
-                <span class="nav-text">Appointments</span>
-            </a>
-            <a routerLink="/admin/billing" routerLinkActive="active" class="nav-item">
-                <span class="nav-icon">💰</span>
-                <span class="nav-text">Billing</span>
-            </a>
-            <a routerLink="/admin/doctors" routerLinkActive="active" class="nav-item">
-                <span class="nav-icon">👨‍⚕️</span>
-                <span class="nav-text">Doctors</span>
-            </a>
-        </nav>
-    </aside>
-
-    <!-- Main Content Area -->
-    <div class="admin-main">
-        <!-- Header -->
-        <header class="admin-header">
-            <div class="header-left">
-                <h1 class="page-title">Admin Panel</h1>
-            </div>
-            <div class="header-right">
-                <div class="header-actions">
-                    <div class="notification-wrapper">
-                        <button class="btn-icon notification-btn" title="Notifications" (click)="toggleNotifications()">
-                            <span>🔔</span>
-                            <span class="notification-badge" *ngIf="unreadCount > 0">
-                                {{ unreadCount }}
-                            </span>
-                        </button>
-
-                        <!-- Notifications Dropdown -->
-                        <div class="notifications-dropdown" *ngIf="showNotifications"
-                            (click)="$event.stopPropagation()">
-                            <div class="notifications-header">
-                                <h4>Notifications</h4>
-                                <button class="btn-mark-all" (click)="markAllAsRead()" *ngIf="unreadCount > 0">
-                                    Mark all as read
-                                </button>
-                            </div>
-                            <div class="notifications-list" *ngIf="notifications$ | async as notifications">
-                                <div class="notification-item" *ngFor="let notification of notifications"
-                                    [class.unread]="!notification.read" (click)="markAsRead(notification)">
-                                    <div class="notification-icon">{{ getNotificationIcon(notification.type) }}</div>
-                                    <div class="notification-content">
-                                        <div class="notification-title">{{ notification.title }}</div>
-                                        <div class="notification-message">{{ notification.message }}</div>
-                                        <div class="notification-time">{{ formatNotificationTime(notification.timestamp)
-                                            }}</div>
-                                    </div>
-                                    <button class="btn-delete-notification"
-                                        (click)="deleteNotification(notification.id, $event)" title="Delete">
-                                        ×
-                                    </button>
-                                    <span class="unread-dot" *ngIf="!notification.read"></span>
-                                </div>
-                                <div class="no-notifications" *ngIf="notifications.length === 0">
-                                    <p>No notifications</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-avatar">A</div>
-                        <span class="user-name">Admin</span>
-                    </div>
-                    <a routerLink="/" class="btn-logout">Logout</a>
-                </div>
-            </div>
-        </header>
-
-        <!-- Content -->
-        <main class="admin-content">
-            <router-outlet></router-outlet>
-        </main>
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <a
+        routerLink="/"
+        class="brand-logo"
+        style="text-decoration: none; color: inherit"
+      >
+        <span class="brand-dot"></span>
+        <span class="brand-text">HealthConnect</span>
+      </a>
+      <div class="admin-badge" *ngIf="badgeLabel">{{ badgeLabel }}</div>
     </div>
+
+    <nav class="sidebar-nav">
+      <a
+        *ngFor="let item of menu"
+        [routerLink]="item.link"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-text">{{ item.label }}</span>
+      </a>
+
+      <!-- When there is no menu (public route) show a simple link back home -->
+      <a *ngIf="menu.length === 0" routerLink="/" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-text">Home</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="admin-main">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="header-left">
+        <h1 class="page-title">{{ headerTitle }}</h1>
+      </div>
+      <div class="header-right">
+        <div class="header-actions">
+          <div class="notification-wrapper">
+            <button
+              class="btn-icon notification-btn"
+              title="Notifications"
+              (click)="toggleNotifications()"
+            >
+              <span>🔔</span>
+              <span class="notification-badge" *ngIf="unreadCount > 0">
+                {{ unreadCount }}
+              </span>
+            </button>
+
+            <!-- Notifications Dropdown (kept as-is) -->
+            <div
+              class="notifications-dropdown"
+              *ngIf="showNotifications"
+              (click)="$event.stopPropagation()"
+            >
+              <div class="notifications-header">
+                <h4>Notifications</h4>
+                <button
+                  class="btn-mark-all"
+                  (click)="markAllAsRead()"
+                  *ngIf="unreadCount > 0"
+                >
+                  Mark all as read
+                </button>
+              </div>
+              <div class="notifications-list">
+                <div class="no-notifications">
+                  <p>No notifications</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="user-menu">
+            <div class="user-avatar">A</div>
+            <span class="user-name">{{ badgeLabel || "User" }}</span>
+          </div>
+          <a routerLink="/" class="btn-logout" (click)="logout()">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="admin-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
 </div>

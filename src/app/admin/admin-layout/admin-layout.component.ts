@@ -1,106 +1,122 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
-  RouterOutlet,
-  RouterLink,
-  RouterLinkActive,
-  Router,
-} from '@angular/router';
-import { NotificationService } from '../../services/notification.service';
-import { Notification } from '../../models/notification.interface';
-import { Observable, Subscription } from 'rxjs';
+
+type LayoutKey = 'admin' | 'doctor' | 'patient' | 'public';
+
+interface NavItem {
+  label: string;
+  icon?: string;
+  link: string;
+}
 
 @Component({
   selector: 'app-admin-layout',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './admin-layout.component.html',
-  styleUrl: './admin-layout.component.css',
+  styleUrls: ['./admin-layout.component.css'],
+  imports: [RouterLink, RouterOutlet, CommonModule],
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {
-  notifications$!: Observable<Notification[]>;
-  unreadCount: number = 0;
-  showNotifications: boolean = false;
-  private subscriptions: Subscription[] = [];
+  layout: LayoutKey = 'public';
+  headerTitle = 'Dashboard';
+  badgeLabel = '';
+  menu: NavItem[] = [];
 
-  constructor(
-    private notificationService: NotificationService,
-    private router: Router
-  ) {}
+  // keep simple notification placeholders (existing template expects these)
+  unreadCount = 0;
+  showNotifications = false;
+
+  private sub = new Subscription();
+
+  constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit(): void {
-    this.notifications$ = this.notificationService.notifications$;
+    // set initial layout based on current url
+    this.updateLayoutFromUrl(this.router.url);
 
-    // Subscribe to notifications to update unread count
-    const sub = this.notificationService.notifications$.subscribe(
-      (notifications) => {
-        this.unreadCount = notifications.filter((n) => !n.read).length;
-      }
+    // update on navigation
+    this.sub.add(
+      this.router.events.subscribe((ev) => {
+        if (ev instanceof NavigationEnd) {
+          this.updateLayoutFromUrl(ev.urlAfterRedirects);
+        }
+      })
     );
-    this.subscriptions.push(sub);
   }
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
-  }
+  private updateLayoutFromUrl(url: string): void {
+    // normalize and pick first non-empty path segment
+    const segment = (url || '').split('/').filter(Boolean)[0] || '';
+    const key = (segment.toLowerCase() as LayoutKey) || 'public';
+    this.layout =
+      key === 'admin' || key === 'doctor' || key === 'patient' ? key : 'public';
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: Event): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.notification-wrapper')) {
-      this.showNotifications = false;
+    // configure header / badge / menu per layout
+    switch (this.layout) {
+      case 'admin':
+        this.headerTitle = 'Admin Panel';
+        this.badgeLabel = 'Admin';
+        this.menu = [
+          { label: 'Dashboard', icon: '📊', link: '/admin/dashboard' },
+          { label: 'Patients', icon: '👥', link: '/admin/patients' },
+          { label: 'Appointments', icon: '📅', link: '/admin/appointments' },
+          { label: 'Billing', icon: '💰', link: '/admin/billing' },
+          { label: 'Doctors', icon: '👨‍⚕️', link: '/admin/doctors' },
+        ];
+        break;
+
+      case 'doctor':
+        this.headerTitle = 'Doctor Panel';
+        this.badgeLabel = 'Doctor';
+        this.menu = [
+          { label: 'Dashboard', icon: '📋', link: '/doctor/dashboard' },
+          { label: 'Profile', icon: '👤', link: '/doctor/profile' },
+          { label: 'Tasks', icon: '🗂️', link: '/doctor/tasks' },
+          { label: 'Appointments', icon: '📅', link: '/doctor/appointment' },
+          { label: 'Patients', icon: '👥', link: '/doctor/patients' },
+        ];
+        break;
+
+      case 'patient':
+        this.headerTitle = 'Patient Panel';
+        this.badgeLabel = 'Patient';
+        this.menu = [
+          { label: 'Dashboard', icon: '🏠', link: '/patient/dashboard' },
+          { label: 'Profile', icon: '👤', link: '/patient/profile' },
+          { label: 'Appointments', icon: '📅', link: '/patient/appointments' },
+        ];
+        break;
+
+      default:
+        this.headerTitle = 'Dashboard';
+        this.badgeLabel = '';
+        this.menu = [];
     }
   }
 
   toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
   }
-
-  closeNotifications(): void {
-    this.showNotifications = false;
-  }
-
-  markAsRead(notification: Notification): void {
-    if (!notification.read) {
-      this.notificationService.markAsRead(notification.id).subscribe();
-    }
-    if (notification.link) {
-      this.router.navigate([notification.link]);
-      this.closeNotifications();
-    }
-  }
-
   markAllAsRead(): void {
-    this.notificationService.markAllAsRead().subscribe();
+    this.unreadCount = 0;
+  }
+  markAsRead(_notification: any): void {
+    /* placeholder */
+  }
+  deleteNotification(_id: number, _event?: Event): void {
+    _event?.stopPropagation();
+    /* placeholder */
   }
 
-  deleteNotification(id: number, event: Event): void {
-    event.stopPropagation();
-    this.notificationService.deleteNotification(id).subscribe();
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
   }
 
-  getNotificationIcon(type: string): string {
-    const icons: { [key: string]: string } = {
-      INFO: 'ℹ️',
-      SUCCESS: '✅',
-      WARNING: '⚠️',
-      ERROR: '❌',
-    };
-    return icons[type] || '📌';
-  }
-
-  formatNotificationTime(timestamp: string): string {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

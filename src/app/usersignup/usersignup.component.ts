@@ -11,9 +11,6 @@ import {
 } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { AuthUser } from '../models/auth.interface';
- 
-
-
 
 @Component({
   selector: 'app-signup',
@@ -36,7 +33,11 @@ export class UsersignupComponent implements OnInit {
     return this.confirmVisible ? 'text' : 'password';
   }
 
-  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     // add 'role' control and attach the password match validator to the group
@@ -49,7 +50,7 @@ export class UsersignupComponent implements OnInit {
           // Validators.pattern(/^\+91\s\d{5}\s\d{5}$/) // +91 XXXXX XXXXX
         ]),
         dob: new FormControl('', Validators.required),
-        role: new FormControl('', Validators.required), 
+        role: new FormControl('', Validators.required),
         password: new FormControl('', [
           Validators.required,
           Validators.minLength(8),
@@ -77,34 +78,31 @@ export class UsersignupComponent implements OnInit {
     }
   }
 
-
-   signup() {
-      console.log('Attempting signup...');
-      const fv = this.signupForm.value;
-      const user: AuthUser = {
-        email: fv.email ?? '',
-        role: fv.role ?? '',
-      };
-      this.authService.signup(user);
-    }
+  signup() {
+    console.log('Attempting signup...');
+    const fv = this.signupForm.value;
+    const user: AuthUser = {
+      email: fv.email ?? '',
+      role: fv.role ?? '',
+    };
+    this.authService.signup(user);
+  }
 
   // ✅ Handle form submission
   onSubmit() {
     if (this.signupForm.valid) {
       console.log('Form Submitted:', this.signupForm.value);
 
-
-       if (this.signupForm.valid) {
-      this.signup();
-      const role = this.signupForm.value.role;
-      if (role === 'admin') this.router.navigate(['/admin']);
-      else if (role === 'patient') this.router.navigate(['/patient']);
-      else if (role === 'doctor') this.router.navigate(['/doctor']);
-    } else {
-      this.signupForm.markAllAsTouched();
-    }
-
-
+      if (this.signupForm.valid) {
+        this.signup();
+        const role = this.signupForm.value.role;
+        console.log('Form is valid, proceeding with signup', role);
+        if (role === 'ADMIN') this.router.navigate(['/admin']);
+        else if (role === 'PATIENT') this.router.navigate(['/patient']);
+        else if (role === 'DOCTOR') this.router.navigate(['/doctor']);
+      } else {
+        this.signupForm.markAllAsTouched();
+      }
     } else {
       console.log('Form is invalid');
       console.log(this.signupForm.errors);

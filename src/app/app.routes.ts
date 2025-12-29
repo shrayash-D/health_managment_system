@@ -31,11 +31,15 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: PatientDashboardComponent },
-      { path: 'profile', component: UserprofileComponent /*, canActivate: [AuthGuard] */ },
+      {
+        path: 'profile',
+        component: UserprofileComponent /*, canActivate: [AuthGuard] */,
+      },
+      { path: 'appointments', component: AppointmentFormComponent },
     ],
   },
 
-  // Doctor 
+  // Doctor
   {
     path: 'doctor',
     component: AdminLayoutComponent,
@@ -50,7 +54,7 @@ export const routes: Routes = [
       { path: 'patients', component: PatientListComponent },
     ],
   },
-  
+
   // Admin (nested)
   {
     path: 'admin',
@@ -68,11 +72,8 @@ export const routes: Routes = [
   // Auth
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: UsersignupComponent },
-  { path: 'appointment', component: AppointmentFormComponent },
-
 
   // Default / public
   { path: '', component: HeroSectionComponent },
   { path: 'contact', component: ContactUsComponent },
-
 ];
