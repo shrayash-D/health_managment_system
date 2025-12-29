@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { ContactUsComponent } from './contact-us/contact-us.component';
 import { DiagnosisFormComponent } from './diagnosis-form/diagnosis-form.component';
 import { PrescriptionFormComponent } from './prescription-form/prescription-form.component';
@@ -8,6 +9,9 @@ import { LoginComponent } from './userlogin/userlogin.component';
 import { UsersignupComponent } from './usersignup/usersignup.component';
 import { UserprofileComponent } from './userprofile/userprofile.component';
 import { AppointmentFormComponent } from './appointment-form/appointment-form.component';
+import { NavbarComponent } from './navbar/navbar.component';
+import { FooterComponent } from './footer/footer.component';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -17,11 +21,23 @@ import { AppointmentFormComponent } from './appointment-form/appointment-form.co
     DiagnosisFormComponent,
     PrescriptionFormComponent,
     PatientDashboardComponent,
-    AppointmentFormComponent
-],
+    AppointmentFormComponent,
+    CommonModule,
+    NavbarComponent,
+    FooterComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
 export class AppComponent {
   title = 'hospital_project';
+  isAdminRoute: boolean = false;
+
+  constructor(private router: Router) {
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.isAdminRoute = event.url.startsWith('/admin');
+      });
+  }
 }

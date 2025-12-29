@@ -1,7 +1,6 @@
-/* You can add global styles to this file, and also import other style files */
-/* You can add global styles to this file, and also import other style files */
 @import "bootstrap/dist/css/bootstrap.min.css";
 
+/* === Global Variables === */
 :root {
   /* Palette */
   --primary: #0a5b8f;
@@ -48,7 +47,7 @@
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* Optional: base font to make sure it’s applied app-wide */
+/* === Base Styles === */
 body {
   font-family: Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
     Arial, sans-serif;
@@ -57,58 +56,152 @@ body {
   margin: 0;
 }
 
-/* You can add global styles to this file, and also import other style files */
-:root {
-  /* Palette */
-  --primary: #0a5b8f;
-  --primary-600: #1d6ea7;
-  --primary-400: #2c89c7;
-
-  --blue-900: #0a3963;
-  --blue-700: #1767a3;
-  --blue-300: #bfd6e6;
-  --blue-200: #e6eff6;
-  --blue-100: #f3f7fa;
-
-  --text-900: #15181c;
-  --text-600: #374151;
-  --text-500: #6b7280;
-  --text-300: #d1d5db;
-  --white: #ffffff;
-
-  --success: #27ae60;
-  --warning: #ffb020;
-  --danger: #e74c3c;
-  --info: #1d4ed8;
-
-  /* Gradient */
-  --grad-ocean-cyan: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%);
-
-  /* Spacing */
-  --sp-1: 4px;
-  --sp-2: 8px;
-  --sp-3: 12px;
-  --sp-4: 16px;
-  --sp-5: 20px;
-  --sp-6: 24px;
-  --sp-7: 28px;
-  --sp-8: 32px;
-  --sp-9: 36px;
-  --sp-10: 40px;
-
-  /* Elevation & radius */
-  --radius-8: 8px;
-  --radius-12: 12px;
-  --shadow-1: 0 1px 2px rgba(10, 91, 143, 0.08),
-    0 6px 18px rgba(10, 91, 143, 0.12);
-  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+/* === Utility Classes === */
+.text-primary-600 {
+  color: var(--primary-600);
+}
+.text-muted-500 {
+  color: var(--text-500);
+}
+.text-muted-600 {
+  color: var(--text-600);
 }
 
-/* Optional: base font to make sure it’s applied app-wide */
-body {
-  font-family: Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-    Arial, sans-serif;
-  color: var(--text-900);
-  background: linear-gradient(180deg, #f6fafd 0%, #f2f7fb 100%);
-  margin: 0;
+.bg-surface {
+  background-color: var(--white);
+}
+.bg-section {
+  background: var(--grad-ocean-cyan);
+}
+.bg-blue-100 {
+  background-color: var(--blue-100);
+}
+.bg-blue-200 {
+  background-color: var(--blue-200);
+}
+
+.border-light-300 {
+  border-color: var(--text-300) !important;
+}
+.border-blue-300 {
+  border-color: var(--blue-300) !important;
+}
+
+.rounded-8 {
+  border-radius: var(--radius-8);
+}
+.rounded-12 {
+  border-radius: var(--radius-12);
+}
+
+.shadow-1 {
+  box-shadow: var(--shadow-1);
+}
+.inset-top {
+  box-shadow: var(--shadow-inset);
+}
+
+/* === Buttons === */
+.btn-brand {
+  --bs-btn-bg: var(--primary);
+  --bs-btn-color: var(--white);
+  --bs-btn-border-color: var(--primary);
+  --bs-btn-hover-bg: var(--primary-600);
+  --bs-btn-hover-border-color: var(--primary-600);
+  --bs-btn-focus-shadow-rgb: 10, 91, 143;
+}
+.btn-outline-brand {
+  --bs-btn-color: var(--primary);
+  --bs-btn-border-color: var(--primary);
+  --bs-btn-hover-color: var(--white);
+  --bs-btn-hover-bg: var(--primary);
+  --bs-btn-hover-border-color: var(--primary);
+}
+
+/* === Inputs === */
+.input-brand {
+  border-color: var(--blue-300);
+  background-color: var(--white);
+}
+.input-brand:focus {
+  outline: none;
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 0.25rem rgba(10, 91, 143, 0.25);
+}
+
+/* === Cards === */
+.card-brand {
+  background-color: var(--white);
+  border: 1px solid var(--blue-200);
+  border-radius: var(--radius-12);
+  box-shadow: var(--shadow-1);
+}
+
+/* === Badges === */
+.badge-soft {
+  background-color: var(--blue-100);
+  color: var(--blue-900);
+  border: 1px solid var(--blue-200);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+/* === Links === */
+.link-brand {
+  color: var(--primary);
+  text-decoration: none;
+}
+.link-brand:hover {
+  color: var(--primary-600);
+  text-decoration: underline;
+}
+
+/* === Sections === */
+.section {
+  padding: var(--sp-10) 0;
+}
+.section-sm {
+  padding: var(--sp-6) 0;
+}
+
+/* === Hero Banner === */
+.hero-banner {
+  background: var(--grad-ocean-cyan);
+  color: var(--white);
+  border-radius: var(--radius-12);
+}
+
+/* === Toggle === */
+.toggle-track {
+  width: 44px;
+  height: 24px;
+  background: var(--blue-200);
+  border-radius: 999px;
+  position: relative;
+  border: 1px solid var(--blue-300);
+}
+.toggle-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--white);
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  box-shadow: var(--shadow-1);
+  transition: left 0.15s ease;
+}
+.toggle-checked .toggle-track {
+  background: var(--primary-400);
+  border-color: var(--primary-400);
+}
+.toggle-checked .toggle-thumb {
+  left: 22px;
+}
+
+/* === Focus Ring === */
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(10, 91, 143, 0.25);
 }

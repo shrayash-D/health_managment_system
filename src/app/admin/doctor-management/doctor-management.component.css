@@ -1,0 +1,24 @@
+.doctor-management {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.section-title {
+  margin: var(--sp-4) 0 var(--sp-3) 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--blue-900);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--blue-300);
+}
+
+.password-reset {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.password-reset .form-control {
+  flex: 1;
+}

@@ -1,1 +1,6 @@
+<app-navbar *ngIf="!isAdminRoute" />
 <router-outlet></router-outlet>
+<app-footer *ngIf="!isAdminRoute" />
+<!-- <app-diagnosis-form></app-diagnosis-form> -->
+<!-- <app-prescription-form></app-prescription-form> -->
+<!-- <app-patient-dashboard></app-patient-dashboard> -->

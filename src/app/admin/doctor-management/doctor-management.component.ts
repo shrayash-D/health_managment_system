@@ -1,0 +1,203 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DoctorService } from '../../services/doctor.service';
+import { UserService } from '../../services/user.service';
+import { Doctor } from '../../models/doctor.interface';
+import { User } from '../../models/user.interface';
+import { Observable, combineLatest, map } from 'rxjs';
+
+@Component({
+  selector: 'app-doctor-management',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './doctor-management.component.html',
+  styleUrl: './doctor-management.component.css',
+})
+export class DoctorManagementComponent implements OnInit {
+  doctors$!: Observable<Doctor[]>;
+  searchTerm: string = '';
+  showAddModal: boolean = false;
+  showEditModal: boolean = false;
+  showAccountModal: boolean = false;
+  selectedDoctor: Doctor | null = null;
+  selectedDoctorUser: User | null = null;
+
+  newDoctor: Doctor = {
+    id: 0,
+    name: '',
+    specialization: '',
+    contactInfo: '',
+    email: '',
+    department: '',
+    availability: [],
+  };
+
+  newUser: User = {
+    id: 0,
+    username: '',
+    password: '',
+    role: 'DOCTOR',
+    email: '',
+    name: '',
+  };
+
+  constructor(
+    private doctorService: DoctorService,
+    private userService: UserService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadDoctors();
+  }
+
+  loadDoctors(): void {
+    this.doctors$ = this.doctorService.getAllDoctors();
+  }
+
+  openAddModal(): void {
+    this.newDoctor = {
+      id: 0,
+      name: '',
+      specialization: '',
+      contactInfo: '',
+      email: '',
+      department: '',
+      availability: [],
+    };
+    this.newUser = {
+      id: 0,
+      username: '',
+      password: '',
+      role: 'DOCTOR',
+      email: '',
+      name: '',
+    };
+    this.showAddModal = true;
+  }
+
+  closeAddModal(): void {
+    this.showAddModal = false;
+  }
+
+  openEditModal(doctor: Doctor): void {
+    this.selectedDoctor = { ...doctor };
+    this.showEditModal = true;
+  }
+
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.selectedDoctor = null;
+  }
+
+  openAccountModal(doctor: Doctor): void {
+    this.selectedDoctor = doctor;
+    // Try to find existing user account
+    this.userService
+      .getUserByEntityId(doctor.id, 'DOCTOR')
+      .subscribe((user) => {
+        if (user) {
+          this.selectedDoctorUser = { ...user };
+        } else {
+          this.selectedDoctorUser = {
+            id: 0,
+            username: '',
+            password: '',
+            role: 'DOCTOR',
+            email: doctor.email || '',
+            name: doctor.name,
+          };
+        }
+        this.showAccountModal = true;
+      });
+  }
+
+  closeAccountModal(): void {
+    this.showAccountModal = false;
+    this.selectedDoctor = null;
+    this.selectedDoctorUser = null;
+  }
+
+  addDoctor(): void {
+    if (
+      this.newDoctor.name &&
+      this.newDoctor.specialization &&
+      this.newDoctor.contactInfo
+    ) {
+      this.doctorService.addDoctor(this.newDoctor).subscribe((doctor) => {
+        // Create user account if username provided
+        if (this.newUser.username) {
+          this.newUser.name = doctor.name;
+          this.newUser.email = doctor.email;
+          this.userService.createUser(this.newUser).subscribe();
+        }
+        this.loadDoctors();
+        this.closeAddModal();
+      });
+    }
+  }
+
+  updateDoctor(): void {
+    if (this.selectedDoctor) {
+      this.doctorService
+        .updateDoctor(this.selectedDoctor.id, this.selectedDoctor)
+        .subscribe(() => {
+          this.loadDoctors();
+          this.closeEditModal();
+        });
+    }
+  }
+
+  saveAccount(): void {
+    if (this.selectedDoctor && this.selectedDoctorUser) {
+      if (this.selectedDoctorUser.id === 0) {
+        // Create new account
+        this.selectedDoctorUser.name = this.selectedDoctor.name;
+        this.selectedDoctorUser.email = this.selectedDoctor.email;
+        this.userService.createUser(this.selectedDoctorUser).subscribe(() => {
+          this.closeAccountModal();
+        });
+      } else {
+        // Update existing account
+        this.userService
+          .updateUser(this.selectedDoctorUser.id, this.selectedDoctorUser)
+          .subscribe(() => {
+            this.closeAccountModal();
+          });
+      }
+    }
+  }
+
+  resetPassword(): void {
+    if (this.selectedDoctorUser && this.selectedDoctorUser.id) {
+      const newPassword = prompt('Enter new password:');
+      if (newPassword) {
+        this.userService
+          .resetPassword(this.selectedDoctorUser.id, newPassword)
+          .subscribe(() => {
+            alert('Password reset successfully');
+          });
+      }
+    }
+  }
+
+  deleteDoctor(id: number): void {
+    if (confirm('Are you sure you want to delete this doctor?')) {
+      this.doctorService.deleteDoctor(id).subscribe(() => {
+        this.loadDoctors();
+      });
+    }
+  }
+
+  getFilteredDoctors(doctors: Doctor[]): Doctor[] {
+    if (!this.searchTerm) return doctors;
+    const term = this.searchTerm.toLowerCase();
+    return doctors.filter(
+      (d) =>
+        d.name.toLowerCase().includes(term) ||
+        d.specialization.toLowerCase().includes(term) ||
+        (d.department && d.department.toLowerCase().includes(term)) ||
+        (d.email && d.email.toLowerCase().includes(term))
+    );
+  }
+}
