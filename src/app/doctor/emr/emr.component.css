@@ -1,0 +1,167 @@
+/* --- Layout --- */
+
+/* --- Hero Banner --- */
+.hero {
+  background: var(--grad-ocean-cyan);
+  color: #fff;
+  padding-block: clamp(28px, 7vw, 40px);
+  box-shadow: 0 12px 24px rgba(10, 91, 143, .18);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.hero .hero-inner {
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 12px;
+  padding: clamp(16px, 3vw, 24px);
+}
+
+/* --- Card (Consultations Table) --- */
+.card {
+  background: #fff;
+  border: 1px solid var(--blue-300);
+  border-radius: 12px;
+  box-shadow: var(--shadow-1);
+  padding: clamp(16px, 2.5vw, 24px);
+  margin-block: 24px;
+  overflow-x: auto;
+}
+
+.form-title {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--blue-900);
+}
+
+/* --- Table Styling --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+thead {
+  background: var(--primary);
+  color: #fff;
+}
+
+th, td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+  background: #f6faff;
+}
+
+th {
+  font-weight: 600;
+}
+
+/* --- Buttons (use global styles) --- */
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: .15s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.btn-secondary:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* --- Modal Overlay --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* --- Modal Content --- */
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.profile-details {
+  margin-top: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.form-group p, .form-group ul {
+  margin: 0;
+  color: #333;
+}
+
+.modal-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* --- Responsive Fixes --- */
+@media (max-width: 768px) {
+  .profile-content {
+    
+    padding: 1rem;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    max-width: 90%;
+    padding: 1rem;
+  }
+}

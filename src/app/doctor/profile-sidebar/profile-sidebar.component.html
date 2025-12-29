@@ -1,0 +1,100 @@
+<!-- profile-sidebar.component.html -->
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-header">
+    <div class="avatar">
+      <img src="assets/images/OIP.jpg" alt="Doctor Avatar" />
+    </div>
+    <div class="info" *ngIf="!collapsed">
+      <h4>Dr. Marttin Deo</h4>
+      <p>My Account</p>
+    </div>
+  </div>
+
+  <nav class="sidebar-menu" aria-label="Doctor navigation">
+    <ul>
+      <li>
+        <a
+          routerLink="/doctor/profile"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <i>👤</i> <span *ngIf="!collapsed">Profile</span>
+        </a>
+      </li>
+
+      <li>
+        <a
+          routerLink="/doctor/appointment"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <i>📅</i> <span *ngIf="!collapsed">Appointment</span>
+        </a>
+      </li>
+
+      <li>
+        <a
+          routerLink="/doctor/tasks"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <i>✅</i> <span *ngIf="!collapsed">Tasks</span>
+        </a>
+      </li>
+
+      <li>
+        <a routerLink="/doctor/invoices" routerLinkActive="active">
+          <i>💳</i> <span *ngIf="!collapsed">Invoice</span>
+        </a>
+      </li>
+
+      <li>
+        <a
+          routerLink="/doctor/patients"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <i>👥</i> <span *ngIf="!collapsed">Patients</span>
+        </a>
+      </li>
+
+      <li>
+        <a
+          routerLink="/doctor/emr"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+<i>🩺</i> <span *ngIf="!collapsed">EMR</span>        </a>
+      </li>
+
+      <li>
+        <a
+          routerLink="/doctor/dashboard"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <i>📊</i> <span *ngIf="!collapsed">Dashboard</span>
+        </a>
+      </li>
+
+      <li>
+        <a
+          routerLink="/doctor/settings"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <i>⚙️</i> <span *ngIf="!collapsed">Settings</span>
+        </a>
+      </li>
+      <li> <a (click)="logout()" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" > <i>🚪</i> <span *ngIf="!collapsed">Logout</span> </a> </li>
+    </ul>
+  </nav>
+
+  <button
+    class="toggle-btn"
+    (click)="toggleSidebar()"
+    aria-label="Toggle sidebar"
+  >
+    {{ collapsed ? "➡️" : "⬅️" }}
+  </button>
+</aside>

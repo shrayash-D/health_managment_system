@@ -1,0 +1,83 @@
+<form (ngSubmit)="addTask()" class="task-form">
+ 
+
+<div class="d-flex">
+  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+  <div class="container-fluid p-2">
+  <div class="page">
+    <!-- Hero Banner -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-inner">
+          <h1>Task Management</h1>
+          <p>Manage and track all your tasks and assignments.</p>
+        </div>
+      </div>
+    </section>
+
+    <main class="container">
+      <!-- Task Form -->
+      <section class="card">
+        <h2 class="form-title">Add New Task</h2>
+        <form (ngSubmit)="addTask()" class="task-form">
+          <input
+            type="text"
+            [(ngModel)]="newTaskTitle"
+            name="taskTitle"
+            placeholder="Enter task title..."
+            required
+          />
+
+          <textarea
+            [(ngModel)]="newTaskDescription"
+            name="taskDescription"
+            placeholder="Enter task details..."
+          ></textarea>
+
+          <input
+            type="date"
+            [(ngModel)]="newTaskDate"
+            name="taskDate"
+          />
+
+          <select [(ngModel)]="newTaskPriority" name="taskPriority">
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+          </select>
+
+          <button type="submit" class="btn btn-primary">Add Task</button>
+        </form>
+      </section>
+
+      <!-- Task List -->
+      <section class="card">
+        <h2 class="form-title">Task List</h2>
+        <ul class="task-list">
+          <li *ngFor="let task of tasks">
+            <div class="task-info">
+              <label>
+                <input
+                  type="checkbox"
+                  [checked]="task.status === 'Completed'"
+                  (change)="toggleTask(task)"
+                />
+                <span [class.completed]="task.status === 'Completed'">{{ task.description }}</span>
+              </label>
+              <small>Staff: {{ task.staff }}</small>
+              <span class="chip" [ngClass]="task.status.toLowerCase()">
+                {{ task.status }}
+              </span>
+            </div>
+            <button class="btn btn-outline" (click)="deleteTask(task.id)">
+              ❌ Delete
+            </button>
+          </li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</div>
+
+
+  

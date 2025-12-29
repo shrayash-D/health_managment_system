@@ -1,0 +1,141 @@
+<div class="d-flex">
+  <!-- Sidebar -->
+  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+
+  <!-- Dashboard Content -->
+  <div class="container-fluid p-2" [class.collapsed]="sidebarCollapsed">
+    <div class="page">
+      <!-- Header -->
+      <section class="hero mb-4">
+        <div class="container">
+          <div class="hero-inner">
+            <h1>Doctor Dashboard</h1>
+            <p>Welcome back, Dr. Marttin Deo</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Summary Cards -->
+      <div class="row text-center mb-3">
+        <div class="col-md-4 mb-2">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Total Patients</h5>
+              <h3 class="text-primary">2000+</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Today Patients</h5>
+              <h3 class="text-success">68</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Appointments</h5>
+              <h3 class="text-warning">85</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Section -->
+      <div class="row mb-3">
+        <!-- Pie Chart -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Patients Summary</div>
+            <div class="card-body">
+              <canvas baseChart
+                      [data]="pieChartData"
+                      [options]="pieChartOptions"
+                      [type]="'pie'">
+              </canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today Appointments -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Today Appointments</div>
+            <ul class="list-group list-group-flush">
+              <li *ngFor="let appt of todayAppointments"
+                  class="list-group-item d-flex justify-content-between align-items-center">
+                {{ appt.name }} – {{ appt.diagnosis }}
+                <span class="badge bg-info">{{ appt.status }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Next Patient -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Next Patient</div>
+            <div class="card-body">
+              <h5>{{ nextPatient.name }}</h5>
+              <p><strong>Diagnosis:</strong> {{ nextPatient.diagnosis }}</p>
+              <p><strong>ID:</strong> {{ nextPatient.id }}</p>
+              <p><strong>DOB:</strong> {{ nextPatient.dob }}</p>
+              <p><strong>Sex:</strong> {{ nextPatient.sex }}</p>
+              <p><strong>Weight:</strong> {{ nextPatient.weight }}</p>
+              <p><strong>Height:</strong> {{ nextPatient.height }}</p>
+              <p><strong>Last Appointment:</strong> {{ nextPatient.lastAppointment }}</p>
+              <p><strong>History:</strong> {{ nextPatient.history.join(', ') }}</p>
+              <p><strong>Contact:</strong> {{ nextPatient.contact }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Section -->
+      <div class="row">
+        <!-- Patients Review -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Patients Review</div>
+            <div class="card-body review-bar">
+              <p>Excellent: <span class="text-warning">★★★★★</span></p>
+              <p>Great: <span class="text-warning">★★★★</span></p>
+              <p>Good: <span class="text-warning">★★★</span></p>
+              <p>Average: <span class="text-warning">★★</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appointment Requests -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Appointment Requests</div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                Maria Sarafat – Cold
+                <button class="btn btn-sm btn-success">Accept</button>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                Jhon Deo – Over sweating
+                <button class="btn btn-sm btn-danger">Reject</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">Calendar</div>
+            <div class="card-body text-center">
+              <h5>December 2025</h5>
+              <p><span class="badge bg-primary">28</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

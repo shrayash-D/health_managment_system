@@ -1,0 +1,137 @@
+<div class="d-flex">
+  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+  <div class="container-fluid p-2">
+  <section class="table-scroll card">
+    <h2 class="form-title">Upcoming Appointments</h2>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input
+        type="date"
+        [(ngModel)]="appointmentFilterDate"
+        placeholder="Filter by date"
+      />
+      <select [(ngModel)]="appointmentFilterStatus">
+        <option value="">All Status</option>
+        <option value="BOOKED">BOOKED</option>
+        <option value="COMPLETED">COMPLETED</option>
+        <option value="CANCELLED">CANCELLED</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Patient Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let appointment of filteredAppointments">
+            <td data-label="Patient Name">{{ appointment.patientName }}</td>
+            <td data-label="Date">{{ appointment.date }}</td>
+            <td data-label="Time">{{ appointment.time }}</td>
+            <td data-label="Status">
+              <span class="status {{ appointment.status }}">
+                {{ appointment.status }}
+              </span>
+            </td>
+            <td data-label="Actions">
+              <button
+                class="btn btn-success"
+                (click)="completeAppointment(appointment.id)"
+                [disabled]="appointment.status !== 'BOOKED'"
+              >
+                Completed
+              </button>
+              <button
+                class="btn btn-danger"
+                (click)="cancelAppointment(appointment.id)"
+                [disabled]="appointment.status !== 'BOOKED'"
+              >
+                Appointment
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    </section>
+    <section class="card">
+  <h2 class="form-title">Schedule New Appointment</h2>
+  <form #appointmentForm="ngForm" (ngSubmit)="scheduleAppointment()" novalidate>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Patient Name</label>
+        <input
+          type="text"
+          [(ngModel)]="newAppointment.patientName"
+          name="patientName"
+          required
+        />
+        <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.patientName">
+          Patient name is required
+        </small>
+      </div>
+
+      <div class="form-field">
+        <label>Date</label>
+        <input
+          type="date"
+          [(ngModel)]="newAppointment.date"
+          name="date"
+          required
+        />
+        <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.date">
+          Date is required
+        </small>
+      </div>
+
+      <div class="form-field">
+        <label>Time</label>
+        <input
+          type="time"
+          [(ngModel)]="newAppointment.time"
+          name="time"
+          required
+        />
+        <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.time">
+          Time is required
+        </small>
+      </div>
+
+      <div class="form-field">
+        <label>Status</label>
+        <select
+          [(ngModel)]="newAppointment.status"
+          name="status"
+          required
+        >
+          <option value="">Select status</option>
+          <option value="BOOKED">BOOKED</option>
+          <option value="COMPLETED">COMPLETED</option>
+          <option value="CANCELLED">CANCELLED</option>
+        </select>
+        <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.status">
+          Status is required
+        </small>
+      </div>
+    </div>
+    <br>
+<div class="text-center">
+    <button
+      class="btn btn-success" 
+      type="submit"
+      [disabled]="appointmentForm.invalid"
+    >
+      Add Appointment
+    </button></div>
+  </form>
+</section>
+
+</div>
