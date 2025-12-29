@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { UserprofileComponent } from './userprofile/userprofile.component';
 import { LoginComponent } from './userlogin/userlogin.component';
-import { AuthGuard } from './services/auth.guard';
+// import { AuthGuard } from './services/auth.guard';
 import { UsersignupComponent } from './usersignup/usersignup.component';
 import { AppointmentFormComponent } from './appointment-form/appointment-form.component';
 import { PatientDashboardComponent } from './patient-dashboard/patient-dashboard.component';
@@ -14,143 +14,65 @@ import { AppointmentManagementComponent } from './admin/appointment-management/a
 import { BillingManagementComponent } from './admin/billing-management/billing-management.component';
 import { DoctorManagementComponent } from './admin/doctor-management/doctor-management.component';
 
+/* Direct (non-lazy) doctor imports */
+import { DoctorProfileComponent } from './doctor/doctor-profile/doctor-profile.component';
+import { DoctorDashboardComponent } from './doctor/doctor-dashboard/doctor-dashboard.component';
+import { TaskManagementComponent } from './doctor/task-management/task-management.component';
+import { InvoiceListComponent } from './doctor/invoice-list/invoice-list.component';
+import { AppointmentComponent } from './doctor/appointment/appointment.component';
+import { EmrComponent } from './doctor/emr/emr.component';
+import { PatientListComponent } from './doctor/patient-list/patient-list.component';
+
 export const routes: Routes = [
-  // Doctor profile
+  // Patient
   {
     path: 'patient',
     component: AdminLayoutComponent,
     children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full',
-      },
-      {
-        path: 'dashboard',
-        component: PatientDashboardComponent,
-      },
-      {
-        path: 'profile',
-        component: UserprofileComponent,
-        canActivate: [AuthGuard],
-      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: PatientDashboardComponent },
+      { path: 'profile', component: UserprofileComponent /*, canActivate: [AuthGuard] */ },
     ],
   },
 
+  // Doctor 
   {
-    path: 'doctor/profile',
-    loadComponent: () =>
-      import('./doctor/doctor-profile/doctor-profile.component').then(
-        (m) => m.DoctorProfileComponent
-      ),
+    path: 'doctor',
+    component: AdminLayoutComponent,
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DoctorDashboardComponent },
+      { path: 'profile', component: DoctorProfileComponent },
+      { path: 'tasks', component: TaskManagementComponent },
+      { path: 'invoices', component: InvoiceListComponent },
+      { path: 'appointment', component: AppointmentComponent },
+      { path: 'emr', component: EmrComponent },
+      { path: 'patients', component: PatientListComponent },
+    ],
   },
-
-  // Doctor dashboard
-  {
-    path: 'login',
-    component: LoginComponent,
-  },
-  {
-    path: 'signup',
-    component: UsersignupComponent,
-  },
-  {
-    path: 'appointment',
-    component: AppointmentFormComponent,
-  },
-  {
-    path: 'doctor/dashboard',
-    loadComponent: () =>
-      import('./doctor/doctor-dashboard/doctor-dashboard.component').then(
-        (m) => m.DoctorDashboardComponent
-      ),
-  },
-
-  // Doctor tasks
-  {
-    path: 'doctor/tasks',
-    loadComponent: () =>
-      import('./doctor/task-management/task-management.component').then(
-        (m) => m.TaskManagementComponent
-      ),
-  },
-
-  // Doctor invoices
-  {
-    path: 'doctor/invoices',
-    loadComponent: () =>
-      import('./doctor/invoice-list/invoice-list.component').then(
-        (m) => m.InvoiceListComponent
-      ),
-  },
-
-  // Doctor appointment
-  {
-    path: 'doctor/appointment',
-    loadComponent: () =>
-      import('./doctor/appointment/appointment.component').then(
-        (m) => m.AppointmentComponent
-      ),
-  },
-
-  // Doctor EMR
-  {
-    path: 'doctor/emr',
-    loadComponent: () =>
-      import('./doctor/emr/emr.component').then((m) => m.EmrComponent),
-  },
-
-  // Doctor patients
-  {
-    path: 'doctor/patients',
-    loadComponent: () =>
-      import('./doctor/patient-list/patient-list.component').then(
-        (m) => m.PatientListComponent
-      ),
-  },
-
-  // Default redirect
-  // { path: '', redirectTo: 'doctor/profile', pathMatch: 'full' },
-
-  // Wildcard fallback
-  // { path: '**', redirectTo: 'doctor/dashboard' },
-  {
-    path: '',
-    component: HeroSectionComponent,
-  },
-  {
-    path: 'contact',
-    component: ContactUsComponent,
-  },
+  
+  // Admin (nested)
   {
     path: 'admin',
     component: AdminLayoutComponent,
     children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full',
-      },
-      {
-        path: 'dashboard',
-        component: AdminDashboardComponent,
-      },
-      {
-        path: 'patients',
-        component: PatientManagementComponent,
-      },
-      {
-        path: 'appointments',
-        component: AppointmentManagementComponent,
-      },
-      {
-        path: 'billing',
-        component: BillingManagementComponent,
-      },
-      {
-        path: 'doctors',
-        component: DoctorManagementComponent,
-      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: AdminDashboardComponent },
+      { path: 'patients', component: PatientManagementComponent },
+      { path: 'appointments', component: AppointmentManagementComponent },
+      { path: 'billing', component: BillingManagementComponent },
+      { path: 'doctors', component: DoctorManagementComponent },
     ],
   },
+
+  // Auth
+  { path: 'login', component: LoginComponent },
+  { path: 'signup', component: UsersignupComponent },
+  { path: 'appointment', component: AppointmentFormComponent },
+
+
+  // Default / public
+  { path: '', component: HeroSectionComponent },
+  { path: 'contact', component: ContactUsComponent },
+
 ];
