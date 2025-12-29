@@ -10,7 +10,8 @@ import {
   FormControl,
 } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
-import { User } from '../models/user.interface';
+import { AuthUser } from '../models/auth.interface';
+ 
 
 
 
@@ -80,7 +81,7 @@ export class UsersignupComponent implements OnInit {
    signup() {
       console.log('Attempting signup...');
       const fv = this.signupForm.value;
-      const user: User = {
+      const user: AuthUser = {
         email: fv.email ?? '',
         role: fv.role ?? '',
       };

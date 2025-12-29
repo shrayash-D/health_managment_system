@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { User } from '../models/user.interface';
+import { AuthUser } from '../models/auth.interface';
 @Component({
   selector: 'app-userlogin',
   imports: [RouterLink, RouterOutlet, CommonModule, ReactiveFormsModule],
@@ -33,7 +34,7 @@ export class LoginComponent {
   login() {
     console.log('Attempting login...');
     const fv = this.loginForm.value;
-    const user: User = {
+    const user: AuthUser = {
       email: fv.email ?? '',
       role: fv.role ?? '',
       // token/name can be set after real authentication

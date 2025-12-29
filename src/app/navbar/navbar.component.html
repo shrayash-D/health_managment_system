@@ -46,7 +46,18 @@
           routerLink="/appointemts"
           >Book Now</a
         >
+
+        <!-- show Logout when logged in, Sign In when not -->
+        <button
+          *ngIf="isLoggedInUser()"
+          class="btn btn-outline-primary rounded-3 px-4 py-2 fw-medium"
+          (click)="logout()"
+        >
+          Logout
+        </button>
+
         <a
+          *ngIf="!isLoggedInUser()"
           class="btn btn-outline-primary rounded-3 px-4 py-2 fw-medium"
           routerLink="/login"
           >Sign In</a

@@ -1,9 +1,10 @@
-// export type UserRole = 'PATIENT' | 'DOCTOR' | 'ADMIN';
+export type UserRole = 'PATIENT' | 'DOCTOR' | 'ADMIN';
 
 export interface User {
-  id?: number;
+  id: number;
+  username: string;
   password?: string; // Should not be exposed in frontend normally
-  role: string;
-  email: string;
+  role: UserRole;
+  email?: string;
   name?: string;
 }

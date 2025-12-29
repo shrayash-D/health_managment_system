@@ -1,31 +1,32 @@
 import { Injectable } from '@angular/core';
 import { User } from '../models/user.interface';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { AuthUser } from '../models/auth.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly storageKey = 'currentUser';
-  private currentUserSubject: BehaviorSubject<User | null>;
-  public currentUser$: Observable<User | null>;
+  private currentUserSubject: BehaviorSubject<AuthUser | null>;
+  public currentUser$: Observable<AuthUser | null>;
 
   constructor() {
     const stored = localStorage.getItem(this.storageKey);
-    this.currentUserSubject = new BehaviorSubject<User | null>(
-      stored ? (JSON.parse(stored) as User) : null
+    this.currentUserSubject = new BehaviorSubject<AuthUser | null>(
+      stored ? (JSON.parse(stored) as AuthUser) : null
     );
     this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
-  signup(user: User): void {
+  signup(user: AuthUser): void {
     console.log('Signing up user:', user);
     localStorage.setItem(this.storageKey, JSON.stringify(user));
     this.currentUserSubject.next(user);
   }
 
   // Call this after a successful login
-  login(user: User): void {
+  login(user: AuthUser): void {
     console.log('Logging in user:', user);
     localStorage.setItem(this.storageKey, JSON.stringify(user));
     this.currentUserSubject.next(user);
@@ -47,7 +48,7 @@ export class AuthService {
   // }
 
   // Synchronous access to current value
-  get currentUserValue(): User | null {
+  get currentUserValue(): AuthUser | null {
     return this.currentUserSubject.value;
   }
 }
