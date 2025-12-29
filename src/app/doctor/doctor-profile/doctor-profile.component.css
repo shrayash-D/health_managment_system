@@ -1,0 +1,314 @@
+/* --- Layout --- */
+
+/* --- Top Panel --- */
+.top-panel {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-block: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* --- Notification Bell --- */
+.notification {
+  position: relative;
+}
+
+.bell-icon {
+  font-size: 1.4rem;
+  color: #f5b400;
+  cursor: pointer;
+}
+
+.notification .dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  background: red;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+/* --- Profile Box --- */
+.profile-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-box .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--blue-300);
+  box-shadow: var(--shadow-1);
+}
+
+.profile-box .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Hero Banner --- */
+.hero {
+  background: var(--grad-ocean-cyan);
+  color: #fff;
+  padding-block: clamp(28px, 7vw, 40px);
+  box-shadow: 0 12px 24px rgba(10, 91, 143, .18);
+}
+
+.hero .hero-inner {
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 12px;
+  padding: clamp(16px, 3vw, 24px);
+}
+
+/* --- Card --- */
+.card {
+  background: #fff;
+  border: 1px solid var(--blue-300);
+  border-radius: 12px;
+  box-shadow: var(--shadow-1);
+  padding: clamp(16px, 2.5vw, 24px);
+  margin-block: 24px;
+}
+
+/* --- Profile Header --- */
+.profile-header {
+  margin-block: 32px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.profile-header .left {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-header .avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--blue-300);
+  box-shadow: var(--shadow-1);
+}
+
+.profile-header .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-header .name {
+  margin: 0 0 8px;
+  font-size: clamp(1.35rem, 2.2vw, 1.7rem);
+  font-weight: 700;
+  color: var(--blue-900);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--blue-100);
+  color: var(--blue-900);
+  border: 1px solid var(--blue-300);
+  font-weight: 600;
+}
+
+.profile-header .actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* --- Buttons --- */
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: .15s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.btn-outline {
+  background: #fff;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-outline:hover {
+  background: #F6FAFD;
+}
+
+.btn-back {
+  background: #fff;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .15s ease;
+}
+
+.btn-back:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* --- Form --- */
+.form-card {
+  margin-block: 24px;
+}
+
+.form-title {
+  margin: 0 0 16px;
+  color: var(--blue-900);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.span-2 {
+  grid-column: span 1;
+}
+
+@media (min-width: 768px) {
+  .span-2 {
+    grid-column: span 2;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  color: var(--text-600);
+  font-weight: 600;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  font: inherit;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--blue-300);
+  background: #FAFCFE;
+  color: var(--text-900);
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+/* --- Restricted Fields --- */
+.form-field input[readonly],
+.form-field input:disabled {
+  background: #f0f4f8;
+  color: #666;
+  border: 1px solid #d0d7de;
+  cursor: not-allowed;
+}
+
+/* --- Validation --- */
+.form-field input[type="tel"].ng-invalid.ng-touched {
+  border-color: #d32f2f;
+  background: #fff0f0;
+}
+
+.form-field input[type="tel"].ng-valid.ng-touched {
+  border-color: #4caf50;
+  background: #f6fff6;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 0.85rem;
+}
+
+/* --- Centered Edit Button --- */
+.edit-profile-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* --- Responsive Fixes --- */
+@media (max-width: 768px) {
+  .profile-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .profile-header {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .profile-header .left {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .profile-header .avatar {
+    margin-inline: auto;
+  }
+
+  .top-panel {
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .top-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+
