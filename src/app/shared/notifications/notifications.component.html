@@ -1,0 +1,26 @@
+<div class="notification-wrapper">
+  <button
+    class="btn-icon notification-btn"
+    title="Notifications"
+    (click)="onToggle()"
+  >
+    <span>🔔</span>
+    <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+  </button>
+
+  <div class="notifications-dropdown" *ngIf="show" (click)="$event.stopPropagation()">
+    <div class="notifications-header">
+      <h4>Notifications</h4>
+      <button class="btn-mark-all" (click)="onMarkAll()" *ngIf="unreadCount > 0">Mark all as read</button>
+    </div>
+    <div class="notifications-list">
+      <div *ngIf="(!notifications || notifications.length === 0)" class="no-notifications">
+        <p>No notifications</p>
+      </div>
+      <div *ngFor="let n of notifications" class="notification-item" (click)="onMarkRead(n)">
+        <div class="notification-body">{{ n.text || (n.title ?? 'Notification') }}</div>
+        <button class="btn-delete" (click)="onDelete(n.id, $event)">✕</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -5,6 +5,7 @@ import { LoginComponent } from './userlogin/userlogin.component';
 import { UsersignupComponent } from './usersignup/usersignup.component';
 import { AppointmentFormComponent } from './appointment-form/appointment-form.component';
 import { PatientDashboardComponent } from './patient-dashboard/patient-dashboard.component';
+import { PatientHistoryComponent } from './patient-history/patient-history.component';
 import { HeroSectionComponent } from './hero-section/hero-section.component';
 import { ContactUsComponent } from './contact-us/contact-us.component';
 import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
@@ -35,6 +36,7 @@ export const routes: Routes = [
         path: 'profile',
         component: UserprofileComponent /*, canActivate: [AuthGuard] */,
       },
+      { path: 'history', component: PatientHistoryComponent },
       { path: 'appointments', component: AppointmentFormComponent },
     ],
   },

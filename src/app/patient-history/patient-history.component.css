@@ -1,0 +1,83 @@
+/* Container */
+.patient-history {
+  display: block;
+  padding: var(--sp-4, 16px);
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f7fa 100%);
+  border: 1px solid var(--blue-300, #cfe4ff);
+  border-radius: 12px;
+}
+
+/* Heading */
+.patient-history > h2 {
+  margin: 0 0 var(--sp-3, 12px);
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
+  color: var(--blue-900, #0b3a6f);
+  font-weight: 700;
+}
+
+/* Empty state */
+.empty {
+  padding: var(--sp-4, 16px);
+  border: 1px dashed var(--blue-300, #cfe4ff);
+  border-radius: 10px;
+  color: var(--text-500, #667085);
+  background: repeating-linear-gradient(90deg, #f8fbff 0 6px, #f3f7fa 6px 12px);
+  text-align: center;
+}
+
+/* List container */
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-3, 12px);
+}
+
+/* Each row */
+.history-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--sp-3, 12px);
+  padding: var(--sp-3, 12px) var(--sp-4, 16px);
+  border: 1px solid var(--blue-300, #cfe4ff);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(11, 58, 111, 0.04);
+}
+
+/* Left block */
+.history-item .left .title {
+  color: var(--text-900, #1f2937);
+  font-weight: 600;
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+}
+
+.history-item .left .notes {
+  margin-top: 4px;
+  color: var(--text-500, #667085);
+  font-size: 0.85rem;
+}
+
+/* Right block */
+.history-item .right .date {
+  color: var(--text-600, #475569);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border: 1px solid var(--blue-200, #dbeafe);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f7fa 100%);
+}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  .history-item {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .history-item .right {
+    justify-self: start;
+  }
+}

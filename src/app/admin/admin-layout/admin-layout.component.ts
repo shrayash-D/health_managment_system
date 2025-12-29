@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { NotificationComponent } from '../../shared/notifications/notifications.component';
 
 type LayoutKey = 'admin' | 'doctor' | 'patient' | 'public';
 
@@ -17,7 +18,7 @@ interface NavItem {
   selector: 'app-admin-layout',
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.css'],
-  imports: [RouterLink, RouterOutlet, CommonModule],
+  imports: [RouterLink, RouterOutlet, CommonModule, NotificationComponent],
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {
   layout: LayoutKey = 'public';
@@ -86,6 +87,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         this.menu = [
           { label: 'Dashboard', icon: '🏠', link: '/patient/dashboard' },
           { label: 'Profile', icon: '👤', link: '/patient/profile' },
+          { label: 'History', icon: '🩺', link: '/patient/history' },
           { label: 'Appointments', icon: '📅', link: '/patient/appointments' },
         ];
         break;

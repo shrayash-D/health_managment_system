@@ -1,0 +1,23 @@
+<section class="patient-history">
+  <h2>Patient Medical History</h2>
+
+  <ng-container *ngIf="history$ | async as history; else loading">
+    <div *ngIf="history.length === 0" class="empty">No history found.</div>
+
+    <ul *ngIf="history.length > 0" class="history-list">
+      <li *ngFor="let h of history" class="history-item">
+        <div class="left">
+          <div class="title">{{ h.title || "-" }}</div>
+          <div class="notes" *ngIf="h.notes">{{ h.notes }}</div>
+        </div>
+        <div class="right">
+          <div class="date">{{ h.date | date : "MMM d, y" }}</div>
+        </div>
+      </li>
+    </ul>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="empty">Loading history…</div>
+  </ng-template>
+</section>

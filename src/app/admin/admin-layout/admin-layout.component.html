@@ -41,41 +41,15 @@
       </div>
       <div class="header-right">
         <div class="header-actions">
-          <div class="notification-wrapper">
-            <button
-              class="btn-icon notification-btn"
-              title="Notifications"
-              (click)="toggleNotifications()"
-            >
-              <span>🔔</span>
-              <span class="notification-badge" *ngIf="unreadCount > 0">
-                {{ unreadCount }}
-              </span>
-            </button>
-
-            <!-- Notifications Dropdown (kept as-is) -->
-            <div
-              class="notifications-dropdown"
-              *ngIf="showNotifications"
-              (click)="$event.stopPropagation()"
-            >
-              <div class="notifications-header">
-                <h4>Notifications</h4>
-                <button
-                  class="btn-mark-all"
-                  (click)="markAllAsRead()"
-                  *ngIf="unreadCount > 0"
-                >
-                  Mark all as read
-                </button>
-              </div>
-              <div class="notifications-list">
-                <div class="no-notifications">
-                  <p>No notifications</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-notifications
+            [unreadCount]="unreadCount"
+            [show]="showNotifications"
+            [notifications]="[]"
+            (toggle)="toggleNotifications()"
+            (markAll)="markAllAsRead()"
+            (markRead)="markAsRead($event)"
+            (delete)="deleteNotification($event)"
+          ></app-notifications>
 
           <div class="user-menu">
             <div class="user-avatar">A</div>
