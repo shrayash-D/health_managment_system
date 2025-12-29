@@ -21,7 +21,7 @@ interface DiagnosisFormModel {
   selector: 'app-diagnosis-form',
   imports: [CommonModule,ReactiveFormsModule],
   templateUrl: './diagnosis-form.component.html',
-  styleUrl: './diagnosis-form.component.css'
+  styleUrl: './diagnosis-form.component.css',
 })
 export class DiagnosisFormComponent implements OnInit {
   form!: FormGroup;
