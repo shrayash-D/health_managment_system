@@ -21,7 +21,7 @@ import { TaskManagementComponent } from './doctor/task-management/task-managemen
 import { InvoiceListComponent } from './doctor/invoice-list/invoice-list.component';
 import { AppointmentComponent } from './doctor/appointment/appointment.component';
 import { EmrComponent } from './doctor/emr/emr.component';
-import { PatientListComponent } from './doctor/patient-list/patient-list.component';
+
 
 export const routes: Routes = [
   // Patient
@@ -35,6 +35,7 @@ export const routes: Routes = [
         path: 'profile',
         component: UserprofileComponent /*, canActivate: [AuthGuard] */,
       },
+      
       { path: 'appointments', component: AppointmentFormComponent },
     ],
   },
@@ -47,11 +48,10 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DoctorDashboardComponent },
       { path: 'profile', component: DoctorProfileComponent },
-      { path: 'tasks', component: TaskManagementComponent },
       { path: 'invoices', component: InvoiceListComponent },
       { path: 'appointment', component: AppointmentComponent },
       { path: 'emr', component: EmrComponent },
-      { path: 'patients', component: PatientListComponent },
+      { path: 'patients', component: PatientManagementComponent },
     ],
   },
 

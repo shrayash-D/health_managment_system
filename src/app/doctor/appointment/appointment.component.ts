@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProfileSidebarComponent } from '../profile-sidebar/profile-sidebar.component';
 import { DoctorDataService, Appointment } from '../../services/doctor-data.service';
 
 @Component({
   selector: 'app-appointment',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileSidebarComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './appointment.component.html',
   styleUrls: ['./appointment.component.css']
 })

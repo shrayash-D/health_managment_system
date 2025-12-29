@@ -1,99 +1,96 @@
 <div class="d-flex">
-  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+ 
   <div class="container-fluid p-2">
-<div class="page">
-  <!-- Hero Banner -->
-  <section class="hero">
-    <div class="container">
-      <div class="hero-inner">
-         <section class="card profile-header">
-      <div class="left">
-        <div class="avatar" aria-hidden="true">
-          <img *ngIf="photoUrl" [src]="photoUrl" alt="Doctor Photo" />
-        </div>
-        <div class="info">
-          <h2 class="name">{{ doctor.fullName }}</h2>
-          <div class="meta">
-            <span class="chip">Role: {{ doctor.role }}</span>
-            <span class="chip">Specialization: {{ doctor.specialization }}</span>
-            <span class="chip">Experience: {{ doctor.experience }}</span>
-            <span class="chip">Member since: {{ doctor.memberSince }}</span>
-            <span class="chip">{{ doctor.email }}</span>
-            <span class="chip">{{ doctor.countryCode }} {{ doctor.phone }}</span>
+    <div class="page">
+      <!-- Hero Banner -->
+      <section class="hero">
+        <div class="container">
+          <div class="hero-inner">
+            <section class="card profile-header">
+              <div class="left">
+                <div class="avatar" aria-hidden="true">
+                  <img *ngIf="photoUrl" [src]="photoUrl" alt="Doctor Photo" />
+                </div>
+                <div class="info">
+                  <h2 class="name">{{ doctor.fullName }}</h2>
+                  <div class="meta">
+                    <span class="chip">Role: {{ doctor.role }}</span>
+                    <span class="chip">Specialization: {{ doctor.specialization }}</span>
+                    <span class="chip">Experience: {{ doctor.experience }}</span>
+                    <span class="chip">Member since: {{ doctor.memberSince }}</span>
+                    <span class="chip">{{ doctor.email }}</span>
+                    <span class="chip">{{ doctor.countryCode }} {{ doctor.phone }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="actions">
+                <input type="file" accept="image/*" #photoInput (change)="onPhotoSelected($event)" hidden />
+                <button class="btn btn-outline" (click)="photoInput.click()">Change photo</button>
+                <button class="btn btn-primary" *ngIf="showSavePhotoBtn" (click)="savePhoto()">Save Photo</button>
+              </div>
+            </section>
           </div>
         </div>
-      </div>
-      <div class="actions">
-        <input type="file" accept="image/*" #photoInput (change)="onPhotoSelected($event)" hidden />
-       
-       
-        <button class="btn btn-outline" (click)="photoInput.click()">Change photo</button>
-        <button class="btn btn-primary" *ngIf="showSavePhotoBtn" (click)="savePhoto()">Save Photo</button>
-        
-      </div>
-    </section>
-      </div>
+      </section>
+
+      <main class="container">
+        <!-- Edit Profile Form -->
+        <section class="card form-card">
+          <h2 class="form-title">Edit Profile</h2>
+          <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="form-grid" novalidate>
+            
+            <div class="form-field">
+              <label for="fullName">Full Name</label>
+              <input id="fullName" type="text" formControlName="fullName" [readonly]="!isEditing" />
+            </div>
+
+            <div class="form-field">
+              <label for="email">Email</label>
+              <input id="email" type="email" formControlName="email" readonly />
+            </div>
+
+            <div class="form-field">
+              <label for="phone">Phone</label>
+              <div class="phone-input">
+                <select id="countryCode" formControlName="countryCode" [disabled]="!isEditing">
+                  <option *ngFor="let c of countryCodes" [value]="c.code">
+                    {{ c.country }} ({{ c.code }})
+                  </option>
+                </select>
+                <input
+                  id="phone"
+                  type="tel"
+                  formControlName="phone"
+                  [readonly]="!isEditing"
+                  placeholder="Enter 10-15 digit number"
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="specialization">Specialization</label>
+              <input id="specialization" type="text" formControlName="specialization" readonly />
+            </div>
+
+            <div class="form-field span-2">
+              <label for="bio">Bio</label>
+              <textarea id="bio" rows="4" formControlName="bio" [readonly]="!isEditing"></textarea>
+            </div>
+
+            <!-- Edit button (visible only when not editing) -->
+            <div class="edit-profile-container" *ngIf="!isEditing">
+              <button type="button" class="btn btn-primary" (click)="enableEdit()">Edit Profile</button>
+            </div>
+
+            <!-- Save/Cancel buttons (visible only when editing) -->
+            <div class="form-actions span-2" *ngIf="isEditing">
+              <button type="button" class="btn btn-outline" (click)="cancelEdit()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </section>
+        <router-outlet></router-outlet>
+      </main>
     </div>
-  </section>
-
-  <main class="container">
-    <!-- Profile Header -->
-   
-
-    <!-- Edit Profile Form -->
-    <section class="card form-card">
-      <h2 class="form-title">Edit Profile</h2>
-      <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="form-grid" novalidate>
-        <div class="form-field">
-          <label for="fullName">Full Name</label>
-          <input id="fullName" type="text" formControlName="fullName" [readonly]="!isEditing" />
-        </div>
-
-        <div class="form-field">
-          <label for="email">Email</label>
-          <input id="email" type="email" formControlName="email" readonly />
-        </div>
-
-        <div class="form-field">
-          <label for="phone">Phone</label>
-          <div class="phone-input">
-            <select id="countryCode" formControlName="countryCode" [disabled]="!isEditing">
-              <option *ngFor="let c of countryCodes" [value]="c.code">
-                {{ c.country }} ({{ c.code }})
-              </option>
-            </select>
-            <input
-              id="phone"
-              type="tel"
-              formControlName="phone"
-              [readonly]="!isEditing"
-              placeholder="Enter 10-digit number"
-            />
-          </div>
-          <small *ngIf="profileForm.get('phone')?.invalid && profileForm.get('phone')?.touched" class="error">
-            Phone must be exactly 10 digits.
-          </small>
-        </div>
-
-        <div class="form-field">
-          <label for="specialization">Specialization</label>
-          <input id="specialization" type="text" formControlName="specialization" readonly />
-        </div>
-
-        <div class="form-field span-2">
-          <label for="bio">Bio</label>
-          <textarea id="bio" rows="4" formControlName="bio" [readonly]="!isEditing"></textarea>
-        </div>
-        <div class="edit-profile-container">
-        <button class="btn btn-primary" (click)="enableEdit()" *ngIf="!isEditing">Edit Profile</button>
-        </div>
-        <div class="form-actions span-2" *ngIf="isEditing">
-          <button type="button" class="btn btn-outline" (click)="cancelEdit()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-        </div>
-      </form>
-    </section>
-    <router-outlet></router-outlet>
-  </main>
-</div>
+  </div>
 </div>

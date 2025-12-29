@@ -1,16 +1,19 @@
 <div class="d-flex">
-  <app-profile-sidebar (collapsedChange)="onSidebarCollapse($event)"></app-profile-sidebar>
+
   <div class="container-fluid p-2">
   <div class="page">
     <!-- Hero Banner -->
-    <section class="hero">
-      <div class="container">
-        <div class="hero-inner">
-          <h1>Electronic Medical Record</h1>
+   
+        <div class="page-header">
+          <h2>Electronic Medical Record</h2>
           <p>View and manage patient consultations.</p>
         </div>
-      </div>
-    </section>
+      
+       
+        
+        
+    </div>
+    
 
     <!-- Consultations Table -->
     <section class="card">
@@ -105,6 +108,7 @@
 
             <!-- Modal Actions -->
             <div class="modal-actions">
+              <button class="btn btn-primary" (click)="downloadEmrPDF()">Download PDF</button>
               <button class="btn btn-secondary" (click)="startAddDiagnosis()">Add Diagnosis</button>
               <button class="btn btn-secondary" (click)="uploadPrescription()">Upload Prescription</button>
               <button class="btn btn-secondary" (click)="closeEMRModal()">Close</button>
