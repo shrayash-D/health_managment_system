@@ -17,10 +17,26 @@ import { DoctorManagementComponent } from './admin/doctor-management/doctor-mana
 export const routes: Routes = [
   // Doctor profile
   {
-    path: 'patientdashboard',
-    component: PatientDashboardComponent,
-    pathMatch: 'full',
+    path: 'patient',
+    component: AdminLayoutComponent,
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
+        path: 'dashboard',
+        component: PatientDashboardComponent,
+      },
+      {
+        path: 'profile',
+        component: UserprofileComponent,
+        canActivate: [AuthGuard],
+      },
+    ],
   },
+
   {
     path: 'doctor/profile',
     loadComponent: () =>
@@ -30,11 +46,6 @@ export const routes: Routes = [
   },
 
   // Doctor dashboard
-  {
-    path: 'profile',
-    component: UserprofileComponent,
-    canActivate: [AuthGuard],
-  },
   {
     path: 'login',
     component: LoginComponent,

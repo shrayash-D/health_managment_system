@@ -31,13 +31,15 @@ import { filter } from 'rxjs/operators';
 })
 export class AppComponent {
   title = 'hospital_project';
-  isAdminRoute: boolean = false;
+  isLayout: boolean = false;
 
   constructor(private router: Router) {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {
-        this.isAdminRoute = event.url.startsWith('/admin');
+        this.isLayout = ['/admin', '/patient', '/doctor'].some((prefix) =>
+          event.url.startsWith(prefix)
+        );
       });
   }
 }
