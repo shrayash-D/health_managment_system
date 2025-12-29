@@ -17,11 +17,6 @@ import { filter } from 'rxjs/operators';
   selector: 'app-root',
   imports: [
     RouterOutlet,
-    ContactUsComponent,
-    DiagnosisFormComponent,
-    PrescriptionFormComponent,
-    PatientDashboardComponent,
-    AppointmentFormComponent,
     CommonModule,
     NavbarComponent,
     FooterComponent,
