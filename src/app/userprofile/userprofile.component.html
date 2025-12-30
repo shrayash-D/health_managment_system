@@ -16,40 +16,70 @@
   <!-- Profile Header -->
   <section class="card profile-header">
     <div class="left">
-      <div class="avatar" aria-hidden="true"></div>
+      <div class="avatar" aria-hidden="true">
+        <img
+          *ngIf="photoPreview; else initials"
+          [src]="photoPreview"
+          alt="avatar"
+        />
+        <ng-template #initials>
+          <div class="avatar-placeholder">{{ initials }}</div>
+        </ng-template>
+      </div>
       <div class="info">
-        <h2 class="name">Shrayash Desai</h2>
+        <h2 class="name">{{ displayName }}</h2>
         <div class="meta">
-          <span class="chip">Role: Patient</span>
+          <span class="chip">Role: {{ displayRole }}</span>
           <span class="chip">Member since: 2023</span>
         </div>
       </div>
     </div>
     <div class="actions">
-      <button class="btn btn-outline">Change photo</button>
-      <button class="btn btn-primary">Edit Profile</button>
+      <input
+        type="file"
+        #fileInput
+        accept="image/*"
+        hidden
+        (change)="onPhotoSelect($event)"
+      />
+      <button class="btn btn-outline" type="button" (click)="fileInput.click()">
+        Change photo
+      </button>
+      <button
+        *ngIf="photoPreview"
+        class="btn btn-outline"
+        type="button"
+        (click)="removePhoto()"
+      >
+        Remove photo
+      </button>
     </div>
   </section>
 
   <!-- Profile Details (2-column responsive form) -->
   <section class="card form-card">
     <h2 class="form-title">Account Details</h2>
-    <form class="form-grid" novalidate>
+    <form
+      [formGroup]="profileForm"
+      (ngSubmit)="onSave()"
+      class="form-grid"
+      novalidate
+    >
       <div class="form-field">
         <label for="fullName">Full Name</label>
-        <input id="fullName" type="text" value="Shrayash Desai" />
+        <input id="fullName" type="text" formControlName="name" />
       </div>
       <div class="form-field">
         <label for="email">Email</label>
-        <input id="email" type="email" value="shrayash@example.com" />
+        <input id="email" type="email" formControlName="email" />
       </div>
       <div class="form-field">
         <label for="phone">Phone</label>
-        <input id="phone" type="tel" value="+91 98XXX XXX90" />
+        <input id="phone" type="tel" formControlName="phone" />
       </div>
       <div class="form-field">
         <label for="dob">Date of Birth</label>
-        <input id="dob" type="date" />
+        <input id="dob" type="date" formControlName="dob" />
       </div>
 
       <div class="form-field span-2">
@@ -57,15 +87,19 @@
         <textarea
           id="address"
           rows="3"
+          formControlName="address"
           placeholder="Street, City, State, PIN"
         ></textarea>
       </div>
 
       <div class="form-actions span-2">
         <div class="buttons">
-          <button type="button" class="btn btn-outline">Cancel</button>
+          <button type="button" class="btn btn-outline" (click)="ngOnInit()">
+            Reset
+          </button>
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
+        <div *ngIf="saved" class="save-indicator">Saved</div>
       </div>
     </form>
   </section>
