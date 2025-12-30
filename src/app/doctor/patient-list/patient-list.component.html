@@ -1,0 +1,212 @@
+
+<div class="patient-management">
+    <!-- Header -->
+    <div class="page-header">
+        <h2>Patient Management</h2>
+        <button class="btn btn-primary" (click)="openAddModal()">+ Add Patient</button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" class="form-control input-brand"
+            placeholder="Search patients by name, contact, or blood group..." [(ngModel)]="searchTerm" />
+    </div>
+
+    <!-- Patients Table -->
+    <div class="table-container" *ngIf="patients$ | async as patients">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Date of Birth</th>
+                    <th>Blood Group</th>
+                    <th>Primary Physician</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let patient of getFilteredPatients(patients)">
+                    <td>{{ patient.id }}</td>
+                    <td><strong>{{ patient.name }}</strong></td>
+                    <td>{{ patient.contactInfo }}</td>
+                    <td>{{ patient.dob }}</td>
+                    <td>
+                        <span class="badge badge-soft" *ngIf="patient.bloodGroup">{{ patient.bloodGroup }}</span>
+                    </td>
+                    <td>{{ patient.primaryPhysician || '-' }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary"
+                                (click)="openEditModal(patient)">Edit</button>
+                           
+                            <button class="btn btn-sm btn-outline-danger"
+                                (click)="deletePatient(patient.id)">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="getFilteredPatients(patients).length === 0">
+                    <td colspan="7" class="text-center text-muted-500">No patients found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Patient Modal -->
+    <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Add New Patient</h3>
+                <button class="btn-close" (click)="closeAddModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newPatient.name" name="name"
+                            required />
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newPatient.contactInfo"
+                            name="contactInfo" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth *</label>
+                        <input type="date" class="form-control input-brand" [(ngModel)]="newPatient.dob" name="dob"
+                            required />
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Group</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newPatient.bloodGroup"
+                            name="bloodGroup" />
+                    </div>
+                    <div class="form-group">
+                        <label>Medical History</label>
+                        <textarea class="form-control input-brand" [(ngModel)]="newPatient.medicalHistory"
+                            name="medicalHistory" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Primary Physician</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newPatient.primaryPhysician"
+                            name="primaryPhysician" />
+                    </div>
+
+                    <h4 class="section-title">Create User Account (Optional)</h4>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="newUser.username"
+                            name="username" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control input-brand" [(ngModel)]="newUser.password"
+                            name="password" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeAddModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="addPatient()">Add Patient</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Patient Modal -->
+    <div class="modal-overlay" *ngIf="showEditModal && selectedPatient" (click)="closeEditModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Edit Patient</h3>
+                <button class="btn-close" (click)="closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedPatient.name"
+                            name="name" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedPatient.contactInfo"
+                            name="contactInfo" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth *</label>
+                        <input type="date" class="form-control input-brand" [(ngModel)]="selectedPatient.dob" name="dob"
+                            required />
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Group</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedPatient.bloodGroup"
+                            name="bloodGroup" />
+                    </div>
+                    <div class="form-group">
+                        <label>Medical History</label>
+                        <textarea class="form-control input-brand" [(ngModel)]="selectedPatient.medicalHistory"
+                            name="medicalHistory" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Primary Physician</label>
+                        <input type="text" class="form-control input-brand"
+                            [(ngModel)]="selectedPatient.primaryPhysician" name="primaryPhysician" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="updatePatient()">Update Patient</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Management Modal -->
+    <div class="modal-overlay" *ngIf="showAccountModal && selectedPatient && selectedPatientUser"
+        (click)="closeAccountModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Manage Account - {{ selectedPatient.name }}</h3>
+                <button class="btn-close" (click)="closeAccountModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" class="form-control input-brand" [(ngModel)]="selectedPatientUser.username"
+                            name="username" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control input-brand" [(ngModel)]="selectedPatientUser.email"
+                            name="email" />
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select class="form-control input-brand" [(ngModel)]="selectedPatientUser.role" name="role"
+                            disabled>
+                            <option value="PATIENT">Patient</option>
+                        </select>
+                    </div>
+                    <div class="form-group" *ngIf="selectedPatientUser.id !== 0">
+                        <label>Password</label>
+                        <div class="password-reset">
+                            <input type="password" class="form-control input-brand" value="••••••••" disabled />
+                            <button type="button" class="btn btn-sm btn-outline-primary" (click)="resetPassword()">Reset
+                                Password</button>
+                        </div>
+                    </div>
+                    <div class="form-group" *ngIf="selectedPatientUser.id === 0">
+                        <label>Password *</label>
+                        <input type="password" class="form-control input-brand"
+                            [(ngModel)]="selectedPatientUser.password" name="password" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeAccountModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="saveAccount()">Save Account</button>
+            </div>
+        </div>
+    </div>
+</div>
