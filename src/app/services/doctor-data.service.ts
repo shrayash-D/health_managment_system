@@ -74,9 +74,9 @@ export interface Invoice {
 export class DoctorDataService {
   // 🔹 Doctor profile data
   private doctorSubject = new BehaviorSubject<any>({
-    id: 'shrayash',
-    fullName: 'Dr. Shrayash Desai',
-    email: 'dr.shrayash@example.com',
+    id: 'p123',
+    fullName: '	Dr. Sarah Johnson',
+    email: 'dr.sarah@example.com',
     phone: '9876543210',
     countryCode: '+91',
     specialization: 'Cardiologist',

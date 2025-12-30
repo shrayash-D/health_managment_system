@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProfileSidebarComponent } from '../profile-sidebar/profile-sidebar.component';
 import { DoctorDataService, Consultation, Patient } from '../../services/doctor-data.service';
 import { Subscription } from 'rxjs';
+import jsPDF from 'jspdf';
 
 interface EMRConsultation {
   patientName: string;
@@ -22,7 +22,7 @@ interface EMRConsultation {
   standalone: true,
   templateUrl: './emr.component.html',
   styleUrls: ['./emr.component.css'],
-  imports: [CommonModule, FormsModule, ProfileSidebarComponent],
+  imports: [CommonModule, FormsModule],
 })
 export class EmrComponent implements OnInit, OnDestroy {
   consultations: EMRConsultation[] = [];
@@ -31,7 +31,6 @@ export class EmrComponent implements OnInit, OnDestroy {
 
   selectedConsultation: EMRConsultation | null = null;
   showEMRModal = false;
-  sidebarCollapsed = false;
 
   addingDiagnosis = false;
   newDiagnosis = '';
@@ -62,6 +61,13 @@ export class EmrComponent implements OnInit, OnDestroy {
 
   viewEMR(consultation: EMRConsultation) {
     this.selectedConsultation = { ...consultation };
+
+    // Load stored prescription image if available
+    const storedImage = localStorage.getItem(`prescription-${consultation.id}`);
+    if (storedImage) {
+      this.selectedConsultation.prescriptionImage = storedImage;
+    }
+
     this.showEMRModal = true;
   }
 
@@ -70,8 +76,51 @@ export class EmrComponent implements OnInit, OnDestroy {
     this.selectedConsultation = null;
   }
 
-  onSidebarCollapse(collapsed: boolean) {
-    this.sidebarCollapsed = collapsed;
+  downloadEmrPDF() {
+    if (!this.selectedConsultation) {
+      alert('No consultation selected');
+      return;
+    }
+
+    const emr = this.selectedConsultation;
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text('Electronic Medical Record', 10, 10);
+
+    doc.setFontSize(12);
+    doc.text(`Patient: ${emr.patientName}`, 10, 30);
+    doc.text(`Date: ${emr.date}`, 10, 40);
+    doc.text(`Diagnosis: ${emr.diagnosis}`, 10, 50);
+
+    if (emr.previousDiagnosis) {
+      doc.text(`Previous Diagnosis: ${emr.previousDiagnosis}`, 10, 60);
+    }
+
+    // Prescriptions
+    if (emr.prescriptions?.length) {
+      doc.text('Prescriptions:', 10, 80);
+      emr.prescriptions.forEach((p: string, i: number) => {
+        doc.text(`- ${p}`, 20, 90 + i * 10);
+      });
+    }
+
+    // Lab Results
+    if (emr.labResults?.length) {
+      const startY = 100 + (emr.prescriptions?.length || 0) * 10;
+      doc.text('Lab Results:', 10, startY);
+      emr.labResults.forEach((r: string, i: number) => {
+        doc.text(`- ${r}`, 20, startY + 10 + i * 10);
+      });
+    }
+
+    // Prescription Image from localStorage
+    const storedImage = localStorage.getItem(`prescription-${emr.id}`);
+    if (storedImage) {
+      doc.addImage(storedImage, 'JPEG', 10, 180, 80, 80); // adjust size/position
+    }
+
+    doc.save(`EMR_${emr.patientName}.pdf`);
   }
 
   startAddDiagnosis() {
@@ -114,8 +163,11 @@ export class EmrComponent implements OnInit, OnDestroy {
       const reader = new FileReader();
       reader.onload = () => {
         if (this.selectedConsultation) {
-          this.selectedConsultation.prescriptionImage = reader.result as string;
-          // Note: In a real app, you'd upload this to a server and store the URL
+          const base64Image = reader.result as string;
+          this.selectedConsultation.prescriptionImage = base64Image;
+
+          // Save to localStorage
+          localStorage.setItem(`prescription-${this.selectedConsultation.id}`, base64Image);
         }
       };
       reader.readAsDataURL(input.files[0]);

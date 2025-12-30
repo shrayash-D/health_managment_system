@@ -18,7 +18,7 @@ import { DoctorManagementComponent } from './admin/doctor-management/doctor-mana
 /* Direct (non-lazy) doctor imports */
 import { DoctorProfileComponent } from './doctor/doctor-profile/doctor-profile.component';
 import { DoctorDashboardComponent } from './doctor/doctor-dashboard/doctor-dashboard.component';
-import { TaskManagementComponent } from './doctor/task-management/task-management.component';
+//import { TaskManagementComponent } from './doctor/task-management/task-management.component';
 import { InvoiceListComponent } from './doctor/invoice-list/invoice-list.component';
 import { AppointmentComponent } from './doctor/appointment/appointment.component';
 import { EmrComponent } from './doctor/emr/emr.component';
@@ -49,7 +49,6 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DoctorDashboardComponent },
       { path: 'profile', component: DoctorProfileComponent },
-      { path: 'tasks', component: TaskManagementComponent },
       { path: 'invoices', component: InvoiceListComponent },
       { path: 'appointment', component: AppointmentComponent },
       { path: 'emr', component: EmrComponent },

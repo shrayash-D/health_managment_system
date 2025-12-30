@@ -3,7 +3,6 @@ import { DoctorDataService, Task } from '../../../services/doctor-data.service';
 import { DoctorTaskFormComponent } from "../doctor-task-form/doctor-task-form.component";
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ProfileSidebarComponent } from "../../profile-sidebar/profile-sidebar.component";
 import { RouterOutlet } from '@angular/router';
 
 @Component({
@@ -11,7 +10,7 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './doctor-task-list.component.html',
   styleUrls: ['./doctor-task-list.component.css'],
   standalone: true,
-  imports: [FormsModule, CommonModule, DoctorTaskFormComponent, ProfileSidebarComponent, RouterOutlet]
+  imports: [FormsModule, CommonModule, DoctorTaskFormComponent,  RouterOutlet]
 })
 export class DoctorTaskListComponent implements OnInit {
   tasks: Task[] = [];

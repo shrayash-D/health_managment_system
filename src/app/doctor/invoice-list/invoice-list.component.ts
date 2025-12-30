@@ -2,14 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DoctorDataService, Invoice } from '../../services/doctor-data.service';
-import { ProfileSidebarComponent } from '../profile-sidebar/profile-sidebar.component';
 
 import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-invoice-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileSidebarComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './invoice-list.component.html',
   styleUrls: ['./invoice-list.component.css'],
 })

@@ -3,26 +3,22 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { DoctorDataService } from '../../services/doctor-data.service';
 import { RouterModule } from '@angular/router';
-import { inject } from '@angular/core';
-import { Location } from '@angular/common';
-import { ProfileSidebarComponent } from "../profile-sidebar/profile-sidebar.component";
+
 @Component({
   selector: 'app-doctor-profile',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule, ProfileSidebarComponent],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule],
   templateUrl: './doctor-profile.component.html',
   styleUrls: ['./doctor-profile.component.css']
 })
 export class DoctorProfileComponent implements OnInit {
   profileForm: FormGroup;
   isEditing = false;
+  doctor: any;
   photoUrl: string | null = null;
   tempPhotoUrl: string | null = null;
   showSavePhotoBtn = false;
-  doctor: any;
- private location = inject(Location);
- sidebarCollapsed = false;
- 
+
   countryCodes = [
     { code: '+91', country: 'India' },
     { code: '+1', country: 'USA' },
@@ -37,49 +33,37 @@ export class DoctorProfileComponent implements OnInit {
     this.doctor = this.doctorService.getDoctor();
     this.profileForm = this.fb.group({
       fullName: [this.doctor.fullName, Validators.required],
-      email: [{ value: this.doctor.email, disabled: true }],
+      email: [this.doctor.email, Validators.required],
       countryCode: [this.doctor.countryCode, Validators.required],
-      phone: [this.doctor.phone, [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      specialization: [{ value: this.doctor.specialization, disabled: true }],
+      phone: [this.doctor.phone, [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
+      specialization: [this.doctor.specialization, Validators.required],
       bio: [this.doctor.bio]
     });
-    this.lockFields();
   }
 
-  goBack() { this.location.back();}
-
-  onSidebarCollapse(state: boolean)
-   { this.sidebarCollapsed = state; }
   ngOnInit() {
     this.photoUrl = this.doctor.photoUrl;
   }
 
-  lockFields() {
-    this.profileForm.get('fullName')?.disable();
-    this.profileForm.get('phone')?.disable();
-    this.profileForm.get('bio')?.disable();
-    this.profileForm.get('countryCode')?.disable();
-  }
-
   enableEdit() {
     this.isEditing = true;
-    this.profileForm.get('fullName')?.enable();
-    this.profileForm.get('phone')?.enable();
-    this.profileForm.get('bio')?.enable();
-    this.profileForm.get('countryCode')?.enable();
   }
 
   cancelEdit() {
     this.isEditing = false;
     this.profileForm.reset(this.doctor);
-    this.lockFields();
   }
 
   onSave() {
     if (this.profileForm.valid) {
       this.doctorService.updateDoctor(this.profileForm.getRawValue());
       this.doctor = this.doctorService.getDoctor();
-      this.cancelEdit();
+      this.isEditing = false;
+
+      // ✅ Show alert after saving
+      alert('Profile saved successfully!');
+    } else {
+      alert('Please fix the errors before saving.');
     }
   }
 
@@ -100,6 +84,7 @@ export class DoctorProfileComponent implements OnInit {
       this.doctorService.updateDoctor({ photoUrl: this.tempPhotoUrl });
       this.photoUrl = this.doctorService.getDoctor().photoUrl;
       this.showSavePhotoBtn = false;
+      alert('Photo updated successfully!');
     }
   }
 }
