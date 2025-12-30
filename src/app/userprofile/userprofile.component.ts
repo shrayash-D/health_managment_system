@@ -27,6 +27,8 @@ interface Profile {
 export class UserprofileComponent implements OnInit {
   profileForm!: FormGroup;
   photoPreview?: string | null = null;
+  tempPhotoUrl?: string | null = null;
+  showSavePhotoBtn = false;
   saved = false;
 
   private storageKey = 'userProfile';
@@ -84,13 +86,50 @@ export class UserprofileComponent implements OnInit {
     const file = input.files[0];
     const reader = new FileReader();
     reader.onload = () => {
-      this.photoPreview = reader.result as string;
+      this.tempPhotoUrl = reader.result as string;
+      this.showSavePhotoBtn = true;
     };
     reader.readAsDataURL(file);
   }
 
   removePhoto(): void {
+    // remove from both temp and persisted storage
+    this.tempPhotoUrl = null;
     this.photoPreview = null;
+    this.showSavePhotoBtn = false;
+    // clear stored photo in profile if present
+    const raw = localStorage.getItem(this.storageKey);
+    if (raw) {
+      try {
+        const p = JSON.parse(raw);
+        if (p && typeof p === 'object') {
+          delete p.photo;
+          localStorage.setItem(this.storageKey, JSON.stringify(p));
+        }
+      } catch {}
+    }
+  }
+
+  savePhoto(): void {
+    if (!this.tempPhotoUrl) return;
+    // persist into profile object
+    const raw = localStorage.getItem(this.storageKey);
+    let p: any = {};
+    if (raw) {
+      try {
+        p = JSON.parse(raw) || {};
+      } catch {
+        p = {};
+      }
+    }
+    p.photo = this.tempPhotoUrl;
+    localStorage.setItem(this.storageKey, JSON.stringify(p));
+    // update current preview and clear temp
+    this.photoPreview = this.tempPhotoUrl;
+    this.tempPhotoUrl = null;
+    this.showSavePhotoBtn = false;
+    this.saved = true;
+    setTimeout(() => (this.saved = false), 1200);
   }
 
   onSave(): void {

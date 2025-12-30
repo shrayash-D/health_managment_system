@@ -110,14 +110,38 @@
   align-items: center;
   gap: 20px;
 }
+
+/* Avatar inside Profile Header */
 .profile-header .avatar {
   width: 84px;
-  aspect-ratio: 1/1;
+  height: 84px;            /* Use explicit height to avoid grid “auto” weirdness */
   border-radius: 50%;
   background: linear-gradient(180deg, #eaf2f9 0%, #dde9f6 100%);
   border: 1px solid var(--blue-300);
   box-shadow: var(--shadow-1);
+  overflow: hidden;         /* Critical: clips image inside the circle */
+  position: relative;       /* Enables absolute children if needed */
 }
+
+/* Make sure the <img> fits perfectly */
+.profile-header .avatar img {
+  display: block;           /* Removes inline-gap issues */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;        /* Crops image to fill circle without distortion */
+}
+
+/* Placeholder initials */
+.avatar-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  color: var(--blue-900);
+  background: #eaf2f9;
+}
+
 .profile-header .name {
   margin: 0 0 8px;
   font-size: clamp(1.35rem, 2.2vw, 1.7rem);
@@ -306,9 +330,7 @@
   }
 }
 
-  transition: border-color 0.15s ease, box-shadow 0.15s ease,
-    background 0.15s ease;
-}
+ 
 .form-field input:focus,
 .form-field textarea:focus {
   border-color: var(--primary);
