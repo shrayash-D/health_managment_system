@@ -1,137 +1,197 @@
 <div class="d-flex">
-  
   <div class="container-fluid p-2">
-  <section class="table-scroll card">
-    <h2 class="form-title">Upcoming Appointments</h2>
+    <section class="table-scroll card">
+      <h2 class="form-title">Upcoming Appointments</h2>
 
-    <!-- Filters -->
-    <div class="filters">
-      <input
-        type="date"
-        [(ngModel)]="appointmentFilterDate"
-        placeholder="Filter by date"
-      />
-      <select [(ngModel)]="appointmentFilterStatus">
-        <option value="">All Status</option>
-        <option value="BOOKED">BOOKED</option>
-        <option value="COMPLETED">COMPLETED</option>
-        <option value="CANCELLED">CANCELLED</option>
-      </select>
-    </div>
-
-    <!-- Table -->
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Patient Name</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let appointment of filteredAppointments">
-            <td data-label="Patient Name">{{ appointment.patientName }}</td>
-            <td data-label="Date">{{ appointment.date }}</td>
-            <td data-label="Time">{{ appointment.time }}</td>
-            <td data-label="Status">
-              <span class="status {{ appointment.status }}">
-                {{ appointment.status }}
-              </span>
-            </td>
-            <td data-label="Actions">
-              <button
-                class="btn btn-success"
-                (click)="completeAppointment(appointment.id)"
-                [disabled]="appointment.status !== 'BOOKED'"
-              >
-                Completed
-              </button>
-              <button
-                class="btn btn-danger"
-                (click)="cancelAppointment(appointment.id)"
-                [disabled]="appointment.status !== 'BOOKED'"
-              >
-                Appointment
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    </section>
-    <section class="card">
-  <h2 class="form-title">Schedule New Appointment</h2>
-  <form #appointmentForm="ngForm" (ngSubmit)="scheduleAppointment()" novalidate>
-    <div class="form-grid">
-      <div class="form-field">
-        <label>Patient Name</label>
-        <input
-          type="text"
-          [(ngModel)]="newAppointment.patientName"
-          name="patientName"
-          required
-        />
-        <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.patientName">
-          Patient name is required
-        </small>
-      </div>
-
-      <div class="form-field">
-        <label>Date</label>
+      <!-- Filters -->
+      <div class="filters">
         <input
           type="date"
-          [(ngModel)]="newAppointment.date"
-          name="date"
-          required
+          [(ngModel)]="appointmentFilterDate"
+          placeholder="Filter by date"
         />
-        <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.date">
-          Date is required
-        </small>
-      </div>
-
-      <div class="form-field">
-        <label>Time</label>
-        <input
-          type="time"
-          [(ngModel)]="newAppointment.time"
-          name="time"
-          required
-        />
-        <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.time">
-          Time is required
-        </small>
-      </div>
-
-      <div class="form-field">
-        <label>Status</label>
-        <select
-          [(ngModel)]="newAppointment.status"
-          name="status"
-          required
-        >
-          <option value="">Select status</option>
+        <select [(ngModel)]="appointmentFilterStatus">
+          <option value="">All Status</option>
           <option value="BOOKED">BOOKED</option>
           <option value="COMPLETED">COMPLETED</option>
           <option value="CANCELLED">CANCELLED</option>
         </select>
-        <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.status">
-          Status is required
-        </small>
       </div>
+
+      <!-- Table -->
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient Name</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let appointment of filteredAppointments">
+              <td data-label="Patient Name">{{ appointment.patientName }}</td>
+              <td data-label="Date">{{ appointment.date }}</td>
+              <td data-label="Time">{{ appointment.time }}</td>
+              <td data-label="Status">
+                <span class="status {{ appointment.status }}">
+                  {{ appointment.status }}
+                </span>
+              </td>
+              <td data-label="Actions">
+                <button
+                  class="btn btn-success"
+                  (click)="completeAppointment(appointment.id)"
+                  [disabled]="appointment.status !== 'BOOKED'"
+                >
+                  Completed
+                </button>
+                <button
+                  class="btn btn-danger"
+                  (click)="cancelAppointment(appointment.id)"
+                  [disabled]="appointment.status !== 'BOOKED'"
+                >
+                  Cancel
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="form-title">Schedule New Appointment</h2>
+      <form #appointmentForm="ngForm" (ngSubmit)="scheduleAppointment()" novalidate>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Patient Name</label>
+            <input
+              type="text"
+              [(ngModel)]="newAppointment.patientName"
+              name="patientName"
+              required
+            />
+            <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.patientName">
+              Patient name is required
+            </small>
+          </div>
+
+          <div class="form-field">
+            <label>Date</label>
+            <input
+              type="date"
+              [(ngModel)]="newAppointment.date"
+              name="date"
+              required
+            />
+            <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.date">
+              Date is required
+            </small>
+          </div>
+
+          <!-- 🔹 New Available Slots Dropdown -->
+          <div class="form-field">
+            <label>Available Slots</label>
+            <select
+              [(ngModel)]="newAppointment.time"
+              name="time"
+              required
+            >
+              <option value="">Select time</option>
+              <ng-container *ngFor="let slot of availableSlots">
+                <optgroup [label]="slot.date">
+                  <option *ngFor="let t of slot.times" [value]="t">
+                    {{ t }}
+                  </option>
+                </optgroup>
+              </ng-container>
+            </select>
+            <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.time">
+              Time is required
+            </small>
+          </div>
+          <!-- 🔹 End of new snippet -->
+
+          <div class="form-field">
+            <label>Status</label>
+            <select
+              [(ngModel)]="newAppointment.status"
+              name="status"
+              required
+            >
+              <option value="">Select status</option>
+              <option value="BOOKED">BOOKED</option>
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+            <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.status">
+              Status is required
+            </small>
+          </div>
+        </div>
+        <br>
+        <div class="text-center">
+          <button
+            class="btn btn-success" 
+            type="submit"
+            [disabled]="appointmentForm.invalid"
+          >
+            Add Appointment
+          </button>
+        </div>
+      </form>
+    </section>
+    <section class="card">
+  <h2 class="form-title">Manage Doctor Availability</h2>
+  <form #slotForm="ngForm" (ngSubmit)="addSlot()" novalidate>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="slotDate" name="slotDate" required />
+      </div>
+      <div class="form-field">
+  <label>Time Slot</label>
+  <div class="d-flex">
+    <input
+      type="time"
+      [(ngModel)]="slotStartTime"
+      name="slotStartTime"
+      required
+    />
+    <span style="margin: 0 8px;">to</span>
+    <input
+      type="time"
+      [(ngModel)]="slotEndTime"
+      name="slotEndTime"
+      required
+    />
+  </div>
+  
+</div>
+
     </div>
     <br>
-<div class="text-center">
-    <button
-      class="btn btn-success" 
-      type="submit"
-      [disabled]="appointmentForm.invalid"
-    >
-      Add Appointment
-    </button></div>
+    <div class="text-center">
+      <button class="btn btn-success" type="submit" [disabled]="slotForm.invalid">
+        Add Slot
+      </button>
+    </div>
   </form>
+
+  <!-- Show current slots -->
+  <ul>
+    <li *ngFor="let slot of availableSlots">
+      <strong>{{ slot.date }}</strong>:
+      <span *ngFor="let t of slot.times">
+        {{ t }}
+        <button class="btn btn-sm btn-danger" (click)="removeSlot(slot.date, t)">x</button>
+      </span>
+    </li>
+  </ul>
 </section>
 
+  </div>
 </div>

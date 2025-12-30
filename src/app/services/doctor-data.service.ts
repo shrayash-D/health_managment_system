@@ -127,15 +127,17 @@ export class DoctorDataService {
 
   // 🔹 Appointment management
   private appointmentsSubject = new BehaviorSubject<Appointment[]>([
-    { id: 1, patientName: 'John Doe', date: '2023-10-15', time: '10:00 AM', status: 'BOOKED', type: 'new' },
-    { id: 2, patientName: 'Jane Smith', date: '2023-10-16', time: '2:00 PM', status: 'COMPLETED', type: 'followup' },
-    { id: 3, patientName: 'Bob Johnson', date: '2023-10-17', time: '11:00 AM', status: 'CANCELLED', type: 'new' }
+    { id: 1, patientName: 'John Doe', date: '2023-10-15', time: '10:00-11:00 ', status: 'BOOKED', type: 'new' },
+    { id: 2, patientName: 'Jane Smith', date: '2023-10-16', time: '14:00-15:30 ', status: 'COMPLETED', type: 'followup' },
+    { id: 3, patientName: 'Bob Johnson', date: '2023-10-17', time: '11:00-13:00 ', status: 'CANCELLED', type: 'new' }
   ]);
+// 🔹 Mock available slots (doctor-defined)
 
   appointments$ = this.appointmentsSubject.asObservable();
 
   addAppointment(appointment: Appointment) {
     this.appointmentsSubject.next([...this.appointmentsSubject.value, appointment]);
+    alert('Appointment booked successfully ✅');
   }
 
   updateAppointment(updated: Appointment) {
@@ -146,6 +148,7 @@ export class DoctorDataService {
 
   cancelAppointment(id: number) {
     this.updateAppointment({ ...this.appointmentsSubject.value.find(a => a.id === id)!, status: 'CANCELLED' });
+    alert('Appointment cancelled successfully ❌');
   }
 
   completeAppointment(id: number) {
@@ -369,5 +372,37 @@ export class DoctorDataService {
       this.invoicesSubject.value.map(inv => inv.id === updated.id ? updated : inv)
     );
   }
+
+// 🔹 Doctor available slots management
+private slotsSubject = new BehaviorSubject<{ date: string; times: string[] }[]>([
+  { date: '2025-01-05', times: ['10:00-12:00', '14:00-15:00'] },
+  { date: '2025-01-06', times: ['09:00-11:00', '16:00-17:00'] },
+]);
+
+slots$ = this.slotsSubject.asObservable();
+
+getSlots() {
+  return this.slotsSubject.value;
+}
+
+addSlot(date: string, time: string) {
+  const slots = [...this.slotsSubject.value];
+  const slotIndex = slots.findIndex(s => s.date === date);
+  if (slotIndex > -1) {
+    slots[slotIndex].times.push(time);
+  } else {
+    slots.push({ date, times: [time] });
+  }
+  this.slotsSubject.next(slots);
+}
+
+removeSlot(date: string, time: string) {
+  const slots = this.slotsSubject.value.map(s =>
+    s.date === date ? { ...s, times: s.times.filter(t => t !== time) } : s
+  );
+  this.slotsSubject.next(slots);
+}
+
+
 
 }
