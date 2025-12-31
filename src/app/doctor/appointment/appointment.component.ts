@@ -1,20 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DoctorDataService, Appointment } from '../../services/doctor-data.service';
+import {
+  DoctorDataService,
+  Appointment,
+} from '../../services/doctor-data.service';
 
 @Component({
   selector: 'app-appointment',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './appointment.component.html',
-  styleUrls: ['./appointment.component.css']
+  styleUrls: ['./appointment.component.css'],
 })
 export class AppointmentComponent implements OnInit {
   appointments: Appointment[] = [];
   appointmentFilterDate = '';
   appointmentFilterStatus = '';
-  sidebarCollapsed = false;
+  slotDate = '';
+  slotTime = '';
+  slotStartTime = '';
+  slotEndTime = '';
+  availableSlots: { date: string; times: string[] }[] = [];
   newAppointment: Appointment = {
     id: 0,
     patientName: '',
@@ -30,8 +37,22 @@ export class AppointmentComponent implements OnInit {
     this.doctorService.appointments$.subscribe((appointments) => {
       this.appointments = appointments;
     });
+    this.doctorService.slots$.subscribe((slots) => {
+      this.availableSlots = slots;
+    });
   }
-
+  addSlot() {
+    if (this.slotDate && this.slotStartTime && this.slotEndTime) {
+      const timeRange = `${this.slotStartTime}-${this.slotEndTime}`;
+      this.doctorService.addSlot(this.slotDate, timeRange);
+      this.slotDate = '';
+      this.slotStartTime = '';
+      this.slotEndTime = '';
+    }
+  }
+  removeSlot(date: string, time: string) {
+    this.doctorService.removeSlot(date, time);
+  }
   get filteredAppointments() {
     return this.appointments.filter((appointment) => {
       const dateMatch =
@@ -44,10 +65,6 @@ export class AppointmentComponent implements OnInit {
     });
   }
 
-  onSidebarCollapse(collapsed: boolean) {
-    this.sidebarCollapsed = collapsed;
-  }
-
   completeAppointment(id: number) {
     this.doctorService.completeAppointment(id);
   }
@@ -55,7 +72,7 @@ export class AppointmentComponent implements OnInit {
   cancelAppointment(id: number) {
     this.doctorService.cancelAppointment(id);
   }
-  
+
   scheduleAppointment() {
     if (
       this.newAppointment.patientName &&
