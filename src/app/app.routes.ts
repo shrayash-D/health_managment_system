@@ -22,6 +22,7 @@ import { EmrComponent } from './doctor/emr/emr.component';
 import { PatientListComponent } from './doctor/patient-list/patient-list.component';
 
 import { AuthGuard } from './services/auth.guard';
+import { ErrorPageComponent } from './error-page/error-page.component';
 
 export const routes: Routes = [
   // Patient (nested) - only PATIENT role allowed
@@ -87,4 +88,5 @@ export const routes: Routes = [
   // Default / public
   { path: '', component: HeroSectionComponent },
   { path: 'contact', component: ContactUsComponent },
+  { path: '**', component: ErrorPageComponent },
 ];
