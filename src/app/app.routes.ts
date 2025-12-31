@@ -23,6 +23,7 @@ import { PatientListComponent } from './doctor/patient-list/patient-list.compone
 
 import { AuthGuard } from './services/auth.guard';
 import { ErrorPageComponent } from './error-page/error-page.component';
+import { PatientHistoryComponent } from './patient-history/patient-history.component';
 
 export const routes: Routes = [
   // Patient (nested) - only PATIENT role allowed
@@ -40,7 +41,7 @@ export const routes: Routes = [
       },
       {
         path: 'history',
-        component: /* PatientHistoryComponent */ PatientDashboardComponent, // adjust if separate component exists
+        component: PatientHistoryComponent,
       },
       { path: 'appointments', component: AppointmentFormComponent },
     ],
