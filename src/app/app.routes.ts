@@ -22,6 +22,7 @@ import { EmrComponent } from './doctor/emr/emr.component';
 import { PatientListComponent } from './doctor/patient-list/patient-list.component';
 
 import { AuthGuard } from './services/auth.guard';
+import { GuestGuard } from './services/guest.guard';
 import { ErrorPageComponent } from './error-page/error-page.component';
 import { PatientHistoryComponent } from './patient-history/patient-history.component';
 
@@ -82,8 +83,8 @@ export const routes: Routes = [
   },
 
   // Public / Auth
-  { path: 'login', component: LoginComponent },
-  { path: 'signup', component: UsersignupComponent },
+  { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
+  { path: 'signup', component: UsersignupComponent, canActivate: [GuestGuard] },
   { path: 'appointment', component: AppointmentFormComponent },
 
   // Default / public
