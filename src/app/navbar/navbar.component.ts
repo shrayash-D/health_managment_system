@@ -19,7 +19,6 @@ export class NavbarComponent {
     private router: Router,
     private destroyRef: DestroyRef
   ) {
-
     console.log('NavbarComponent initialized');
 
     // initialize and subscribe to changes
@@ -29,7 +28,7 @@ export class NavbarComponent {
     const subscription = this.authService.currentUser$.subscribe((u) =>
       this.isLoggedInUser.set(!!u)
     );
-    
+
     this.destroyRef.onDestroy(() => {
       subscription.unsubscribe();
     });
@@ -38,5 +37,19 @@ export class NavbarComponent {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  goToDashboard() {
+    const role = this.authService.currentUserValue?.role;
+
+    if (role == 'patient') {
+      this.router.navigate(['/patient']);
+    }
+    if (role == 'doctor') {
+      this.router.navigate(['/doctor']);
+    }
+    if (role == 'admin') {
+      this.router.navigate(['/admin']);
+    }
   }
 }

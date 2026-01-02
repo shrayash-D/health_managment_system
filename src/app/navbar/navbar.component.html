@@ -41,13 +41,16 @@
       </ul>
 
       <div class="d-flex ms-lg-4 mt-3 mt-lg-0 gap-2">
-        <a
-          class="btn btn-brand rounded-3 px-4 py-2 fw-medium"
-          routerLink="/appointemts"
-          >Book Now</a
-        >
+        
 
         <!-- show Logout when logged in, Sign In when not -->
+         <button
+          *ngIf="isLoggedInUser()"
+          class="btn btn-outline-primary rounded-3 px-4 py-2 fw-medium"
+          (click) = "goToDashboard()"
+        >
+          Dashboard
+        </button>
         <button
           *ngIf="isLoggedInUser()"
           class="btn btn-outline-primary rounded-3 px-4 py-2 fw-medium"
@@ -55,6 +58,8 @@
         >
           Logout
         </button>
+
+        
 
         <a
           *ngIf="!isLoggedInUser()"
