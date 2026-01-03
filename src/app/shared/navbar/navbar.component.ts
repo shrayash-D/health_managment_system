@@ -1,6 +1,6 @@
 import { Component, signal, OnDestroy, DestroyRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
 import { NgIf } from '@angular/common';
 

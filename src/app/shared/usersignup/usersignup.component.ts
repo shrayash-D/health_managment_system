@@ -9,8 +9,8 @@ import {
   AbstractControl,
   FormControl,
 } from '@angular/forms';
-import { AuthService } from '../services/auth.service';
-import { AuthUser } from '../models/auth.interface';
+import { AuthService } from '../../services/auth.service';
+import { AuthUser } from '../../models/auth.interface';
 
 @Component({
   selector: 'app-signup',

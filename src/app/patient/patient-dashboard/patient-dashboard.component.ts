@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { PatientDashboardService } from '../services/patient-dashboard.services';
+import { PatientDashboardService } from '../../services/patient-dashboard.services';
 import {
   Appointment,
   BillingSummary,
@@ -8,10 +8,10 @@ import {
   LabResult,
   Medication,
   Vital,
-} from '../models/patient-dashboard.models';
+} from '../../models/patient-dashboard.models';
 import { RouterLink } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -41,7 +41,6 @@ export class PatientDashboardComponent implements OnInit {
     this.labResults$ = patientDetail.getLabs();
     this.billings$ = patientDetail.getBillingSummary();
     this.invoice$ = patientDetail.getInvoices();
-    
   }
 
   ngOnInit(): void {

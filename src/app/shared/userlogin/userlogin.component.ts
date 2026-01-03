@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { User } from '../models/user.interface';
-import { AuthUser } from '../models/auth.interface';
+import { AuthUser } from '../../models/auth.interface';
 @Component({
   selector: 'app-userlogin',
   imports: [RouterLink, RouterOutlet, CommonModule, ReactiveFormsModule],

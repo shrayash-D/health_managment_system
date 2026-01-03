@@ -1,8 +1,10 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
-import { MedicalHistoryService, MedicalEntry } from '../services/medical-history.service';
+import {
+  MedicalHistoryService,
+  MedicalEntry,
+} from '../../services/medical-history.service';
 
 @Component({
   selector: 'app-patient-history',
