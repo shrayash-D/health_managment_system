@@ -1,19 +1,12 @@
 <div class="d-flex">
-
   <div class="container-fluid p-2">
-  <div class="page">
-    <!-- Hero Banner -->
-   
-        <div class="page-header">
-          <h2>Electronic Medical Record</h2>
-          <p>View and manage patient consultations.</p>
-        </div>
-      
-       
-        
-        
+    <div class="page">
+      <!-- Hero Banner -->
+      <div class="page-header">
+        <h2>Electronic Medical Record</h2>
+        <p>View and manage patient consultations.</p>
+      </div>
     </div>
-    
 
     <!-- Consultations Table -->
     <section class="card">
@@ -35,9 +28,6 @@
               <strong>{{ consultation.diagnosis }}</strong>
               <div *ngIf="consultation.previousDiagnosis" class="prev-diagnosis">
                 <small>Previous: {{ consultation.previousDiagnosis }}</small>
-              </div>
-              <div *ngIf="consultation.prescriptionImage" class="prescription-thumb">
-                <img [src]="consultation.prescriptionImage" alt="Prescription" style="max-width:80px; border-radius:6px; margin-top:4px;" />
               </div>
             </td>
             <td>
@@ -89,28 +79,13 @@
                   </li>
                 </ul>
               </div>
-
-              <!-- Uploaded Prescription Preview -->
-              <div *ngIf="selectedConsultation.prescriptionImage" class="form-group">
-                <label>Uploaded Prescription:</label>
-                <img [src]="selectedConsultation.prescriptionImage" alt="Prescription" style="max-width:100%; border:1px solid #ccc; border-radius:8px; margin-top:8px;" />
-              </div>
             </div>
-
-            <!-- Hidden file input for prescription upload -->
-            <input
-              type="file"
-              id="prescriptionInput"
-              accept="image/*"
-              style="display:none"
-              (change)="onPrescriptionUpload($event)"
-            />
 
             <!-- Modal Actions -->
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="downloadEmrPDF()">Download PDF</button>
+              <button class="btn btn-primary" (click)="downloadEMRReport()">Download EMR Report</button>
+              <button class="btn btn-primary" (click)="startGeneratePrescription()">Generate Prescription</button>
               <button class="btn btn-secondary" (click)="startAddDiagnosis()">Add Diagnosis</button>
-              <button class="btn btn-secondary" (click)="uploadPrescription()">Upload Prescription</button>
               <button class="btn btn-secondary" (click)="closeEMRModal()">Close</button>
             </div>
 
@@ -121,9 +96,71 @@
                 <label for="diagnosis">Diagnosis</label>
                 <input id="diagnosis" [(ngModel)]="newDiagnosis" placeholder="Enter diagnosis" />
               </div>
+              <div class="form-field">
+                <label for="diagnosis">Lab Result</label>
+                <input id="diagnosis" [(ngModel)]="newDiagnosis" placeholder="Enter Lab Result" />
+              </div>
               <div class="modal-actions">
                 <button class="btn btn-primary" (click)="saveDiagnosis()">Save</button>
                 <button class="btn btn-secondary" (click)="cancelDiagnosis()">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Generate Prescription Form -->
+            <div *ngIf="generatingPrescription" class="form-card generate-prescription">
+              <h4 class="form-title">Generate Prescription</h4>
+
+              <!-- Medicine Dropdown -->
+              <div class="form-field">
+                <label for="medicine">Medicine</label>
+                <select id="medicine" [(ngModel)]="newPrescription.medicine">
+                  <option value="">Select medicine</option>
+                  <option value="Paracetamol">Paracetamol</option>
+                  <option value="Ibuprofen">Ibuprofen</option>
+                  <option value="Amoxicillin">Amoxicillin</option>
+                  <option value="Lisinopril">Lisinopril</option>
+                </select>
+              </div>
+
+              <!-- Dosage Dropdown -->
+              <div class="form-field">
+                <label for="dosage">Dosage</label>
+                <select id="dosage" [(ngModel)]="newPrescription.dosage">
+                  <option value="">Select dosage</option>
+                  <option value="5mg">5mg</option>
+                  <option value="10mg">10mg</option>
+                  <option value="20mg">20mg</option>
+                  <option value="50mg">50mg</option>
+                </select>
+              </div>
+
+              <!-- Frequency Dropdown -->
+              <div class="form-field">
+                <label for="frequency">Frequency</label>
+                <select id="frequency" [(ngModel)]="newPrescription.frequency">
+                  <option value="">Select frequency</option>
+                  <option value="Once daily">Once daily</option>
+                  <option value="Twice daily">Twice daily</option>
+                  <option value="Thrice daily">Thrice daily</option>
+                  <option value="As needed">As needed</option>
+                </select>
+              </div>
+
+              <!-- Duration -->
+              <div class="form-field">
+                <label for="duration">Duration</label>
+                <input id="duration" [(ngModel)]="newPrescription.duration" placeholder="e.g. 7 days" />
+              </div>
+
+              <!-- Notes -->
+              <div class="form-field">
+                <label for="notes">Notes</label>
+                <textarea id="notes" [(ngModel)]="newPrescription.notes" placeholder="Additional instructions"></textarea>
+              </div>
+
+              <div class="modal-actions">
+                <button class="btn btn-primary" (click)="savePrescription()">Save Prescription</button>
+                <button class="btn btn-secondary" (click)="cancelPrescription()">Cancel</button>
               </div>
             </div>
 

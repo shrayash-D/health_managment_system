@@ -41,12 +41,12 @@
             
             <div class="form-field">
               <label for="fullName">Full Name</label>
-              <input id="fullName" type="text" formControlName="fullName" [readonly]="!isEditing" />
+              <input id="fullName" type="text" formControlName="fullName" readonly />
             </div>
 
             <div class="form-field">
               <label for="email">Email</label>
-              <input id="email" type="email" formControlName="email" readonly />
+              <input id="email" type="email" formControlName="email" [readonly]="!isEditing" />
             </div>
 
             <div class="form-field">

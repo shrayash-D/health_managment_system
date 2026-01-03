@@ -75,7 +75,7 @@ export class DoctorDataService {
   // 🔹 Doctor profile data
   private doctorSubject = new BehaviorSubject<any>({
     id: 'p123',
-    fullName: '	Dr. Sarah Johnson',
+    fullName: 'Dr. Sarah Johnson',
     email: 'dr.sarah@example.com',
     phone: '9876543210',
     countryCode: '+91',

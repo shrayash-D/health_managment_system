@@ -12,9 +12,16 @@ interface EMRConsultation {
   previousDiagnosis?: string;
   prescriptions: string[];
   labResults: string[];
-  prescriptionImage?: string;
   id: number;
   patientId: number;
+}
+
+interface NewPrescription {
+  medicine: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  notes?: string;
 }
 
 @Component({
@@ -35,6 +42,9 @@ export class EmrComponent implements OnInit, OnDestroy {
   addingDiagnosis = false;
   newDiagnosis = '';
 
+  generatingPrescription = false;
+  newPrescription: NewPrescription = this.getEmptyPrescription();
+
   constructor(private doctorService: DoctorDataService) {}
 
   ngOnInit() {
@@ -42,8 +52,7 @@ export class EmrComponent implements OnInit, OnDestroy {
       this.doctorService.consultations$.subscribe(consultations => {
         this.consultations = consultations.map(c => ({
           ...c,
-          previousDiagnosis: undefined,
-          prescriptionImage: undefined
+          previousDiagnosis: undefined
         }));
       })
     );
@@ -61,68 +70,21 @@ export class EmrComponent implements OnInit, OnDestroy {
 
   viewEMR(consultation: EMRConsultation) {
     this.selectedConsultation = { ...consultation };
-
-    // Load stored prescription image if available
-    const storedImage = localStorage.getItem(`prescription-${consultation.id}`);
-    if (storedImage) {
-      this.selectedConsultation.prescriptionImage = storedImage;
-    }
-
     this.showEMRModal = true;
   }
 
   closeEMRModal() {
     this.showEMRModal = false;
     this.selectedConsultation = null;
+    this.addingDiagnosis = false;
+    this.generatingPrescription = false;
+    this.newDiagnosis = '';
+    this.newPrescription = this.getEmptyPrescription();
   }
 
-  downloadEmrPDF() {
-    if (!this.selectedConsultation) {
-      alert('No consultation selected');
-      return;
-    }
-
-    const emr = this.selectedConsultation;
-    const doc = new jsPDF();
-
-    doc.setFontSize(18);
-    doc.text('Electronic Medical Record', 10, 10);
-
-    doc.setFontSize(12);
-    doc.text(`Patient: ${emr.patientName}`, 10, 30);
-    doc.text(`Date: ${emr.date}`, 10, 40);
-    doc.text(`Diagnosis: ${emr.diagnosis}`, 10, 50);
-
-    if (emr.previousDiagnosis) {
-      doc.text(`Previous Diagnosis: ${emr.previousDiagnosis}`, 10, 60);
-    }
-
-    // Prescriptions
-    if (emr.prescriptions?.length) {
-      doc.text('Prescriptions:', 10, 80);
-      emr.prescriptions.forEach((p: string, i: number) => {
-        doc.text(`- ${p}`, 20, 90 + i * 10);
-      });
-    }
-
-    // Lab Results
-    if (emr.labResults?.length) {
-      const startY = 100 + (emr.prescriptions?.length || 0) * 10;
-      doc.text('Lab Results:', 10, startY);
-      emr.labResults.forEach((r: string, i: number) => {
-        doc.text(`- ${r}`, 20, startY + 10 + i * 10);
-      });
-    }
-
-    // Prescription Image from localStorage
-    const storedImage = localStorage.getItem(`prescription-${emr.id}`);
-    if (storedImage) {
-      doc.addImage(storedImage, 'JPEG', 10, 180, 80, 80); // adjust size/position
-    }
-
-    doc.save(`EMR_${emr.patientName}.pdf`);
-  }
-
+  /* -----------------------------
+     Diagnosis Management
+  ----------------------------- */
   startAddDiagnosis() {
     this.addingDiagnosis = true;
   }
@@ -133,7 +95,6 @@ export class EmrComponent implements OnInit, OnDestroy {
         this.selectedConsultation.diagnosis;
       this.selectedConsultation.diagnosis = this.newDiagnosis.trim();
 
-      // Update the consultation in the service
       const updatedConsultation: Consultation = {
         id: this.selectedConsultation.id,
         patientId: this.selectedConsultation.patientId,
@@ -156,28 +117,117 @@ export class EmrComponent implements OnInit, OnDestroy {
     this.newDiagnosis = '';
   }
 
-  // Handle prescription image upload
-  onPrescriptionUpload(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (this.selectedConsultation) {
-          const base64Image = reader.result as string;
-          this.selectedConsultation.prescriptionImage = base64Image;
+  /* -----------------------------
+     Prescription Management
+  ----------------------------- */
+  startGeneratePrescription() {
+    this.generatingPrescription = true;
+    this.newPrescription = this.getEmptyPrescription();
+  }
 
-          // Save to localStorage
-          localStorage.setItem(`prescription-${this.selectedConsultation.id}`, base64Image);
-        }
+  savePrescription() {
+    if (this.selectedConsultation) {
+      const prescriptionText = `${this.newPrescription.medicine} - ${this.newPrescription.dosage}, ${this.newPrescription.frequency}, for ${this.newPrescription.duration}${this.newPrescription.notes ? ' (' + this.newPrescription.notes + ')' : ''}`;
+
+      this.selectedConsultation.prescriptions.push(prescriptionText);
+
+      const updatedConsultation: Consultation = {
+        id: this.selectedConsultation.id,
+        patientId: this.selectedConsultation.patientId,
+        patientName: this.selectedConsultation.patientName,
+        date: this.selectedConsultation.date,
+        diagnosis: this.selectedConsultation.diagnosis,
+        prescriptions: this.selectedConsultation.prescriptions,
+        labResults: this.selectedConsultation.labResults
       };
-      reader.readAsDataURL(input.files[0]);
+
+      this.doctorService.updateConsultation(updatedConsultation);
+
+      this.generatingPrescription = false;
+      this.newPrescription = this.getEmptyPrescription();
     }
   }
 
-  uploadPrescription() {
-    const fileInput = document.getElementById(
-      'prescriptionInput'
-    ) as HTMLInputElement;
-    fileInput.click();
+  cancelPrescription() {
+    this.generatingPrescription = false;
+    this.newPrescription = this.getEmptyPrescription();
   }
+
+  private getEmptyPrescription(): NewPrescription {
+    return {
+      medicine: '',
+      dosage: '',
+      frequency: '',
+      duration: '',
+      notes: ''
+    };
+  }
+
+
+downloadEMRReport(): void {
+  if (!this.selectedConsultation) return;
+
+  const consultation = this.selectedConsultation;
+  const doc = new jsPDF();
+
+  // Title
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Electronic Medical Record Report', 20, 20);
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+
+  // Patient Info
+  doc.text(`Patient: `, 20, 40);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`${consultation.patientName}`, 60, 40);
+
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Date: `, 20, 50);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`${consultation.date}`, 60, 50);
+
+  // Diagnosis
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Diagnosis: `, 20, 60);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`${consultation.diagnosis}`, 60, 60);
+
+  if (consultation.previousDiagnosis) {
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Previous Diagnosis: `, 20, 70);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${consultation.previousDiagnosis}`, 80, 70);
+  }
+
+  // Prescriptions
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Prescriptions:`, 20, 85);
+  doc.setFont('helvetica', 'bold');
+  if (consultation.prescriptions.length > 0) {
+    consultation.prescriptions.forEach((p, i) => {
+      doc.text(`- ${p}`, 30, 95 + i * 10);
+    });
+  } else {
+    doc.text('None', 30, 95);
+  }
+
+  // Lab Results
+  const yStart = 95 + (consultation.prescriptions.length > 0 ? consultation.prescriptions.length * 10 : 10) + 10;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Lab Results:`, 20, yStart);
+  doc.setFont('helvetica', 'bold');
+  if (consultation.labResults.length > 0) {
+    consultation.labResults.forEach((r, i) => {
+      doc.text(`- ${r}`, 30, yStart + 10 + i * 10);
+    });
+  } else {
+    doc.text('None', 30, yStart + 10);
+  }
+
+  // Save PDF
+  doc.save(`${consultation.patientName}_EMR_Report.pdf`);
+}
+
 }
