@@ -1,10 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   DoctorDataService,
   Appointment,
 } from '../../services/doctor-data.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
+export enum AppointmentStatus {
+  BOOKED = 'BOOKED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
+}
 
 @Component({
   selector: 'app-appointment',
@@ -13,15 +21,15 @@ import {
   templateUrl: './appointment.component.html',
   styleUrls: ['./appointment.component.css'],
 })
-export class AppointmentComponent implements OnInit {
+export class AppointmentComponent implements OnInit, OnDestroy {
   appointments: Appointment[] = [];
   appointmentFilterDate = '';
   appointmentFilterStatus = '';
   slotDate = '';
-  slotTime = '';
   slotStartTime = '';
   slotEndTime = '';
   availableSlots: { date: string; times: string[] }[] = [];
+
   newAppointment: Appointment = {
     id: 0,
     patientName: '',
@@ -31,16 +39,29 @@ export class AppointmentComponent implements OnInit {
     type: 'new',
   };
 
+  private destroy$ = new Subject<void>();
+
   constructor(private doctorService: DoctorDataService) {}
 
   ngOnInit() {
-    this.doctorService.appointments$.subscribe((appointments) => {
-      this.appointments = appointments;
-    });
-    this.doctorService.slots$.subscribe((slots) => {
-      this.availableSlots = slots;
-    });
+    this.doctorService.appointments$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((appointments) => {
+        this.appointments = appointments;
+      });
+
+    this.doctorService.slots$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((slots) => {
+        this.availableSlots = slots;
+      });
   }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   addSlot() {
     if (this.slotDate && this.slotStartTime && this.slotEndTime) {
       const timeRange = `${this.slotStartTime}-${this.slotEndTime}`;
@@ -50,9 +71,11 @@ export class AppointmentComponent implements OnInit {
       this.slotEndTime = '';
     }
   }
+
   removeSlot(date: string, time: string) {
     this.doctorService.removeSlot(date, time);
   }
+
   get filteredAppointments() {
     return this.appointments.filter((appointment) => {
       const dateMatch =

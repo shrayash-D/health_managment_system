@@ -67,6 +67,38 @@
   font-size: 0.8125rem;
 }
 
+/* --- Unified Buttons --- */
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: .15s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.btn-secondary,
+.btn-outline {
+  background: #fff;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.btn-secondary:hover,
+.btn-outline:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;

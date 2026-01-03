@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DoctorDataService, Consultation, Patient } from '../../services/doctor-data.service';
-import { Subscription } from 'rxjs';
+import { Subscription, BehaviorSubject } from 'rxjs';
 import jsPDF from 'jspdf';
 
 interface EMRConsultation {
@@ -24,6 +24,16 @@ interface NewPrescription {
   notes?: string;
 }
 
+export interface LabResult {
+  id: number;
+  patientId: number;
+  testName: string;
+  value: string;
+  unit?: string;
+  date: string;
+  notes?: string;
+}
+
 @Component({
   selector: 'app-emr',
   standalone: true,
@@ -41,9 +51,13 @@ export class EmrComponent implements OnInit, OnDestroy {
 
   addingDiagnosis = false;
   newDiagnosis = '';
+  newLabResult: LabResult = this.getEmptyLabResult();
 
   generatingPrescription = false;
   newPrescription: NewPrescription = this.getEmptyPrescription();
+
+  labResults: LabResult[] = [];
+  labResults$ = new BehaviorSubject<LabResult[]>([]);
 
   constructor(private doctorService: DoctorDataService) {}
 
@@ -80,6 +94,7 @@ export class EmrComponent implements OnInit, OnDestroy {
     this.generatingPrescription = false;
     this.newDiagnosis = '';
     this.newPrescription = this.getEmptyPrescription();
+    this.newLabResult = this.getEmptyLabResult();
   }
 
   /* -----------------------------
@@ -163,71 +178,124 @@ export class EmrComponent implements OnInit, OnDestroy {
     };
   }
 
+  private getEmptyLabResult(): LabResult {
+    return {
+      id: Date.now(),
+      patientId: 0,
+      testName: '',
+      value: '',
+      unit: '',
+      date: new Date().toISOString(),
+      notes: ''
+    };
+  }
 
-downloadEMRReport(): void {
-  if (!this.selectedConsultation) return;
+  /* -----------------------------
+     Lab Results Management
+  ----------------------------- */
 
-  const consultation = this.selectedConsultation;
-  const doc = new jsPDF();
+  // Accepts possibly undefined patientId from template; guards internally.
+  addLabResult(patientId: number | undefined | null, result: LabResult) {
+    if (typeof patientId !== 'number') {
+      alert('No patient selected for lab result.');
+      return;
+    }
 
-  // Title
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Electronic Medical Record Report', 20, 20);
+    const normalized: LabResult = {
+      ...result,
+      patientId,
+      id: result.id || Date.now(),
+      date: result.date || new Date().toISOString()
+    };
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
+    this.labResults.push(normalized);
+    this.labResults$.next(this.labResults);
 
-  // Patient Info
-  doc.text(`Patient: `, 20, 40);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`${consultation.patientName}`, 60, 40);
+    // Also reflect in the currently selected consultation as a readable entry
+    if (this.selectedConsultation) {
+      const formatted = `${normalized.testName}: ${normalized.value}${normalized.unit ? ' ' + normalized.unit : ''}${normalized.notes ? ' — ' + normalized.notes : ''} (${new Date(normalized.date).toLocaleDateString()})`;
+      this.selectedConsultation.labResults.push(formatted);
 
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Date: `, 20, 50);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`${consultation.date}`, 60, 50);
+      const updatedConsultation: Consultation = {
+        id: this.selectedConsultation.id,
+        patientId: this.selectedConsultation.patientId,
+        patientName: this.selectedConsultation.patientName,
+        date: this.selectedConsultation.date,
+        diagnosis: this.selectedConsultation.diagnosis,
+        prescriptions: this.selectedConsultation.prescriptions,
+        labResults: this.selectedConsultation.labResults
+      };
 
-  // Diagnosis
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Diagnosis: `, 20, 60);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`${consultation.diagnosis}`, 60, 60);
+      this.doctorService.updateConsultation(updatedConsultation);
+    }
 
-  if (consultation.previousDiagnosis) {
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Previous Diagnosis: `, 20, 70);
+    // Reset input model
+    this.newLabResult = this.getEmptyLabResult();
+  }
+
+  getLabResultsByTest(patientId: number, testName: string): LabResult[] {
+    return this.labResults
+      .filter(r => r.patientId === patientId && r.testName === testName)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  downloadEMRReport(): void {
+    if (!this.selectedConsultation) return;
+
+    const consultation = this.selectedConsultation;
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${consultation.previousDiagnosis}`, 80, 70);
+    doc.text('Electronic Medical Record Report', 20, 20);
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+
+    doc.text(`Patient: `, 20, 40);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${consultation.patientName}`, 60, 40);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Date: `, 20, 50);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${consultation.date}`, 60, 50);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Diagnosis: `, 20, 60);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${consultation.diagnosis}`, 60, 60);
+
+    if (consultation.previousDiagnosis) {
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Previous Diagnosis: `, 20, 70);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${consultation.previousDiagnosis}`, 80, 70);
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Prescriptions:`, 20, 85);
+    doc.setFont('helvetica', 'bold');
+    if (consultation.prescriptions.length > 0) {
+      consultation.prescriptions.forEach((p, i) => {
+        doc.text(`- ${p}`, 30, 95 + i * 10);
+      });
+    } else {
+      doc.text('None', 30, 95);
+    }
+
+    const yStart = 95 + (consultation.prescriptions.length > 0 ? consultation.prescriptions.length * 10 : 10) + 10;
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Lab Results:`, 20, yStart);
+    doc.setFont('helvetica', 'bold');
+    if (consultation.labResults.length > 0) {
+      consultation.labResults.forEach((r, i) => {
+        doc.text(`- ${r}`, 30, yStart + 10 + i * 10);
+      });
+    } else {
+      doc.text('None', 30, yStart + 10);
+    }
+
+    doc.save(`${consultation.patientName}_EMR_Report.pdf`);
   }
-
-  // Prescriptions
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Prescriptions:`, 20, 85);
-  doc.setFont('helvetica', 'bold');
-  if (consultation.prescriptions.length > 0) {
-    consultation.prescriptions.forEach((p, i) => {
-      doc.text(`- ${p}`, 30, 95 + i * 10);
-    });
-  } else {
-    doc.text('None', 30, 95);
-  }
-
-  // Lab Results
-  const yStart = 95 + (consultation.prescriptions.length > 0 ? consultation.prescriptions.length * 10 : 10) + 10;
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Lab Results:`, 20, yStart);
-  doc.setFont('helvetica', 'bold');
-  if (consultation.labResults.length > 0) {
-    consultation.labResults.forEach((r, i) => {
-      doc.text(`- ${r}`, 30, yStart + 10 + i * 10);
-    });
-  } else {
-    doc.text('None', 30, yStart + 10);
-  }
-
-  // Save PDF
-  doc.save(`${consultation.patientName}_EMR_Report.pdf`);
-}
-
 }

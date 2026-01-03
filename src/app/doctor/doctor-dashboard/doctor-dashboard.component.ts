@@ -14,11 +14,9 @@ export class DoctorDashboardComponent implements OnInit {
   sidebarCollapsed = false;
 
   appointments: Appointment[] = [];
-  invoices: any[] = [];
   private _today: Date = new Date();
   todayDate: number = this._today.getDate();
-   todayMonthIndex: number = new Date().getMonth();
-  todayYear: number = new Date().getFullYear();
+  todayYear: number = this._today.getFullYear();
 
   pieChartData: ChartData<'pie'> = {
     labels: ['New Patients', 'Old Patients'],
@@ -62,9 +60,6 @@ export class DoctorDashboardComponent implements OnInit {
   currentMonth: string = '';
   currentYear: number = 0;
   days: number[] = [];
-
- 
- 
 
   // Current month index for navigation
   currentMonthIndex: number = new Date().getMonth();
@@ -122,7 +117,6 @@ export class DoctorDashboardComponent implements OnInit {
     const daysInMonth = new Date(this.currentYear, this.currentMonthIndex + 1, 0).getDate();
     this.days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   }
-  
 
   isToday(day: number): boolean {
     return (
@@ -131,5 +125,4 @@ export class DoctorDashboardComponent implements OnInit {
       this.currentYear === this._today.getFullYear()
     );
   }
-
 }

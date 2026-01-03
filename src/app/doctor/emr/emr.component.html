@@ -90,22 +90,38 @@
             </div>
 
             <!-- Add Diagnosis Form -->
+             <div *ngIf="addingDiagnosis" class="form-card diagnosis">
             <div *ngIf="addingDiagnosis" class="form-card">
               <h4 class="form-title">Add New Diagnosis</h4>
               <div class="form-field">
-                <label for="diagnosis">Diagnosis</label>
-                <input id="diagnosis" [(ngModel)]="newDiagnosis" placeholder="Enter diagnosis" />
+                <label for="diagnosisField">Diagnosis</label>
+                <input id="diagnosisField" [(ngModel)]="newDiagnosis" placeholder="Enter diagnosis" />
+              </div>
+
+              <!-- ✅ Lab Result Inputs -->
+              <div class="form-field">
+                <label for="labTestField">Lab Test Name</label>
+                <input id="labTestField" [(ngModel)]="newLabResult.testName" placeholder="e.g. Blood Pressure" />
               </div>
               <div class="form-field">
-                <label for="diagnosis">Lab Result</label>
-                <input id="diagnosis" [(ngModel)]="newDiagnosis" placeholder="Enter Lab Result" />
+                <label for="labValueField">Value</label>
+                <input id="labValueField" [(ngModel)]="newLabResult.value" placeholder="e.g. 140/90" />
               </div>
+              <div class="form-field">
+                <label for="labUnitField">Unit</label>
+                <input id="labUnitField" [(ngModel)]="newLabResult.unit" placeholder="e.g. mmHg (optional)" />
+              </div>
+              <div class="form-field">
+                <label for="labNotesField">Notes</label>
+                <textarea id="labNotesField" [(ngModel)]="newLabResult.notes" placeholder="Doctor notes (optional)"></textarea>
+              </div>
+
               <div class="modal-actions">
-                <button class="btn btn-primary" (click)="saveDiagnosis()">Save</button>
+                <button class="btn btn-primary" (click)="addLabResult(selectedConsultation.patientId, newLabResult)">Save</button>
                 <button class="btn btn-secondary" (click)="cancelDiagnosis()">Cancel</button>
               </div>
             </div>
-
+</div>
             <!-- Generate Prescription Form -->
             <div *ngIf="generatingPrescription" class="form-card generate-prescription">
               <h4 class="form-title">Generate Prescription</h4>

@@ -33,17 +33,16 @@ export class DoctorProfileComponent implements OnInit {
     this.doctor = this.doctorService.getDoctor();
     this.profileForm = this.fb.group({
       fullName: [this.doctor.fullName, Validators.required],
-      email: [this.doctor.email, Validators.required],
+      email: [this.doctor.email, [Validators.required, Validators.email]], // ✅ added email validator
       countryCode: [this.doctor.countryCode, Validators.required],
       phone: [this.doctor.phone, [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
       specialization: [this.doctor.specialization, Validators.required],
       bio: [this.doctor.bio]
     });
+    this.photoUrl = this.doctor.photoUrl; // ✅ initialize here
   }
 
-  ngOnInit() {
-    this.photoUrl = this.doctor.photoUrl;
-  }
+  ngOnInit() {}
 
   enableEdit() {
     this.isEditing = true;
@@ -59,11 +58,9 @@ export class DoctorProfileComponent implements OnInit {
       this.doctorService.updateDoctor(this.profileForm.getRawValue());
       this.doctor = this.doctorService.getDoctor();
       this.isEditing = false;
-
-      // ✅ Show alert after saving
-      alert('Profile saved successfully!');
+      this.showMessage('Profile saved successfully!');
     } else {
-      alert('Please fix the errors before saving.');
+      this.showMessage('Please fix the errors before saving.');
     }
   }
 
@@ -84,7 +81,11 @@ export class DoctorProfileComponent implements OnInit {
       this.doctorService.updateDoctor({ photoUrl: this.tempPhotoUrl });
       this.photoUrl = this.doctorService.getDoctor().photoUrl;
       this.showSavePhotoBtn = false;
-      alert('Photo updated successfully!');
+      this.showMessage('Photo updated successfully!');
     }
+  }
+
+  private showMessage(msg: string) {
+    alert(msg);
   }
 }

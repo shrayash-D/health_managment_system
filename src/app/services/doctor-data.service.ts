@@ -1,13 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-export interface Task {
-  id: number;
-  description: string;
-  staff: string;
-  status: 'Pending' | 'Completed';
-}
-
 export interface Appointment {
   id: number;
   patientName: string;
@@ -99,30 +92,6 @@ export class DoctorDataService {
     if (updated.photoUrl) {
       localStorage.setItem('doctorPhoto', updated.photoUrl);
     }
-  }
-
-  // 🔹 Task management
-  private tasksSubject = new BehaviorSubject<Task[]>([
-    { id: 1, description: 'Follow-up call to patient', staff: 'Nurse A', status: 'Pending' },
-    { id: 2, description: 'Upload lab report', staff: 'Lab Tech', status: 'Completed' }
-  ]);
-
-  tasks$ = this.tasksSubject.asObservable();
-
-  addTask(task: Task) {
-    this.tasksSubject.next([...this.tasksSubject.value, task]);
-  }
-
-  updateTask(updated: Task) {
-    this.tasksSubject.next(
-      this.tasksSubject.value.map(t => t.id === updated.id ? updated : t)
-    );
-  }
-
-  deleteTask(id: number) {
-    this.tasksSubject.next(
-      this.tasksSubject.value.filter(t => t.id !== id)
-    );
   }
 
   // 🔹 Appointment management
