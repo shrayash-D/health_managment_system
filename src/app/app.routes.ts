@@ -4,8 +4,8 @@ import { LoginComponent } from '../app/shared/userlogin/userlogin.component';
 import { UsersignupComponent } from './shared/usersignup/usersignup.component';
 import { AppointmentFormComponent } from './patient/appointment-form/appointment-form.component';
 import { PatientDashboardComponent } from './patient/patient-dashboard/patient-dashboard.component';
-import { HeroSectionComponent } from './hero-section/hero-section.component';
-import { ContactUsComponent } from './shared/contact-us/contact-us.component';
+import { HeroSectionComponent } from './pages/hero-section/hero-section.component';
+import { ContactUsComponent } from './pages/contact-us/contact-us.component';
 import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { PatientManagementComponent } from './admin/patient-management/patient-management.component';
@@ -25,6 +25,8 @@ import { AuthGuard } from './services/auth.guard';
 import { GuestGuard } from './services/guest.guard';
 import { ErrorPageComponent } from './shared/error-page/error-page.component';
 import { PatientHistoryComponent } from './patient/patient-history/patient-history.component';
+import { DoctorListComponent } from './pages/doctor-list/doctor-list.component';
+import { AboutUsComponent } from './pages/about-us/about-us.component';
 
 export const routes: Routes = [
   // Patient (nested) - only PATIENT role allowed
@@ -89,5 +91,7 @@ export const routes: Routes = [
   // Default / public
   { path: '', component: HeroSectionComponent },
   { path: 'contact', component: ContactUsComponent },
+  { path: 'All-doctors', component: DoctorListComponent },
+  { path: 'about-us', component: AboutUsComponent },
   { path: '**', component: ErrorPageComponent },
 ];

@@ -15,6 +15,18 @@
   font-size: 0.875rem;
 }
 
+
+.btn-outline-light {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--white);
+}
+
+.btn-outline-light:hover {
+  background: var(--white);
+  color: var(--primary);
+}
+
 /* Utility to fine‑tune band layout on small screens */
 @media (max-width: 576px) {
   .hero-banner {

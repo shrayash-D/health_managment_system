@@ -1,0 +1,109 @@
+<section class="section">
+  <div class="container">
+    <!-- Filters (optional, remove if not needed) -->
+    <div class="row g-3 align-items-center mb-3">
+      <div class="col-12 col-md-6">
+        <input
+          type="text"
+          class="form-control input-brand"
+          placeholder="Search by name, specialization, email…"
+          [(ngModel)]="search"
+        />
+      </div>
+      <div class="col-12 col-md-6">
+        <input
+          type="text"
+          class="form-control input-brand"
+          placeholder="Filter by specialization (e.g., Cardiology)"
+          [(ngModel)]="specialization"
+        />
+      </div>
+    </div>
+
+    <!-- Card Grid -->
+    <div class="row g-4">
+      <ng-container *ngIf="doctors$ | async as doctors; else loading">
+        <ng-container *ngIf="doctors.length; else empty">
+          <ng-container *ngFor="let d of doctors">
+            <ng-container *ngIf="matches(d)">
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="card card-brand h-100 rounded-12 shadow-1">
+                  <!-- Header badges -->
+                  <div
+                    class="card-header bg-blue-100 border-0 rounded-12 inset-top"
+                  >
+                    <div class="d-flex flex-wrap gap-2">
+                      <!-- <span class="badge-soft">{{ d.department }}</span> -->
+                      <span class="badge-soft">{{ d.specialization }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Body -->
+                  <div class="card-body">
+                    <h5 class="card-title mb-1 text-primary-600">
+                      {{ d.name }}
+                    </h5>
+                    <p class="card-text text-muted-600 mb-3">
+                      <strong>Specialization:</strong> {{ d.specialization
+                      }}<br />
+                      <strong>Department:</strong> {{ d.department }}
+                    </p>
+
+                    <!-- Availability -->
+                    <div class="mb-3">
+                      <div class="fw-semibold mb-1">Availability</div>
+                      <ul class="list-unstyled mb-0">
+                        <li *ngFor="let slot of d.availability">
+                          <span class="text-muted-500">
+                            {{ slot.dayOfWeek }}:
+                            <span class="text-muted-600">
+                              {{ slot.startTime }}–{{ slot.endTime }}
+                            </span>
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex flex-wrap gap-2">
+                      <a
+                        class="btn btn-outline-brand focus-ring"
+                        [href]="'tel:' + d.contactInfo"
+                      >
+                        Call
+                      </a>
+                      <a
+                        class="btn btn-brand focus-ring"
+                        [href]="'mailto:' + d.email"
+                      >
+                        Email
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- Footer -->
+                  <div class="card-footer bg-surface border-0">
+                    <small class="text-muted-500">Doctor ID: {{ d.id }}</small>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+
+      <!-- Loading / Empty states -->
+      <ng-template #loading>
+        <div class="col-12">
+          <div class="alert alert-info">Loading doctors…</div>
+        </div>
+      </ng-template>
+
+      <ng-template #empty>
+        <div class="col-12">
+          <div class="alert alert-warning">No doctors found.</div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</section>

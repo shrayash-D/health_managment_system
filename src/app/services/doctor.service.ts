@@ -58,6 +58,31 @@ export class DoctorService {
         { dayOfWeek: 'Thursday', startTime: '09:00', endTime: '17:00' },
       ],
     },
+    // ✅ Add new doctors below
+    {
+      id: 5,
+      name: 'Dr. Olivia Brown',
+      specialization: 'Dermatology',
+      contactInfo: '+1 234-567-8005',
+      email: 'olivia.brown@healthconnect.com',
+      department: 'Dermatology',
+      availability: [
+        { dayOfWeek: 'Monday', startTime: '10:00', endTime: '16:00' },
+        { dayOfWeek: 'Thursday', startTime: '12:00', endTime: '18:00' },
+      ],
+    },
+    {
+      id: 6,
+      name: 'Dr. Robert Smith',
+      specialization: 'General Surgery',
+      contactInfo: '+1 234-567-8006',
+      email: 'robert.smith@healthconnect.com',
+      department: 'Surgery',
+      availability: [
+        { dayOfWeek: 'Wednesday', startTime: '09:00', endTime: '15:00' },
+        { dayOfWeek: 'Friday', startTime: '09:00', endTime: '15:00' },
+      ],
+    },
   ];
 
   getAllDoctors(): Observable<Doctor[]> {

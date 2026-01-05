@@ -1,0 +1,106 @@
+/* Section spacing is taken from your global theme (.section) */
+
+/* Hero banner typography */
+.hero-banner h1 {
+  letter-spacing: 0.2px;
+}
+
+.hero-banner p {
+  max-width: 56ch;
+}
+
+/* Responsive tweaks for hero text */
+@media (max-width: 768px) {
+  .hero-banner h1 {
+    font-size: 1.75rem;
+  }
+  .hero-banner p {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+}
+
+/* Buttons */
+.btn-outline {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--white);
+}
+
+.btn-outline:hover {
+  background: var(--white);
+  color: var(--primary);
+}
+
+.btn-brand,
+.btn-outline {
+  min-width: 140px;
+}
+
+/* Key Highlights styling */
+.keyHighlights {
+  font-size: 1.25rem;
+  color: var(--primary);
+}
+
+.keyHighlights ul li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: nowrap;
+}
+
+.keyHighlights ul li span.text-muted-600 {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 576px) {
+  .keyHighlights ul li {
+    flex-wrap: wrap;
+  }
+  .keyHighlights ul li span.text-muted-600 {
+    white-space: normal;
+  }
+}
+
+/* Badge styling */
+.badge-soft {
+  background-color: var(--primary);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+/* Cards */
+.card-brand {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--blue-200);
+  border-radius: var(--radius-12);
+  background-color: var(--white);
+  box-shadow: var(--shadow-1);
+  transition: transform 140ms ease, box-shadow 140ms ease,
+    border-color 140ms ease;
+  margin-bottom: var(--sp-4);
+}
+
+.card-brand:hover,
+.card-brand:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--blue-300);
+  box-shadow: 0 10px 24px rgba(10, 91, 143, 0.18), var(--shadow-1);
+}
+
+.card-brand .card-header {
+  border: none;
+  padding: var(--sp-5) var(--sp-6);
+  background: linear-gradient(180deg, var(--blue-100) 0%, var(--white) 100%);
+  border-top-left-radius: var(--radius-12);
+  border-top-right-radius: var(--radius-12);
+  box-shadow: var(--shadow-inset);
+}

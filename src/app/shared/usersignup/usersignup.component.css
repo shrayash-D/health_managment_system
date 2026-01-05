@@ -7,6 +7,18 @@
   --grad-ocean-cyan: linear-gradient(135deg, #0a5b8f, #00c6ff);
 }
 
+.form-field select {
+  font: inherit;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--blue-300);
+  background: #FAFCFE;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  appearance: none; /* removes default browser arrow */
+  cursor: pointer;
+}
+
 body {
   font-family: 'Segoe UI', sans-serif;
   font-size: clamp(0.95rem, 1.2vw, 1.05rem);
@@ -144,7 +156,7 @@ body {
 
 .form-actions {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;

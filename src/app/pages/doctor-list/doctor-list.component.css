@@ -1,0 +1,182 @@
+
+/* ===== Card Layout & Elevation ===== */
+.card-brand {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--blue-200);
+  border-radius: var(--radius-12);
+  background-color: var(--white);
+  box-shadow: var(--shadow-1);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+  will-change: transform, box-shadow;
+}
+
+/* Hover/focus elevation */
+.card-brand:hover,
+.card-brand:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--blue-300);
+  box-shadow: 0 10px 24px rgba(10, 91, 143, 0.18), var(--shadow-1);
+}
+
+/* Compact footer border & rounding fix */
+.card-brand .card-footer {
+  border-top: 1px solid var(--blue-200);
+  border-bottom-left-radius: var(--radius-12);
+  border-bottom-right-radius: var(--radius-12);
+}
+
+/* ===== Header Styling ===== */
+.card-brand .card-header {
+  border: none;
+  padding: var(--sp-5) var(--sp-6);
+  background: linear-gradient(180deg, var(--blue-100) 0%, var(--white) 100%);
+  border-top-left-radius: var(--radius-12);
+  border-top-right-radius: var(--radius-12);
+  box-shadow: var(--shadow-inset);
+}
+
+/* Badge group spacing */
+.card-brand .card-header .badge-soft {
+  margin-right: var(--sp-2);
+}
+
+/* ===== Body Content ===== */
+.card-brand .card-body {
+  padding: var(--sp-6);
+}
+
+.card-brand .card-title {
+  margin-bottom: var(--sp-2);
+  color: var(--primary-600);
+  letter-spacing: 0.2px;
+}
+
+.card-brand .card-text {
+  margin-bottom: var(--sp-4);
+  color: var(--text-600);
+}
+
+/* Availability list */
+.card-brand .card-body ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.card-brand .card-body ul li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px dashed var(--blue-200);
+}
+
+.card-brand .card-body ul li:last-child {
+  border-bottom: none;
+}
+
+/* Sub-labels */
+.card-brand .card-body .fw-semibold {
+  color: var(--text-900);
+}
+
+/* ===== Buttons (Actions) ===== */
+.card-brand .card-body .d-flex.gap-2 .btn {
+  min-width: 96px;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-8);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.card-brand .btn-brand:hover,
+.card-brand .btn-outline-brand:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(10, 91, 143, 0.18);
+}
+
+.card-brand .btn-outline-brand {
+  border-width: 1px;
+}
+
+/* ===== Inputs (Filters) ===== */
+.input-brand {
+  border-radius: var(--radius-8);
+  transition: box-shadow 150ms ease, border-color 150ms ease, background-color 150ms ease;
+}
+
+.input-brand::placeholder {
+  color: var(--text-500);
+}
+
+.input-brand:focus {
+  outline: none;
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 0.25rem rgba(10, 91, 143, 0.18);
+}
+
+/* Group spacing above list */
+.section .row.g-3.align-items-center {
+  margin-bottom: var(--sp-4);
+}
+
+/* ===== Badge Soft Enhancements ===== */
+.badge-soft {
+  background-color: var(--blue-100);
+  color: var(--blue-900);
+  border: 1px solid var(--blue-200);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+/* ===== Responsive Tweaks ===== */
+@media (max-width: 992px) {
+  .card-brand .card-body {
+    padding: var(--sp-5);
+  }
+}
+
+@media (max-width: 576px) {
+  .card-brand {
+    transition: none; /* keep mobile smooth */
+  }
+
+  .card-brand .card-header {
+    padding: var(--sp-4) var(--sp-5);
+  }
+
+  .card-brand .card-body .d-flex.gap-2 {
+    gap: var(--sp-3);
+  }
+
+  /* Improve tap targets on mobile */
+  .card-brand .btn {
+    min-height: 40px;
+  }
+}
+
+/* ===== Utility: subtle divider for card clusters ===== */
+.row.g-4 > [class*='col'] .card-brand {
+  position: relative;
+}
+
+.row.g-4 > [class*='col'] .card-brand::after {
+  content: '';
+  position: absolute;
+  left: var(--sp-6);
+  right: var(--sp-6);
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(10, 91, 143, 0) 0%,
+    rgba(10, 91, 143, 0.12) 50%,
+    rgba(10, 91, 143, 0) 100%
+  );
+  border-radius: var(--radius-12);
+  opacity: 0.6;
+}

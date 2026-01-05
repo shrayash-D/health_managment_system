@@ -27,13 +27,10 @@
           <a class="nav-link" href="/">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="doctors">Doctors</a>
+          <a class="nav-link" href="/All-doctors">Doctors</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="departments">Departments</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="articles">Articles</a>
+          <a class="nav-link" href="/about-us">About us</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/contact">Contact</a>
@@ -41,13 +38,11 @@
       </ul>
 
       <div class="d-flex ms-lg-4 mt-3 mt-lg-0 gap-2">
-        
-
         <!-- show Logout when logged in, Sign In when not -->
-         <button
+        <button
           *ngIf="isLoggedInUser()"
           class="btn btn-outline-primary rounded-3 px-4 py-2 fw-medium"
-          (click) = "goToDashboard()"
+          (click)="goToDashboard()"
         >
           Dashboard
         </button>
@@ -58,8 +53,6 @@
         >
           Logout
         </button>
-
-        
 
         <a
           *ngIf="!isLoggedInUser()"
