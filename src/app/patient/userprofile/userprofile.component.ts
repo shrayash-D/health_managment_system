@@ -60,18 +60,6 @@ export class UserprofileComponent implements OnInit {
       role: [initial.role],
     });
   }
-
-  get initials(): string {
-    const name = this.profileForm?.get('name')?.value || '';
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .map((n: string) => n[0].toUpperCase())
-      .slice(0, 2)
-      .join('');
-  }
-
   get displayName(): string {
     return this.profileForm?.get('name')?.value || '';
   }

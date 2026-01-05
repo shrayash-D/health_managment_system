@@ -9,13 +9,10 @@
             <div class="left">
               <div class="avatar" aria-hidden="true">
                 <img
-                  *ngIf="tempPhotoUrl || photoPreview; else initials"
+                  *ngIf="tempPhotoUrl || photoPreview"
                   [src]="tempPhotoUrl || photoPreview"
                   alt="avatar"
                 />
-                <ng-template #initials>
-                  <div class="avatar-placeholder">{{ initials }}</div>
-                </ng-template>
               </div>
               <div class="info">
                 <h2 class="name">{{ displayName }}</h2>

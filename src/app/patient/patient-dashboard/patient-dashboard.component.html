@@ -15,7 +15,12 @@
     <!-- Patient Header Card -->
     <section class="card header-card">
       <div class="left">
-        <div class="avatar" aria-hidden="true"></div>
+        <img
+          class="avatar"
+          aria-hidden="true"
+          [src]="profileImageUrl"
+          alt="Patient Photo"
+        />
         <div class="info">
           <h2 class="name">Anita Deshmukh</h2>
           <div class="meta">
@@ -23,10 +28,6 @@
             <span class="chip">Age: 33</span>
             <span class="chip">Blood Group: O+</span>
           </div>
-          <!-- <div class="tags">
-            <span class="tag warn">Allergy: Penicillin</span>
-            <span class="tag">Primary Physician: Dr. Jon Miller</span>
-          </div> -->
         </div>
       </div>
 
@@ -55,8 +56,10 @@
         <div class="metrics" *ngIf="vitals$ | async as vital">
           <div class="metric" *ngFor="let v of vital">
             <span class="label">{{ v.label }}</span>
-            <span class="value">{{ v.value }}</span>
-            <span class="unit">{{ v.unit }}</span>
+            <div>
+              <span class="value">{{ v.value }}</span>
+              <span class="unit">{{ v.unit }}</span>
+            </div>
           </div>
         </div>
       </article>

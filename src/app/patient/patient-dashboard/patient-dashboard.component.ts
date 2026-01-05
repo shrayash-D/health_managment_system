@@ -28,7 +28,7 @@ export class PatientDashboardComponent implements OnInit {
   billings$: Observable<BillingSummary[]>;
   invoice$: Observable<Invoice[]>;
   medicalHistory$!: Observable<any[]>;
-
+  profileImageUrl: string | null = null;
   patientId?: number;
 
   constructor(
@@ -54,6 +54,23 @@ export class PatientDashboardComponent implements OnInit {
       this.medicalHistory$ = of(arr);
     } catch (e) {
       this.medicalHistory$ = of([]);
+    }
+    this.getProfileImage();
+  }
+
+  getProfileImage(): void {
+    const raw = localStorage.getItem('userProfile');
+    let p: any = {};
+    if (raw) {
+      try {
+        p = JSON.parse(raw) || {};
+      } catch {
+        p = {};
+      }
+    }
+
+    if (p) {
+      this.profileImageUrl = p.photo || null;
     }
   }
 }
