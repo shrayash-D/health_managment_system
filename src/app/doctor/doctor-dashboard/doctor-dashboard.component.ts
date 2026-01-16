@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Appointment } from '../../services/doctor-data.service';
 import { ChartData, ChartOptions } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 
@@ -11,9 +10,9 @@ import { NgChartsModule } from 'ng2-charts';
   imports: [CommonModule, NgChartsModule]
 })
 export class DoctorDashboardComponent implements OnInit {
-  sidebarCollapsed = false;
 
-  appointments: Appointment[] = [];
+
+  
   private _today: Date = new Date();
   todayDate: number = this._today.getDate();
   todayYear: number = this._today.getFullYear();
@@ -51,9 +50,9 @@ export class DoctorDashboardComponent implements OnInit {
     sex: 'Male',
     weight: '59 Kg',
     height: '172 cm',
-    lastAppointment: '15 Dec 2021',
+    lastAppointment: '15 Dec 2025',
     history: ['Asthma', 'Hypertension', 'Fever'],
-    contact: '(088) 555-0102'
+    contact: '9574859323'
   };
 
   // Calendar state
@@ -68,9 +67,7 @@ export class DoctorDashboardComponent implements OnInit {
     this.generateCalendar();
   }
 
-  onSidebarCollapse(collapsed: boolean) {
-    this.sidebarCollapsed = collapsed;
-  }
+ 
 
   calculateAge(dob: string): number {
     const birthDate = new Date(dob);

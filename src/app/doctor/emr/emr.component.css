@@ -53,9 +53,9 @@ th, td {
   border-bottom: 1px solid #ddd;
 }
 
-tr:hover {
+/* tr:hover {
   background: #f6faff;
-}
+} */
 
 th {
   font-weight: 600;

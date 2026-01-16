@@ -1,10 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  DoctorDataService,
-  Appointment,
-} from '../../services/doctor-data.service';
+import { DoctorDataService, Appointment,} from '../../services/doctor-data.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -19,7 +16,7 @@ export enum AppointmentStatus {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './appointment.component.html',
-  styleUrls: ['./appointment.component.css'],
+  styleUrl: './appointment.component.css',
 })
 export class AppointmentComponent implements OnInit, OnDestroy {
   appointments: Appointment[] = [];

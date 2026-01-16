@@ -49,7 +49,7 @@
                 <tr *ngFor="let invoice of filteredInvoices">
                   <td>{{ invoice.id }}</td>
                   <td>{{ invoice.patientName }}</td>
-                  <td>${{ invoice.amount.toFixed(2) }}</td>
+                  <td>{{ invoice.amount.toFixed(2) |currency:'INR'}}</td>
                   <td>
                     <span
                       class="chip"
@@ -103,7 +103,7 @@
         </div>
         <div class="form-group">
           <label>Amount:</label>
-          <p>${{ selectedInvoice.amount.toFixed(2) }}</p>
+          <p>{{ selectedInvoice.amount.toFixed(2) |currency:'INR'}}</p>
         </div>
         <div class="form-group">
           <label>Status:</label>
@@ -144,17 +144,17 @@
         <div class="form-group">
           <label>Charges:</label>
           <ul>
-            <li>Consultation Fee: ${{ selectedInvoice.consultationFee }}</li>
-            <li>Lab Tests: ${{ selectedInvoice.labFee }}</li>
-            <li>Prescriptions / Medicines: ${{ selectedInvoice.medicineFee }}</li>
-            <li>Other Charges: ${{ selectedInvoice.otherCharges }}</li>
+            <li>Consultation Fee: {{ selectedInvoice.consultationFee|currency:'INR'}}</li>
+            <li>Lab Tests: {{ selectedInvoice.labFee|currency:'INR'}}</li>
+            <li>Prescriptions / Medicines: ₹{{ selectedInvoice.medicineFee }}</li>
+            <li>Other Charges: {{ selectedInvoice.otherCharges |currency:'INR'}}</li>
           </ul>
         </div>
 
         <!-- Subtotal -->
         <div class="form-group">
           <label>Subtotal:</label>
-          <p>${{ selectedInvoice.subtotal }}</p>
+          <p>{{ selectedInvoice.subtotal |currency:'INR'}}</p>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component} from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DoctorDataService } from '../../services/doctor-data.service';
@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
   templateUrl: './doctor-profile.component.html',
   styleUrls: ['./doctor-profile.component.css']
 })
-export class DoctorProfileComponent implements OnInit {
+export class DoctorProfileComponent  {
   profileForm: FormGroup;
   isEditing = false;
   doctor: any;
@@ -42,7 +42,7 @@ export class DoctorProfileComponent implements OnInit {
     this.photoUrl = this.doctor.photoUrl; // ✅ initialize here
   }
 
-  ngOnInit() {}
+ 
 
   enableEdit() {
     this.isEditing = true;

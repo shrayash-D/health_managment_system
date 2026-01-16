@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { User } from '../models/user.interface';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthUser } from '../models/auth.interface';
 
@@ -38,14 +37,7 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  // Update parts of the current user object and persist
-  // updateUser(partial: Partial<User>): void {
-  //   const current = this.currentUserSubject.value;
-  //   if (!current) return;
-  //   const updated: User = { ...current, ...partial };
-  //   localStorage.setItem(this.storageKey, JSON.stringify(updated));
-  //   this.currentUserSubject.next(updated);
-  // }
+ 
 
   // Synchronous access to current value
   get currentUserValue(): AuthUser | null {

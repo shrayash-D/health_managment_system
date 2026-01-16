@@ -28,6 +28,7 @@ export interface Patient {
   avatar?: string;
 }
 
+
 export interface Consultation {
   id: number;
   patientId: number;
@@ -371,6 +372,7 @@ removeSlot(date: string, time: string) {
   );
   this.slotsSubject.next(slots);
 }
+
 
 
 
