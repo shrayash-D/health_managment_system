@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -15,7 +15,7 @@ import { AuthUser } from '../../models/auth.interface';
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterOutlet],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './usersignup.component.html',
   styleUrls: ['./usersignup.component.css'],
 })
