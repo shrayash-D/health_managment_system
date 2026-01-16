@@ -47,7 +47,7 @@ export class UsersignupComponent implements OnInit {
         email: new FormControl('', [Validators.required, Validators.email]),
         phone: new FormControl('', [
           Validators.required,
-          // Validators.pattern(/^\+91\s\d{5}\s\d{5}$/) // +91 XXXXX XXXXX
+          Validators.pattern(/^\d{10}$/), // +91 XXXXX XXXXX
         ]),
         dob: new FormControl('', Validators.required),
         role: new FormControl('', Validators.required),
