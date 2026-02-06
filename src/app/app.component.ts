@@ -12,12 +12,13 @@ import { filter } from 'rxjs/operators';
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-  title = 'hospital_project';
+title = 'hospitakl_project';
   isLayout: boolean = false;
 
   constructor(private router: Router) {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
+      // Without this filter, your code would try to update the isLayout variable 5 or 6 times for every single page click. By using NavigationEnd, you ensure the logic only runs once the URL has officially changed.
       .subscribe((event: any) => {
         this.isLayout = ['/admin', '/patient', '/doctor'].some((prefix) =>
           event.url.startsWith(prefix)

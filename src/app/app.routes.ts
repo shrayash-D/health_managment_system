@@ -40,7 +40,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: PatientDashboardComponent },
       {
         path: 'profile',
-        component: UserprofileComponent /*, canActivate: [AuthGuard] */,
+        component: UserprofileComponent,
       },
       {
         path: 'history',

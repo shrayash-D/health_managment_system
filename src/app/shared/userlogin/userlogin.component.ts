@@ -33,6 +33,7 @@ export class LoginComponent {
   login() {
     console.log('Attempting login...');
     const fv = this.loginForm.value;
+    console.log("Form values: ", this.loginForm)
     const user: AuthUser = {
       email: fv.email ?? '',
       role: fv.role ?? '',
