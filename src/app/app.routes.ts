@@ -86,7 +86,6 @@ export const routes: Routes = [
   // Public / Auth
   { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
   { path: 'signup', component: UsersignupComponent, canActivate: [GuestGuard] },
-  { path: 'appointment', component: AppointmentFormComponent },
 
   // Default / public
   { path: '', component: HeroSectionComponent },
