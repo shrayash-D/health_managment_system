@@ -35,8 +35,36 @@ export interface Consultation {
   patientName: string;
   date: string;
   diagnosis: string;
-  prescriptions: string[];
+  previousDiagnosis?: string;
   labResults: string[];
+  prescriptions?: string[];
+  vitals?: {
+    bloodPressure: string;
+    heartRate: string;
+    temperature: string;
+    spO2: string;
+  };
+  medications?: {
+    drug: string;
+    dose: string;
+    route: string;
+    frequency: string;
+    activity: string;
+  }[];
+  labTests?: {
+    cbc: string;
+    lft: string;
+    creatinine: string;
+    hba1c: string;
+  };
+  billing?: {
+    consultationType: string;
+    consultationFee: string;
+    labFee: string;
+    medicineFee: string;
+    total: string;
+    outstanding: string;
+  };
 }
 
 export interface Invoice {
@@ -104,11 +132,6 @@ export class DoctorDataService {
 // 🔹 Mock available slots (doctor-defined)
 
   appointments$ = this.appointmentsSubject.asObservable();
-
-  addAppointment(appointment: Appointment) {
-    this.appointmentsSubject.next([...this.appointmentsSubject.value, appointment]);
-    alert('Appointment booked successfully ✅');
-  }
 
   updateAppointment(updated: Appointment) {
     this.appointmentsSubject.next(
@@ -247,10 +270,10 @@ export class DoctorDataService {
 
   // 🔹 Consultation management
   private consultationsSubject = new BehaviorSubject<Consultation[]>([
-    { id: 1, patientId: 1, patientName: 'Candice Wu', date: '2023-10-10', diagnosis: 'Hypertension', prescriptions: ['Lisinopril 10mg daily'], labResults: ['Blood Pressure: 140/90'] },
-    { id: 2, patientId: 2, patientName: 'Liam Chen', date: '2023-10-12', diagnosis: 'Asthma exacerbation', prescriptions: ['Albuterol inhaler'], labResults: ['Peak flow: 300 L/min'] },
-    { id: 3, patientId: 3, patientName: 'Sophia Patel', date: '2023-10-14', diagnosis: 'Migraine', prescriptions: ['Sumatriptan 50mg'], labResults: ['MRI: Normal'] },
-    { id: 4, patientId: 4, patientName: 'Noah Kim', date: '2023-10-16', diagnosis: 'Allergic rhinitis', prescriptions: ['Loratadine 10mg daily'], labResults: ['Allergy test: Positive for pollen'] }
+    { id: 1, patientId: 1, patientName: 'Candice Wu', date: '2023-10-10', diagnosis: 'Hypertension', labResults: ['Blood Pressure: 140/90'], prescriptions: [] },
+    { id: 2, patientId: 2, patientName: 'Liam Chen', date: '2023-10-12', diagnosis: 'Asthma exacerbation', labResults: ['Peak flow: 300 L/min'], prescriptions: [] },
+    { id: 3, patientId: 3, patientName: 'Sophia Patel', date: '2023-10-14', diagnosis: 'Migraine', labResults: ['MRI: Normal'], prescriptions: [] },
+    { id: 4, patientId: 4, patientName: 'Noah Kim', date: '2023-10-16', diagnosis: 'Allergic rhinitis', labResults: ['Allergy test: Positive for pollen'], prescriptions: [] }
   ]);
 
   consultations$ = this.consultationsSubject.asObservable();
@@ -369,7 +392,7 @@ addSlot(date: string, time: string) {
 removeSlot(date: string, time: string) {
   const slots = this.slotsSubject.value.map(s =>
     s.date === date ? { ...s, times: s.times.filter(t => t !== time) } : s
-  );
+  ).filter(s => s.times.length > 0);
   this.slotsSubject.next(slots);
 }
 

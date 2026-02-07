@@ -11,16 +11,7 @@ export enum PaymentStatus {
   Overdue = 'OVERDUE',
 }
 
-interface NewInvoice {
-  patientId: string;
-  patientName: string;
-  consultationType: string;
-  consultationFee: string;
-  labFee: string;
-  medicineFee: string;
-  otherCharges: string;
-  paymentMethod: string;
-}
+
 
 @Component({
   selector: 'app-invoice-list',
@@ -42,8 +33,7 @@ export class InvoiceListComponent implements OnInit {
   selectedInvoice: Invoice | null = null;
 
   showCreateInvoiceModal = false;
-  newInvoice: NewInvoice = this.getEmptyInvoice();
-
+  
   constructor(private doctorService: DoctorDataService) {}
   
 
@@ -119,56 +109,5 @@ export class InvoiceListComponent implements OnInit {
     this.sidebarCollapsed = collapsed;
   }
 
-  openCreateInvoiceModal() {
-    this.showCreateInvoiceModal = true;
-  }
 
-  closeCreateInvoiceModal() {
-    this.showCreateInvoiceModal = false;
-    this.newInvoice = this.getEmptyInvoice();
-  }
-
-  private getEmptyInvoice(): NewInvoice {
-    return {
-      patientId: '',
-      patientName: '',
-      consultationType: '',
-      consultationFee: '',
-      labFee: '',
-      medicineFee: '',
-      otherCharges: '',
-      paymentMethod: 'Cash',
-    };
-  }
-
-  createInvoice() {
-    const subtotal =
-      Number(this.newInvoice.consultationFee || 0) +
-      Number(this.newInvoice.labFee || 0) +
-      Number(this.newInvoice.medicineFee || 0) +
-      Number(this.newInvoice.otherCharges || 0);
-
-    const invoice: Invoice = {
-      id: 'INV' + (this.invoices.length + 1).toString().padStart(3, '0'),
-      patientId: Number(this.newInvoice.patientId || 0),
-      patientName: this.newInvoice.patientName,
-      consultationType: this.newInvoice.consultationType,
-      consultationFee: Number(this.newInvoice.consultationFee || 0),
-      labFee: Number(this.newInvoice.labFee || 0),
-      medicineFee: Number(this.newInvoice.medicineFee || 0),
-      otherCharges: Number(this.newInvoice.otherCharges || 0),
-      subtotal: subtotal,
-      amount: subtotal,
-      paymentStatus: PaymentStatus.Pending,
-      issueDate: new Date().toISOString().split('T')[0],
-      dueDate: new Date(new Date().setDate(new Date().getDate() + 7))
-        .toISOString()
-        .split('T')[0],
-      paymentMethod: this.newInvoice.paymentMethod,
-      transactionId: 'TXN' + Math.floor(Math.random() * 1000000),
-    };
-
-    this.doctorService.addInvoice(invoice);
-    this.closeCreateInvoiceModal();
-  }
 }

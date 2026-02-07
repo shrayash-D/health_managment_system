@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { DoctorDataService, Consultation, Patient } from '../../services/doctor-data.service';
 import { Subscription, BehaviorSubject } from 'rxjs';
 import jsPDF from 'jspdf';
@@ -59,14 +60,15 @@ export class EmrComponent implements OnInit, OnDestroy {
   labResults: LabResult[] = [];
   labResults$ = new BehaviorSubject<LabResult[]>([]);
 
-  constructor(private doctorService: DoctorDataService) {}
+  constructor(private doctorService: DoctorDataService, private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.subscriptions.add(
       this.doctorService.consultations$.subscribe(consultations => {
         this.consultations = consultations.map(c => ({
           ...c,
-          previousDiagnosis: undefined
+          previousDiagnosis: undefined,
+          prescriptions: c.prescriptions || []
         }));
       })
     );
@@ -76,6 +78,17 @@ export class EmrComponent implements OnInit, OnDestroy {
         this.patients = patients;
       })
     );
+
+    // Check for consultationId query param to open EMR modal
+    this.route.queryParams.subscribe((params: any) => {
+      const consultationId = params['consultationId'];
+      if (consultationId) {
+        const consultation = this.consultations.find(c => c.id === +consultationId);
+        if (consultation) {
+          this.viewEMR(consultation);
+        }
+      }
+    });
   }
 
   ngOnDestroy() {

@@ -96,7 +96,6 @@
 
 /* --- Table --- */
 .table-scroll {
-  overflow-x: auto;
   border-radius: 8px;
 }
 
@@ -105,7 +104,6 @@ table {
   border-collapse: collapse;
   margin-top: 1rem;
   font-size: 0.9rem;
-  min-width: 640px;
 }
 
 thead {
@@ -114,15 +112,20 @@ thead {
 
 th {
   text-align: left;
-  padding: 0.6rem;
+  padding: 0.4rem 0.6rem;
   color: var(--blue-900);
   font-weight: 600;
   border-bottom: 2px solid var(--blue-300);
 }
 
+th.active {
+  background-color: var(--primary);
+  color: #fff;
+}
+
 td {
   text-align: left;
-  padding: 0.6rem;
+  padding: 0.4rem 0.6rem;
   border-bottom: 1px solid var(--blue-200);
   vertical-align: middle;
 }
@@ -157,13 +160,33 @@ tbody tr:hover {
 
 /* --- Buttons --- */
 .btn {
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
   border: 1px solid transparent;
+  cursor: pointer;
+  transition: .15s ease;
   font-size: 0.85rem;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.btn-secondary:hover {
+  background: var(--primary);
+  color: #fff;
 }
 
 .btn-success {
@@ -199,17 +222,152 @@ tbody tr:hover {
   .filters {
     flex-direction: column;
   }
+}
 
-  .table-scroll {
-    overflow-x: auto;
+/* --- Modal Overlay --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* --- Modal Content --- */
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+/* --- Modal Header --- */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.modal-title {
+  margin: 0;
+  flex: 1;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #333;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.profile-details {
+  margin-top: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.form-group p,
+.form-group ul {
+  margin: 0;
+  color: #333;
+}
+
+.modal-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* --- Form Card --- */
+.form-card {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--blue-300);
+  border-radius: 8px;
+  background: #fafcfe;
+}
+
+.form-card .form-field {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.form-card .form-field label {
+  font-weight: 600;
+  color: var(--blue-900);
+  font-size: 0.9rem;
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.form-card .form-field input,
+.form-card .form-field textarea,
+.form-card .form-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--blue-300);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fafcfe;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-card .form-field input:focus,
+.form-card .form-field textarea:focus,
+.form-card .form-field select:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+}
+
+/* --- Nav Pills --- */
+.nav-pills .nav-link {
+  cursor: default;
+  color: #000;
+}
+
+.nav-pills .nav-link.active {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+/* --- Responsive Form Fields --- */
+@media (max-width: 768px) {
+  .form-card .form-field {
+    grid-template-columns: 1fr;
   }
 
-  table {
-    min-width: 640px;
-  }
-
-  th,
-  td {
-    white-space: nowrap;
+  .form-card .form-field label {
+    margin-bottom: 6px;
   }
 }

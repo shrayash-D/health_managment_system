@@ -18,7 +18,7 @@ import { DoctorDashboardComponent } from './doctor/doctor-dashboard/doctor-dashb
 
 import { InvoiceListComponent } from './doctor/invoice-list/invoice-list.component';
 import { AppointmentComponent } from './doctor/appointment/appointment.component';
-import { EmrComponent } from './doctor/emr/emr.component';
+
 import { PatientListComponent } from './doctor/patient-list/patient-list.component';
 
 import { AuthGuard } from './services/auth.guard';
@@ -62,7 +62,7 @@ export const routes: Routes = [
       { path: 'profile', component: DoctorProfileComponent },
       { path: 'invoices', component: InvoiceListComponent },
       { path: 'appointment', component: AppointmentComponent },
-      { path: 'emr', component: EmrComponent },
+      
       { path: 'patients', component: PatientListComponent },
     ],
   },

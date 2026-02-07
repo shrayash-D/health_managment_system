@@ -30,9 +30,9 @@
           <thead>
             <tr>
               <th>Patient Name</th>
-              <th>Date</th>
+              <th [ngClass]="{'active': appointmentFilterDate}">Date</th>
               <th>Time</th>
-              <th>Status</th>
+              <th [ngClass]="{'active': appointmentFilterStatus}">Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -49,7 +49,7 @@
               <td data-label="Actions">
                 <button
                   class="btn btn-success"
-                  (click)="completeAppointment(appointment.id)"
+                  (click)="openCompletionModal(appointment.id)"
                   [disabled]="appointment.status !== 'BOOKED'"
                 >
                   Completed
@@ -66,93 +66,6 @@
           </tbody>
         </table>
       </div>
-    </section>
-
-    <!-- Schedule New Appointment -->
-    <section class="card">
-      <h2 class="form-title">Schedule New Appointment</h2>
-      <form #appointmentForm="ngForm" (ngSubmit)="scheduleAppointment()" novalidate>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="patientName">Patient Name</label>
-            <input
-              id="patientName"
-              type="text"
-              [(ngModel)]="newAppointment.patientName"
-              name="patientName"
-              required
-            />
-            <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.patientName">
-              Patient name is required
-            </small>
-          </div>
-
-          <div class="form-field">
-            <label for="appointmentDate">Date</label>
-            <input
-              id="appointmentDate"
-              type="date"
-              [(ngModel)]="newAppointment.date"
-              name="date"
-              required
-            />
-            <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.date">
-              Date is required
-            </small>
-          </div>
-
-          <!-- Available Slots Dropdown -->
-          <div class="form-field">
-            <label for="appointmentTime">Available Slots</label>
-            <select
-              id="appointmentTime"
-              [(ngModel)]="newAppointment.time"
-              name="time"
-              required
-            >
-              <option value="">Select time</option>
-              <ng-container *ngFor="let slot of availableSlots">
-                <optgroup [label]="slot.date">
-                  <option *ngFor="let t of slot.times" [value]="t">
-                    {{ t }}
-                  </option>
-                </optgroup>
-              </ng-container>
-            </select>
-            <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.time">
-              Time is required
-            </small>
-          </div>
-
-          <div class="form-field">
-            <label for="appointmentStatus">Status</label>
-            <select
-              id="appointmentStatus"
-              [(ngModel)]="newAppointment.status"
-              name="status"
-              required
-            >
-              <option value="">Select status</option>
-              <option value="BOOKED">BOOKED</option>
-              <option value="COMPLETED">COMPLETED</option>
-              <option value="CANCELLED">CANCELLED</option>
-            </select>
-            <small class="error" *ngIf="appointmentForm.submitted && !newAppointment.status">
-              Status is required
-            </small>
-          </div>
-        </div>
-        <br>
-        <div class="text-center">
-          <button
-            class="btn btn-success" 
-            type="submit"
-            [disabled]="appointmentForm.invalid"
-          >
-            Add Appointment
-          </button>
-        </div>
-      </form>
     </section>
 
     <!-- Manage Doctor Availability -->
@@ -183,8 +96,9 @@
                 name="slotEndTime"
                 required
               />
-            </div>
-          </div>
+  </div>
+</div>
+
         </div>
         <br>
         <div class="text-center">
@@ -205,6 +119,195 @@
         </li>
       </ul>
     </section>
+
+    <!-- Completion Popup Card -->
+    <div *ngIf="showCompletionModal" class="modal-overlay" (click)="showCompletionModal = false">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div *ngIf="selectedAppointment">
+      <div class="modal-header">
+        <h2 class="modal-title">Report</h2>
+        <button class="close-btn" (click)="showCompletionModal = false">&times;</button>
+      </div>
+
+          <!-- Modal Actions -->
+      <ul class="nav nav-pills nav-fill">
+        <li class="nav-item">
+          <a class="nav-link" [ngClass]="{'active': activeSection === 'diagnosis'}" (click)="startAddDiagnosis()">Diagnosis</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [ngClass]="{'active': activeSection === 'vitals'}" (click)="startAddVitals()">Vitals</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [ngClass]="{'active': activeSection === 'medications'}" (click)="startAddMedications()">Medications</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [ngClass]="{'active': activeSection === 'billing'}" (click)="startAddBilling()">Billing</a>
+        </li>
+      </ul>
+
+      <div class="profile-details">
+        <div class="form-group">
+          <label>Patient:</label>
+          <p>{{ selectedAppointment.patientName }}</p>
+        </div>
+        <div class="form-group">
+          <label>Date:</label>
+          <p>{{ selectedAppointment.date }}</p>
+        </div>
+      </div>
+
+      <!-- Display Saved Details -->
+      <div class="saved-details" *ngIf="!addingDiagnosis && !addingVitals && !addingMedications && !addingBilling">
+        <div *ngIf="completionData.diagnosis" class="detail-section">
+          <h5>Diagnosis</h5>
+          <p>{{ completionData.diagnosis }}</p>
+        </div>
+        <div *ngIf="completionData.vitals.bloodPressure || completionData.vitals.heartRate || completionData.vitals.temperature || completionData.vitals.spO2" class="detail-section">
+          <h5>Vitals</h5>
+          <p *ngIf="completionData.vitals.bloodPressure">Blood Pressure: {{ completionData.vitals.bloodPressure }}</p>
+          <p *ngIf="completionData.vitals.heartRate">Heart Rate: {{ completionData.vitals.heartRate }}</p>
+          <p *ngIf="completionData.vitals.temperature">Temperature: {{ completionData.vitals.temperature }}</p>
+          <p *ngIf="completionData.vitals.spO2">SpO2: {{ completionData.vitals.spO2 }}</p>
+        </div>
+        <div *ngIf="hasMedications" class="detail-section">
+          <h5>Medications</h5>
+          <div *ngFor="let med of completionData.medications; let i = index">
+            <p *ngIf="med.drug">{{ med.drug }} - {{ med.dose }}, {{ med.route }}, {{ med.frequency }}, {{ med.activity }}</p>
+          </div>
+        </div>
+        <div *ngIf="completionData.billing.consultationFee || completionData.billing.labFee || completionData.billing.medicineFee" class="detail-section">
+          <h5>Billing</h5>
+          <p *ngIf="completionData.billing.consultationType">Type: {{ completionData.billing.consultationType }}</p>
+          <p *ngIf="completionData.billing.consultationFee">Consultation Fee: {{ completionData.billing.consultationFee }}</p>
+          <p *ngIf="completionData.billing.labFee">Lab Fee: {{ completionData.billing.labFee }}</p>
+          <p *ngIf="completionData.billing.medicineFee">Medicine Fee: {{ completionData.billing.medicineFee }}</p>
+          <p *ngIf="completionData.billing.total">Total: {{ completionData.billing.total }}</p>
+          <p *ngIf="completionData.billing.outstanding">Outstanding: {{ completionData.billing.outstanding }}</p>
+        </div>
+      </div>
+
+          <!-- Add Diagnosis Form -->
+          <div *ngIf="addingDiagnosis" class="form-card">
+            <h4 class="form-title">Add Diagnosis</h4>
+            <div class="form-field">
+              <label for="diagnosisField">Diagnosis</label>
+              <textarea id="diagnosisField" [(ngModel)]="completionData.diagnosis" placeholder="Enter diagnosis"></textarea>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" (click)="addingDiagnosis = false">Save</button>
+              <button class="btn btn-secondary" (click)="addingDiagnosis = false; completionData.diagnosis = ''">Cancel</button>
+            </div>
+          </div>
+
+
+
+
+
+          <!-- Add Vitals Form -->
+          <div *ngIf="addingVitals" class="form-card">
+            <h4 class="form-title">Add Vitals</h4>
+            <div class="form-field">
+              <label for="bloodPressure">Blood Pressure</label>
+              <input id="bloodPressure" [(ngModel)]="completionData.vitals.bloodPressure" placeholder="e.g. 120/80" />
+            </div>
+            <div class="form-field">
+              <label for="heartRate">Heart Rate</label>
+              <input id="heartRate" [(ngModel)]="completionData.vitals.heartRate" placeholder="e.g. 72" />
+            </div>
+            <div class="form-field">
+              <label for="temperature">Temperature</label>
+              <input id="temperature" [(ngModel)]="completionData.vitals.temperature" placeholder="e.g. 98.6" />
+            </div>
+            <div class="form-field">
+              <label for="spO2">SpO2</label>
+              <input id="spO2" [(ngModel)]="completionData.vitals.spO2" placeholder="e.g. 98" />
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" (click)="addingVitals = false">Save</button>
+              <button class="btn btn-secondary" (click)="addingVitals = false; completionData.vitals = { bloodPressure: '', heartRate: '', temperature: '', spO2: '' }">Cancel</button>
+            </div>
+          </div>
+
+          <!-- Add Medications Form -->
+          <div *ngIf="addingMedications" class="form-card">
+            <h4 class="form-title">Add Medications</h4>
+            <div *ngFor="let med of completionData.medications; let i = index">
+              <div class="form-field">
+                <label>Drug</label>
+                <input [(ngModel)]="med.drug" placeholder="Drug name" />
+              </div>
+              <div class="form-field">
+                <label>Dose</label>
+                <input [(ngModel)]="med.dose" placeholder="Dose" />
+              </div>
+              <div class="form-field">
+                <label>Route</label>
+                <input [(ngModel)]="med.route" placeholder="Route" />
+              </div>
+              <div class="form-field">
+                <label>Frequency</label>
+                <input [(ngModel)]="med.frequency" placeholder="Frequency" />
+              </div>
+              <div class="form-field">
+                <label>Activity</label>
+                <select [(ngModel)]="med.activity">
+                  <option value="active">Active</option>
+                  <option value="on hold">On Hold</option>
+                  <option value="completed">Completed</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+              <button class="btn btn-danger" (click)="removeMedication(i)">Remove</button>
+            </div>
+            <button class="btn btn-secondary" (click)="addMedication()" *ngIf="completionData.medications.length > 0 && completionData.medications[0].drug">Add Medication</button>
+            <div class="modal-actions">
+              <button class="btn btn-primary" (click)="addingMedications = false">Save</button>
+              <button class="btn btn-secondary" (click)="addingMedications = false; completionData.medications = []">Cancel</button>
+            </div>
+          </div>
+
+          <!-- Add Billing Form -->
+          <div *ngIf="addingBilling" class="form-card">
+            <h4 class="form-title">Add Billing</h4>
+            <div class="form-field">
+              <label for="consultationType">Consultation Type</label>
+              <input id="consultationType" [(ngModel)]="completionData.billing.consultationType" placeholder="e.g. General" />
+            </div>
+            <div class="form-field">
+              <label for="consultationFee">Consultation Fee</label>
+              <input id="consultationFee" type="text" [(ngModel)]="completionData.billing.consultationFee" (input)="calculateTotal()" />
+            </div>
+            <div class="form-field">
+              <label for="labFee">Lab Fee</label>
+              <input id="labFee" type="text" [(ngModel)]="completionData.billing.labFee" (input)="calculateTotal()" />
+            </div>
+            <div class="form-field">
+              <label for="medicineFee">Medicine Fee</label>
+              <input id="medicineFee" type="text" [(ngModel)]="completionData.billing.medicineFee" (input)="calculateTotal()" />
+            </div>
+            <div class="form-field">
+              <label for="total">Total</label>
+              <input id="total" type="text" [(ngModel)]="completionData.billing.total" readonly />
+            </div>
+            <div class="form-field">
+              <label for="outstanding">Outstanding</label>
+              <input id="outstanding" type="text" [(ngModel)]="completionData.billing.outstanding" />
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" (click)="addingBilling = false">Save</button>
+              <button class="btn btn-secondary" (click)="addingBilling = false; completionData.billing = { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' }">Cancel</button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="modal-actions" style="text-align: center; margin-top: 20px;" *ngIf="completionData.billing.consultationFee || completionData.billing.labFee || completionData.billing.medicineFee">
+            <button class="btn btn-success" (click)="submitCompletion()">Submit Completion</button>
+            <button class="btn btn-primary" (click)="downloadAppointmentReport()" style="margin-left: 10px;">Download Report</button>
+          </div>
+
+      </div>
+    </div>
+
 
   </div>
 </div>

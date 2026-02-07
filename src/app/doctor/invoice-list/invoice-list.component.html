@@ -31,7 +31,6 @@
           <div class="table-scroll">
             <div class="invoice-header">
               <h2 class="form-title">Invoices</h2>
-              <button class="btn btn-primary" (click)="openCreateInvoiceModal()">+ Create New Invoice</button>
             </div>
 
             <table>
@@ -167,56 +166,4 @@
   </div>
 </div>
 
-<!-- Create Invoice Modal -->
-<div *ngIf="showCreateInvoiceModal" class="modal-overlay" (click)="closeCreateInvoiceModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <h3>Create New Invoice</h3>
-    <form (ngSubmit)="createInvoice()" #invoiceForm="ngForm">
-      <div class="profile-details">
-        <div class="form-group">
-          <label for="patientId">Patient ID:</label>
-          <input id="patientId" type="number" [(ngModel)]="newInvoice.patientId" name="patientId" required />
-        </div>
-        <div class="form-group">
-          <label for="patientName">Patient Name:</label>
-          <input id="patientName" type="text" [(ngModel)]="newInvoice.patientName" name="patientName" required />
-        </div>
-        <div class="form-group">
-          <label for="consultationType">Consultation Type:</label>
-          <input id="consultationType" type="text" [(ngModel)]="newInvoice.consultationType" name="consultationType" />
-        </div>
-        <div class="form-group">
-          <label for="consultationFee">Consultation Fee:</label>
-          <input id="consultationFee" type="number" [(ngModel)]="newInvoice.consultationFee" name="consultationFee" />
-        </div>
-        <div class="form-group">
-          <label for="labFee">Lab Fee:</label>
-          <input id="labFee" type="number" [(ngModel)]="newInvoice.labFee" name="labFee" />
-        </div>
-        <div class="form-group">
-          <label for="medicineFee">Medicine Fee:</label>
-          <input id="medicineFee" type="number" [(ngModel)]="newInvoice.medicineFee" name="medicineFee" />
-        </div>
-        <div class="form-group">
-          <label for="otherCharges">Other Charges:</label>
-          <input id="otherCharges" type="number" [(ngModel)]="newInvoice.otherCharges" name="otherCharges" />
-        </div>
-        <div class="form-group">
-          <label for="paymentMethod">Payment Method:</label>
-          <select id="paymentMethod" [(ngModel)]="newInvoice.paymentMethod" name="paymentMethod">
-            <option value="Cash">Cash</option>
-            <option value="Card">Card</option>
-            <option value="UPI">UPI</option>
-            <option value="Insurance">Insurance</option>
-          </select>
-        </div>
-      </div>
 
-      <!-- Actions -->
-      <div class="modal-actions">
-        <button class="btn btn-primary" type="submit">Save Invoice</button>
-        <button class="btn btn-secondary" type="button" (click)="closeCreateInvoiceModal()">Cancel</button>
-      </div>
-    </form>
-  </div>
-</div>

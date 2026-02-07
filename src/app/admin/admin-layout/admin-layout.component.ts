@@ -75,7 +75,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         this.menu = [
           { label: 'Dashboard', icon: '📋', link: '/doctor/dashboard' },
           { label: 'Profile', icon: '👤', link: '/doctor/profile' },
-          { label: 'Emr', icon: '🗂️', link: '/doctor/emr' },
           { label: 'Invoices', icon: '🧾', link: '/doctor/invoices' },
           { label: 'Appointments', icon: '📅', link: '/doctor/appointment' },
           { label: 'Patients', icon: '👥', link: '/doctor/patients' },

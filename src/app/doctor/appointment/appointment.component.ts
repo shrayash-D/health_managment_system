@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DoctorDataService, Appointment,} from '../../services/doctor-data.service';
+import { Router } from '@angular/router';
+import { DoctorDataService, Appointment, Consultation, Invoice} from '../../services/doctor-data.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import jsPDF from 'jspdf';
 
 export enum AppointmentStatus {
   BOOKED = 'BOOKED',
@@ -27,18 +29,33 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   slotEndTime = '';
   availableSlots: { date: string; times: string[] }[] = [];
 
-  newAppointment: Appointment = {
-    id: 0,
-    patientName: '',
+  showCompletionModal: boolean = false;
+  selectedAppointment: Appointment | null = null;
+  completionData = {
+    diagnosis: '',
     date: '',
-    time: '',
-    status: '',
-    type: 'new',
+    vitals: { bloodPressure: '', heartRate: '', temperature: '', spO2: '' },
+    medications: [] as { drug: string; dose: string; route: string; frequency: string; activity: string }[],
+    labTests: { cbc: '', lft: '', creatinine: '', hba1c: '' },
+    billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' }
   };
+
+  addingVitals = false;
+  addingMedications = false;
+  addingBilling = false;
+
+  activeSection: string = '';
+
+  showEMRModal = false;
+  selectedConsultation: Consultation | null = null;
+  addingDiagnosis = false;
+  newDiagnosis = '';
+  newLabResult = { testName: '', value: '', unit: '', notes: '' };
+  lastConsultation: Consultation | null = null;
 
   private destroy$ = new Subject<void>();
 
-  constructor(private doctorService: DoctorDataService) {}
+  constructor(private doctorService: DoctorDataService, private router: Router) {}
 
   ngOnInit() {
     this.doctorService.appointments$
@@ -85,30 +102,287 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     });
   }
 
-  completeAppointment(id: number) {
-    this.doctorService.completeAppointment(id);
+  get hasMedications() {
+    return this.completionData.medications.length > 0 && this.completionData.medications.some(med => med.drug);
+  }
+
+  openCompletionModal(id: number) {
+    this.selectedAppointment = this.appointments.find(a => a.id === id) || null;
+    if (this.selectedAppointment) {
+      this.showCompletionModal = true;
+      // Reset completion data
+      this.completionData = {
+        diagnosis: '',
+        date: '',
+        vitals: { bloodPressure: '', heartRate: '', temperature: '', spO2: '' },
+        medications: [{ drug: '', dose: '', route: '', frequency: '', activity: 'active' }],
+        labTests: { cbc: '', lft: '', creatinine: '', hba1c: '' },
+        billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' }
+      };
+      // Set current date
+      this.completionData.date = new Date().toISOString().split('T')[0];
+      // Calculate outstanding from pending bills
+      this.calculateOutstanding();
+      this.addingDiagnosis = false;
+      this.addingVitals = false;
+      this.addingMedications = false;
+      this.addingBilling = false;
+    }
+  }
+
+  addMedication() {
+    this.completionData.medications.push({ drug: '', dose: '', route: '', frequency: '', activity: 'active' });
+  }
+
+  removeMedication(index: number) {
+    this.completionData.medications.splice(index, 1);
+  }
+
+  submitCompletion() {
+    if (!this.selectedAppointment) return;
+
+    // Calculate total
+    this.calculateTotal();
+
+    const consultation: Consultation = {
+      id: Date.now(),
+      patientId: this.selectedAppointment.id,
+      patientName: this.selectedAppointment.patientName,
+      date: this.selectedAppointment.date,
+      diagnosis: this.completionData.diagnosis,
+      labResults: [],
+      vitals: this.completionData.vitals,
+      medications: this.completionData.medications,
+      labTests: this.completionData.labTests,
+      billing: this.completionData.billing
+    };
+
+    this.doctorService.addConsultation(consultation);
+    this.doctorService.completeAppointment(this.selectedAppointment.id);
+
+    // Create invoice
+    const totalAmount = parseFloat(this.completionData.billing.total) || 0;
+    const outstandingAmount = parseFloat(this.completionData.billing.outstanding) || 0;
+    const invoice: Invoice = {
+      id: 'INV' + Date.now(),
+      patientId: this.selectedAppointment.id,
+      patientName: this.selectedAppointment.patientName,
+      amount: totalAmount,
+      paymentStatus: outstandingAmount > 0 ? 'PENDING' : 'PAID',
+      issueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+      paymentMethod: '',
+      transactionId: '',
+      consultationType: this.completionData.billing.consultationType || 'General Consultation',
+      consultationFee: parseFloat(this.completionData.billing.consultationFee) || 0,
+      labFee: parseFloat(this.completionData.billing.labFee) || 0,
+      medicineFee: parseFloat(this.completionData.billing.medicineFee) || 0,
+      otherCharges: 0,
+      subtotal: totalAmount
+    };
+    this.doctorService.addInvoice(invoice);
+
+    // Update patient history
+    const patient = this.doctorService.getPatientById(this.selectedAppointment.id);
+    if (patient) {
+      const updatedPatient = { ...patient };
+      if (this.completionData.diagnosis) {
+        updatedPatient.diagnosis = this.completionData.diagnosis;
+      }
+      if (this.completionData.medications.length > 0) {
+        const medicationList = this.completionData.medications
+          .filter(med => med.drug)
+          .map(med => `${med.drug} ${med.dose} ${med.route} ${med.frequency}`)
+          .join(', ');
+        updatedPatient.ongoingTreatment = medicationList;
+      }
+      updatedPatient.lastAppointment = this.selectedAppointment.date;
+      this.doctorService.updatePatient(updatedPatient);
+    }
+
+    this.showCompletionModal = false;
+    this.selectedAppointment = null;
   }
 
   cancelAppointment(id: number) {
     this.doctorService.cancelAppointment(id);
   }
 
-  scheduleAppointment() {
-    if (
-      this.newAppointment.patientName &&
-      this.newAppointment.date &&
-      this.newAppointment.time &&
-      this.newAppointment.status
-    ) {
-      this.doctorService.addAppointment(this.newAppointment);
-      this.newAppointment = {
-        id: 0,
-        patientName: '',
-        date: '',
-        time: '',
-        status: '',
-        type: 'new',
-      };
+  startAddDiagnosis() {
+    this.addingVitals = false;
+    this.addingMedications = false;
+    this.addingBilling = false;
+    this.addingDiagnosis = true;
+    this.activeSection = 'diagnosis';
+  }
+
+  startAddVitals() {
+    this.addingVitals = true;
+    this.addingMedications = false;
+    this.addingBilling = false;
+    this.addingDiagnosis = false;
+    this.activeSection = 'vitals';
+  }
+
+  startAddMedications() {
+    this.addingVitals = false;
+    this.addingMedications = true;
+    this.addingBilling = false;
+    this.addingDiagnosis = false;
+    this.activeSection = 'medications';
+  }
+
+  startAddBilling() {
+    this.addingVitals = false;
+    this.addingMedications = false;
+    this.addingBilling = true;
+    this.addingDiagnosis = false;
+    this.activeSection = 'billing';
+  }
+
+
+
+  saveVitals() {
+    this.addingVitals = false;
+  }
+
+  cancelVitals() {
+    this.addingVitals = false;
+    // Optionally reset vitals data
+    this.completionData.vitals = { bloodPressure: '', heartRate: '', temperature: '', spO2: '' };
+  }
+
+  saveMedications() {
+    this.addingMedications = false;
+  }
+
+  cancelMedications() {
+    this.addingMedications = false;
+    // Optionally reset medications data
+    this.completionData.medications = [];
+  }
+
+
+
+  saveBilling() {
+    this.addingBilling = false;
+  }
+
+  cancelBilling() {
+    this.addingBilling = false;
+    // Optionally reset billing data
+    this.completionData.billing = { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' };
+  }
+
+  // EMR Navigation method
+  openEMRModal(consultation: Consultation) {
+    this.router.navigate(['/doctor/emr'], { queryParams: { consultationId: consultation.id } });
+  }
+
+  closeEMRModal() {
+    this.showEMRModal = false;
+    this.selectedConsultation = null;
+    this.addingDiagnosis = false;
+  }
+
+  downloadAppointmentReport() {
+    if (!this.selectedAppointment) return;
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Appointment Completion Report', 20, 20);
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+
+    doc.text(`Patient: `, 20, 40);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${this.selectedAppointment.patientName}`, 60, 40);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Date: `, 20, 50);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${this.selectedAppointment.date}`, 60, 50);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Diagnosis: `, 20, 60);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${this.completionData.diagnosis || 'Not provided'}`, 60, 60);
+
+    let yPos = 80;
+
+    if (this.completionData.vitals.bloodPressure || this.completionData.vitals.heartRate || this.completionData.vitals.temperature || this.completionData.vitals.spO2) {
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Vitals:`, 20, yPos);
+      doc.setFont('helvetica', 'bold');
+      if (this.completionData.vitals.bloodPressure) doc.text(`Blood Pressure: ${this.completionData.vitals.bloodPressure}`, 30, yPos + 10);
+      if (this.completionData.vitals.heartRate) doc.text(`Heart Rate: ${this.completionData.vitals.heartRate}`, 30, yPos + 20);
+      if (this.completionData.vitals.temperature) doc.text(`Temperature: ${this.completionData.vitals.temperature}`, 30, yPos + 30);
+      if (this.completionData.vitals.spO2) doc.text(`SpO2: ${this.completionData.vitals.spO2}`, 30, yPos + 40);
+      yPos += 60;
     }
+
+    if (this.completionData.medications.length > 0 && this.completionData.medications.some(m => m.drug)) {
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Medications:`, 20, yPos);
+      doc.setFont('helvetica', 'bold');
+      this.completionData.medications.filter(m => m.drug).forEach((med, i) => {
+        doc.text(`- ${med.drug} (${med.dose}, ${med.route}, ${med.frequency}, ${med.activity})`, 30, yPos + 10 + i * 10);
+      });
+      yPos += 20 + this.completionData.medications.filter(m => m.drug).length * 10;
+    }
+
+    if (this.completionData.billing.consultationFee || this.completionData.billing.labFee || this.completionData.billing.medicineFee) {
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Billing:`, 20, yPos);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Type: ${this.completionData.billing.consultationType || 'N/A'}`, 30, yPos + 10);
+      doc.text(`Consultation Fee: $${this.completionData.billing.consultationFee}`, 30, yPos + 20);
+      doc.text(`Lab Fee: $${this.completionData.billing.labFee}`, 30, yPos + 30);
+      doc.text(`Medicine Fee: $${this.completionData.billing.medicineFee}`, 30, yPos + 40);
+      doc.text(`Total: $${this.completionData.billing.total}`, 30, yPos + 50);
+      doc.text(`Outstanding: $${this.completionData.billing.outstanding}`, 30, yPos + 60);
+    }
+
+    doc.save(`${this.selectedAppointment.patientName}_Appointment_Report.pdf`);
+  }
+
+  downloadEMRReport() {
+    // Implement download logic here
+    console.log('Downloading EMR Report for', this.selectedConsultation?.patientName);
+  }
+
+  
+
+  addLabResult(patientId: number, labResult: any) {
+    // Implement add lab result logic
+    console.log('Adding lab result for patient', patientId, labResult);
+    this.addingDiagnosis = false;
+    this.newLabResult = { testName: '', value: '', unit: '', notes: '' };
+  }
+
+  cancelDiagnosis() {
+    this.addingDiagnosis = false;
+    this.newDiagnosis = '';
+    this.newLabResult = { testName: '', value: '', unit: '', notes: '' };
+  }
+
+  calculateOutstanding() {
+    if (!this.selectedAppointment) return;
+    // Get pending invoices for this patient
+    const pendingInvoices = this.doctorService.getInvoices().filter(inv =>
+      inv.patientId === this.selectedAppointment!.id && inv.paymentStatus === 'PENDING'
+    );
+    const outstandingAmount = pendingInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+    this.completionData.billing.outstanding = outstandingAmount > 0 ? outstandingAmount.toString() : '';
+  }
+
+  calculateTotal() {
+    const consultation = parseFloat(this.completionData.billing.consultationFee) || 0;
+    const lab = parseFloat(this.completionData.billing.labFee) || 0;
+    const medicine = parseFloat(this.completionData.billing.medicineFee) || 0;
+    this.completionData.billing.total = (consultation + lab + medicine).toString();
   }
 }
