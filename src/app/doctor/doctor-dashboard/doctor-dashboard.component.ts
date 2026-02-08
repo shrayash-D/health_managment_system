@@ -22,7 +22,7 @@ export class DoctorDashboardComponent implements OnInit {
     datasets: [
       {
         data: [120, 80],
-        backgroundColor: ['#007bff', '#28a745']
+        backgroundColor: ['#0a5b8f', '#27ae60']
       }
     ]
   };

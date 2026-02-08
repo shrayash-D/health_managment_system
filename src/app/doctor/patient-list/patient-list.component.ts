@@ -51,6 +51,22 @@ export class PatientListComponent implements OnInit {
     );
   }
 
+  formatContact(contact: string): string {
+    if (!contact) return '';
+    // Remove all non-digit characters
+    const digits = contact.replace(/\D/g, '');
+    // If it starts with 91, format as +91 XXXXX XXXXX
+    if (digits.startsWith('91') && digits.length === 12) {
+      return `+91 ${digits.slice(2, 7)} ${digits.slice(7)}`;
+    }
+    // If it's 10 digits, assume Indian mobile, add +91
+    if (digits.length === 10) {
+      return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+    }
+    // Otherwise, return as is
+    return contact;
+  }
+
   downloadHistory(): void {
     if (!this.selectedPatient) return;
     const patient = this.selectedPatient;
@@ -75,7 +91,7 @@ export class PatientListComponent implements OnInit {
     doc.setFont('helvetica', 'normal');
     doc.text(`Contact: `, 20, 60);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${patient.contactInfo}`, 60, 60);
+    doc.text(`${this.formatContact(patient.contactInfo)}`, 60, 60);
 
     doc.setFont('helvetica', 'normal');
     doc.text(`Blood Group: `, 20, 70);

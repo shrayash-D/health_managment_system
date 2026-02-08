@@ -1,7 +1,8 @@
+/* General Container */
 .container-fluid {
   flex: 1;
   padding: 1rem;
-  background: #f9fbff;
+  background: linear-gradient(180deg, #f6fafd 0%, #f2f7fb 100%);
   min-height: 100vh;
   transition: margin-left 0.3s ease;
 }
@@ -10,36 +11,96 @@
   margin-left: 70px;
 }
 
+/* Hero Section */
+.hero {
+  background: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%);
+  border-radius: 12px;
+  padding: 2rem;
+  color: white;
+  box-shadow: 0 1px 2px rgba(10, 91, 143, 0.08), 0 6px 18px rgba(10, 91, 143, 0.12);
+  margin-bottom: 2rem;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.hero p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Cards */
 .card {
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(10, 91, 143, 0.08), 0 6px 18px rgba(10, 91, 143, 0.12);
+  border: 1px solid #e6eff6;
   background: #fff;
   height: auto;
   min-height: 160px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(10, 91, 143, 0.15);
 }
 
 .card-body {
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.5rem;
 }
 
 .card-header {
   font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%);
+  color: white;
+  border-radius: 12px 12px 0 0 !important;
 }
 
 .card-body h5 {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  color: #15181c;
 }
 
 .card-body h3 {
-  font-size: 1.4rem;
-  margin-top: 6px;
+  font-size: 1.6rem;
+  margin-top: 0.5rem;
+  font-weight: 700;
 }
 
+/* Summary Cards Specific */
+.row.text-center .card:nth-child(1) .card-body {
+  background: linear-gradient(135deg, #bfd6e6 0%, #e6eff6 100%);
+}
+
+.row.text-center .card:nth-child(2) .card-body {
+  background: linear-gradient(135deg, #1767a3 0%, #2c89c7 100%);
+  color: white;
+}
+
+.row.text-center .card:nth-child(2) .card-body h5,
+.row.text-center .card:nth-child(2) .card-body h3 {
+  color: white;
+}
+
+.row.text-center .card:nth-child(3) .card-body {
+  background: linear-gradient(135deg, #ffb020 0%, #e74c3c 100%);
+  color: white;
+}
+
+.row.text-center .card:nth-child(3) .card-body h5,
+.row.text-center .card:nth-child(3) .card-body h3 {
+  color: white;
+}
+
+/* Chart */
 .card .card-body canvas {
   display: block;
   width: 100% !important;
@@ -49,72 +110,83 @@
   padding: 0.5rem;
 }
 
+/* List Items */
 .list-group-item {
   font-size: 0.9rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.list-group-item:hover {
+  background: rgba(10, 91, 143, 0.1);
 }
 
 .list-group-item .badge {
   font-size: 0.75rem;
   padding: 4px 8px;
-  border-radius: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%) !important;
+  color: white;
 }
 
+/* Patient Details */
 .card.patient-details p {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
   font-size: 0.9rem;
-  color: #333;
+  color: #374151;
 }
 
 .card.patient-details h5 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  color: #15181c;
 }
 
-.review-bar p {
-  font-size: 0.85rem;
-  margin-bottom: 0.3rem;
-  font-weight: 500;
-}
-
+/* Calendar */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 1rem;
 }
 
 .calendar-grid span {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1f3f9;
-  border-radius: 6px;
+  background: #f3f7fa;
+  border-radius: 8px;
   padding: 8px;
   font-size: 0.9rem;
-  color: #333;
-  transition: background 0.2s ease;
-}
-
-.calendar-grid span:hover {
-  background: #e2e6f0;
+  color: #374151;
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
-.calendar-grid .bg-primary {
-  background: #007bff !important;
-  color: #fff !important;
-  border-radius: 50%;
+.calendar-grid span:hover {
+  background: #0a5b8f;
+  color: white;
+  transform: scale(1.05);
 }
 
+.calendar-grid .bg-primary {
+  background: #0a5b8f !important;
+  color: #fff !important;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(10, 91, 143, 0.3);
+}
+
+/* Responsive Design */
 @media (max-width: 992px) {
   .row > div {
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
   }
 
   .card-body h3 {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
   }
 
   .row > .col-md-4 {
@@ -128,7 +200,19 @@
 
   .calendar-grid span {
     font-size: 0.8rem;
-    padding: 6px;
+    padding: 8px;
+  }
+
+  .hero {
+    padding: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
   }
 }
 
@@ -153,11 +237,23 @@
 
   .calendar-grid {
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    gap: 6px;
   }
 
   .calendar-grid span {
     font-size: 0.75rem;
-    padding: 5px;
+    padding: 6px;
+  }
+
+  .hero {
+    padding: 1rem;
+  }
+
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .hero p {
+    font-size: 0.9rem;
   }
 }
