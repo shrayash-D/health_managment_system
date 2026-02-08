@@ -6,6 +6,8 @@ import {
   AuthUser,
   LoginRequest,
   LoginResponse,
+  SignupRequest,
+  SignupResponse,
 } from '../models/auth.interface';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -58,6 +60,23 @@ export class AuthService {
           // Update BehaviorSubject
           this.currentUserSubject.next(user);
 
+          return response;
+        }),
+        catchError(this.handleError),
+      );
+  }
+
+  /**
+   * Signup with API call
+   * @param signupRequest - email, password, name, role, phoneNumber, and optional dob
+   * @returns Observable<SignupResponse>
+   */
+  signupWithAPI(signupRequest: SignupRequest): Observable<SignupResponse> {
+    return this.http
+      .post<SignupResponse>(`${this.apiUrl}/signup`, signupRequest)
+      .pipe(
+        map((response: SignupResponse) => {
+          console.log('Signup successful:', response);
           return response;
         }),
         catchError(this.handleError),

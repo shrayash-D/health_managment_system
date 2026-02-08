@@ -24,3 +24,19 @@ export interface LoginResponse {
   refreshToken: string;
   expiresAt: string;
 }
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  name: string;
+  role: string;
+  phoneNumber: string;
+  dob?: string; // Optional ISO date string
+}
+
+export interface SignupResponse {
+  id: string;
+  email: string;
+  name: string;
+  phoneNumber: string;
+}
