@@ -90,16 +90,31 @@
           </div>
         </div>
 
+        <!-- Error Message -->
+        <div class="form-field span-2" *ngIf="errorMessage">
+          <div
+            class="error-message"
+            style="
+              color: red;
+              padding: 10px;
+              background-color: #ffe6e6;
+              border-radius: 4px;
+            "
+          >
+            {{ errorMessage }}
+          </div>
+        </div>
+
         <!-- Actions -->
         <div class="form-actions span-2">
-            <p class="link" routerLink="/signup">Want to create account ?</p>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              [disabled]="loginForm.invalid"
-            >
-              Login
-            </button>
+          <p class="link" routerLink="/signup">Want to create account ?</p>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="loginForm.invalid || isLoading"
+          >
+            {{ isLoading ? "Logging in..." : "Login" }}
+          </button>
         </div>
       </form>
     </section>
