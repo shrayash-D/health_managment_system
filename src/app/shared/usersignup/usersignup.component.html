@@ -92,19 +92,64 @@
             />
             <!-- <button type="button" class="icon-btn eye" (click)="toggle('confirm')">{{ confirmVisible ? '🙈' : '👁️' }}</button> -->
           </div>
+          <div
+            class="error"
+            *ngIf="
+              signupForm.errors?.['mismatch'] &&
+              signupForm.get('confirm')?.touched
+            "
+          >
+            Passwords do not match.
+          </div>
         </div>
 
         <div class="form-field span-2">
           <label class="checkbox">
-            <input type="checkbox" />
+            <input type="checkbox" formControlName="terms" />
             <span>I agree to the terms and privacy policy</span>
           </label>
+        </div>
+
+        <!-- Error Message -->
+        <div class="form-field span-2" *ngIf="errorMessage">
+          <div
+            class="error-message"
+            style="
+              color: red;
+              padding: 10px;
+              background-color: #ffe6e6;
+              border-radius: 4px;
+            "
+          >
+            {{ errorMessage }}
+          </div>
+        </div>
+
+        <!-- Success Message -->
+        <div class="form-field span-2" *ngIf="successMessage">
+          <div
+            class="success-message"
+            style="
+              color: green;
+              padding: 10px;
+              background-color: #e6ffe6;
+              border-radius: 4px;
+            "
+          >
+            {{ successMessage }}
+          </div>
         </div>
 
         <div class="form-actions span-2">
           <!-- <div class="buttons"> -->
           <a class="link" routerLink="/login">Already have an account?</a>
-          <button type="submit" class="btn btn-primary">Create Account</button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="signupForm.invalid || isLoading"
+          >
+            {{ isLoading ? "Creating Account..." : "Create Account" }}
+          </button>
           <!-- </div> -->
         </div>
       </form>

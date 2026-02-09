@@ -10,7 +10,7 @@ import {
   FormControl,
 } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { AuthUser } from '../../models/auth.interface';
+import { AuthUser, SignupRequest } from '../../models/auth.interface';
 
 @Component({
   selector: 'app-signup',
@@ -21,6 +21,9 @@ import { AuthUser } from '../../models/auth.interface';
 })
 export class UsersignupComponent implements OnInit {
   signupForm!: FormGroup;
+  isLoading = false;
+  errorMessage = '';
+  successMessage = '';
 
   passVisible = false;
   confirmVisible = false;
@@ -36,7 +39,7 @@ export class UsersignupComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -58,7 +61,7 @@ export class UsersignupComponent implements OnInit {
         confirm: new FormControl('', Validators.required),
         terms: new FormControl(false),
       },
-      { validators: this.passwordMatchValidator }
+      { validators: this.passwordMatchValidator },
     );
   }
 
@@ -81,32 +84,51 @@ export class UsersignupComponent implements OnInit {
   signup() {
     console.log('Attempting signup...');
     const fv = this.signupForm.value;
-    const user: AuthUser = {
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const signupRequest: SignupRequest = {
       email: fv.email ?? '',
-      role: fv.role ?? '',
+      password: fv.password ?? '',
+      name: fv.name ?? '',
+      role: fv.role?.toUpperCase() ?? '', // Convert to uppercase (PATIENT, DOCTOR, ADMIN)
+      phoneNumber: fv.phone ?? '',
+      dob: fv.dob ? new Date(fv.dob).toISOString() : undefined,
     };
-    this.authService.signup(user);
+
+    // Call the API
+    this.authService.signupWithAPI(signupRequest).subscribe({
+      next: (response) => {
+        console.log('Signup successful:', response);
+        this.isLoading = false;
+        this.successMessage =
+          'Account created successfully! Redirecting to login...';
+
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      },
+      error: (error) => {
+        console.error('Signup failed:', error);
+        this.isLoading = false;
+        this.errorMessage = error.message || 'Signup failed. Please try again.';
+      },
+    });
   }
 
   // ✅ Handle form submission
   onSubmit() {
     if (this.signupForm.valid) {
       console.log('Form Submitted:', this.signupForm.value);
-
-      if (this.signupForm.valid) {
-        this.signup();
-        const role = this.signupForm.value.role;
-        console.log('Form is valid, proceeding with signup', role);
-        if (role === 'ADMIN') this.router.navigate(['/admin']);
-        else if (role === 'PATIENT') this.router.navigate(['/patient']);
-        else if (role === 'DOCTOR') this.router.navigate(['/doctor']);
-      } else {
-        this.signupForm.markAllAsTouched();
-      }
+      this.signup();
     } else {
       console.log('Form is invalid');
       console.log(this.signupForm.errors);
       this.signupForm.markAllAsTouched();
+      this.errorMessage = 'Please fill in all required fields correctly.';
     }
   }
 }
