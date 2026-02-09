@@ -83,6 +83,54 @@ export class AuthService {
       );
   }
 
+  /**
+   * Refresh the access token using the refresh token
+   * @returns Observable<LoginResponse>
+   */
+  refreshToken(): Observable<LoginResponse> {
+    const email = this.currentUserValue?.email;
+    const refreshToken = this.getRefreshToken();
+
+    if (!email || !refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    return this.http
+      .post<LoginResponse>(AUTH_API_ENDPOINTS.refresh, {
+        email,
+        refreshToken,
+      })
+      .pipe(
+        map((response: LoginResponse) => {
+          // Update user data and tokens
+          const user: AuthUser = {
+            id: response.id,
+            email: response.email,
+            name: response.name,
+            role: response.role,
+            token: response.token,
+            refreshToken: response.refreshToken,
+            expiresAt: new Date(response.expiresAt),
+          };
+
+          // Save to localStorage
+          localStorage.setItem(this.storageKey, JSON.stringify(user));
+          localStorage.setItem(this.tokenKey, response.token);
+          localStorage.setItem(this.refreshTokenKey, response.refreshToken);
+
+          // Update BehaviorSubject
+          this.currentUserSubject.next(user);
+
+          return response;
+        }),
+        catchError((error) => {
+          // If refresh fails, logout the user
+          this.logout();
+          return throwError(() => error);
+        }),
+      );
+  }
+
   signup(user: AuthUser): void {
     console.log('Signing up user:', user);
     localStorage.setItem(this.storageKey, JSON.stringify(user));
