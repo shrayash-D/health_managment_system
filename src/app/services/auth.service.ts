@@ -11,6 +11,7 @@ import {
 } from '../models/auth.interface';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { AUTH_API_ENDPOINTS } from '../constants/api/auth-endpoints';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +22,6 @@ export class AuthService {
   private readonly refreshTokenKey = 'refresh_token';
   private currentUserSubject: BehaviorSubject<AuthUser | null>;
   public currentUser$: Observable<AuthUser | null>;
-  private apiUrl = `${environment.apiUrl}/Auth`;
 
   constructor(private http: HttpClient) {
     const stored = localStorage.getItem(this.storageKey);
@@ -38,7 +38,7 @@ export class AuthService {
    */
   loginWithAPI(loginRequest: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/login`, loginRequest)
+      .post<LoginResponse>(AUTH_API_ENDPOINTS.login, loginRequest)
       .pipe(
         map((response: LoginResponse) => {
           // Store user data and token
@@ -73,7 +73,7 @@ export class AuthService {
    */
   signupWithAPI(signupRequest: SignupRequest): Observable<SignupResponse> {
     return this.http
-      .post<SignupResponse>(`${this.apiUrl}/signup`, signupRequest)
+      .post<SignupResponse>(AUTH_API_ENDPOINTS.signup, signupRequest)
       .pipe(
         map((response: SignupResponse) => {
           console.log('Signup successful:', response);
