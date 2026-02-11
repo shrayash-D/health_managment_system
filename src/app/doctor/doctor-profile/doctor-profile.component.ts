@@ -37,6 +37,7 @@ export class DoctorProfileComponent  {
       countryCode: [this.doctor.countryCode, Validators.required],
       phone: [this.doctor.phone, [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
       specialization: [this.doctor.specialization, Validators.required],
+      experience: [this.doctor.experience, Validators.required],
       bio: [this.doctor.bio]
     });
     this.photoUrl = this.doctor.photoUrl; // ✅ initialize here

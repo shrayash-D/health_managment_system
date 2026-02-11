@@ -105,7 +105,6 @@ export class DoctorDataService {
     bio: 'Experienced cardiologist with 10+ years in patient care.',
     role: 'Doctor',
     experience: '10+ years',
-    memberSince: '2021',
     photoUrl: localStorage.getItem('doctorPhoto') || null
   });
 

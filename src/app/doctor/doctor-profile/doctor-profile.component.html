@@ -17,7 +17,6 @@
                     <span class="chip">Role: {{ doctor.role }}</span>
                     <span class="chip">Specialization: {{ doctor.specialization }}</span>
                     <span class="chip">Experience: {{ doctor.experience }}</span>
-                    <span class="chip">Member since: {{ doctor.memberSince }}</span>
                     <span class="chip">{{ doctor.email }}</span>
                     <span class="chip">{{ doctor.countryCode }} {{ doctor.phone }}</span>
                   </div>
@@ -41,12 +40,12 @@
             
             <div class="form-field">
               <label for="fullName">Full Name</label>
-              <input id="fullName" type="text" formControlName="fullName" readonly />
+              <input id="fullName" type="text" formControlName="fullName" [readonly]="!isEditing" />
             </div>
 
             <div class="form-field">
               <label for="email">Email</label>
-              <input id="email" type="email" formControlName="email" [readonly]="!isEditing" />
+              <input id="email" type="email" formControlName="email" readonly />
               <small class="error" *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
                 Invalid email
               </small>
@@ -76,6 +75,11 @@
             <div class="form-field">
               <label for="specialization">Specialization</label>
               <input id="specialization" type="text" formControlName="specialization" readonly />
+            </div>
+
+            <div class="form-field">
+              <label for="experience">Experience</label>
+              <input id="experience" type="text" formControlName="experience" [readonly]="!isEditing" />
             </div>
 
             <div class="form-field span-2">

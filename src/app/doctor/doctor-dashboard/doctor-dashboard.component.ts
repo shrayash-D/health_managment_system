@@ -17,23 +17,10 @@ export class DoctorDashboardComponent implements OnInit {
   todayDate: number = this._today.getDate();
   todayYear: number = this._today.getFullYear();
 
-  pieChartData: ChartData<'pie'> = {
-    labels: ['New Patients', 'Old Patients'],
-    datasets: [
-      {
-        data: [120, 80],
-        backgroundColor: ['#0a5b8f', '#27ae60']
-      }
-    ]
-  };
+  
 
-  pieChartOptions: ChartOptions<'pie'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'bottom' }
-    }
-  };
+ 
+  
 
   todayAppointments = [
     { name: 'M.J. Mical', diagnosis: 'Health Checkup', status: 'On Going' },
