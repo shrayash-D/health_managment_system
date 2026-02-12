@@ -1,11 +1,25 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { Patient } from '../models/patient.interface';
+import { HttpClient } from '@angular/common/http';
+import { Patient, PatientApiResponse } from '../models/patient.interface';
+import { environment } from '../../environments/environment';
+import { PATIENT_API_ENDPOINTS } from '../constants/api/api-endpoints';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PatientService {
+  constructor(private http: HttpClient) {}
+
+  getPatientByUserId(userId: string): Observable<PatientApiResponse> {
+    var data = this.http.get<PatientApiResponse>(
+      `${PATIENT_API_ENDPOINTS.getPatientById}/${userId}?isUserId=true`,
+    );
+
+    console.log('ajhcdbajdhc', data);
+    return data;
+  }
+
   private mockPatients: Patient[] = [
     {
       id: 1,

@@ -6,6 +6,8 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { PatientService } from '../../services/patient.service';
+import { PatientApiResponse } from '../../models/patient.interface';
 
 interface Profile {
   name: string;
@@ -30,34 +32,76 @@ export class UserprofileComponent implements OnInit {
   tempPhotoUrl?: string | null = null;
   showSavePhotoBtn = false;
   saved = false;
+  loading = false;
+  patientData?: PatientApiResponse;
 
   private storageKey = 'userProfile';
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private patientService: PatientService,
+  ) {}
 
   ngOnInit(): void {
-    const stored = localStorage.getItem(this.storageKey);
-    const initial: Profile = stored
-      ? (JSON.parse(stored) as Profile)
-      : {
-          name: 'Shrayash Desai',
-          email: 'shrayash@example.com',
-          phone: '+91 98XXX XXX90',
-          dob: '',
-          address: '',
-          role: 'Patient',
-          photo: undefined,
-        };
+    // Initialize form immediately to prevent template errors
+    this.initializeDefaultForm();
+    this.loadPatientData();
+  }
 
-    this.photoPreview = initial.photo ?? null;
+  loadPatientData(): void {
+    // Get userId from localStorage
+    var currentuser = localStorage.getItem('currentUser');
+    var userId = currentuser ? JSON.parse(currentuser).id : null;
 
+    if (!userId) {
+      console.error('User ID not found in localStorage');
+      this.initializeDefaultForm();
+      return;
+    }
+
+    this.loading = true;
+    this.patientService.getPatientByUserId(userId).subscribe({
+      next: (data: PatientApiResponse) => {
+        this.patientData = data;
+        this.photoPreview = data.profileImage || null;
+
+        // Format the date for the input field
+        const dob = data.user.dob
+          ? new Date(data.user.dob).toISOString().split('T')[0]
+          : '';
+
+        this.profileForm = this.fb.group({
+          name: [data.user.name || '', Validators.required],
+          email: [
+            data.user.email || '',
+            [Validators.required, Validators.email],
+          ],
+          phone: [data.user.phoneNumber || ''],
+          dob: [dob],
+          address: [''],
+          role: ['Patient'],
+          bloodGroup: [data.bloodGroup || ''],
+        });
+
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching patient data:', error);
+        this.loading = false;
+        this.initializeDefaultForm();
+      },
+    });
+  }
+
+  initializeDefaultForm(): void {
     this.profileForm = this.fb.group({
-      name: [initial.name, Validators.required],
-      email: [initial.email, [Validators.required, Validators.email]],
-      phone: [initial.phone],
-      dob: [initial.dob],
-      address: [initial.address],
-      role: [initial.role],
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: [''],
+      dob: [''],
+      address: [''],
+      role: ['Patient'],
+      bloodGroup: [''],
     });
   }
   get displayName(): string {
@@ -66,6 +110,10 @@ export class UserprofileComponent implements OnInit {
 
   get displayRole(): string {
     return this.profileForm?.get('role')?.value || '';
+  }
+
+  get displayEmail(): string {
+    return this.profileForm?.get('email')?.value || '';
   }
 
   onPhotoSelect(event: Event | any): void {

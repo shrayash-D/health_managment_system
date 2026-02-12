@@ -7,3 +7,7 @@ export const AUTH_API_ENDPOINTS = {
   signup: `${API_BASE_URL}/auth/signup`,
   refresh: `${API_BASE_URL}/auth/Refresh`,
 };
+
+export const PATIENT_API_ENDPOINTS = {
+  getPatientById : `${API_BASE_URL}/patient`,
+}
