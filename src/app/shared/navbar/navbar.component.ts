@@ -42,13 +42,13 @@ export class NavbarComponent {
   goToDashboard() {
     const role = this.authService.currentUserValue?.role;
 
-    if (role == 'patient') {
+    if (role == 'PATIENT') {
       this.router.navigate(['/patient']);
     }
-    if (role == 'doctor') {
+    if (role == 'DOCTOR') {
       this.router.navigate(['/doctor']);
     }
-    if (role == 'admin') {
+    if (role == 'ADMIN') {
       this.router.navigate(['/admin']);
     }
   }
