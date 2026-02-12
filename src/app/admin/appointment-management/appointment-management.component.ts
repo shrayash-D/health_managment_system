@@ -27,8 +27,6 @@ export class AppointmentManagementComponent implements OnInit {
   searchTerm: string = '';
   statusFilter: AppointmentStatus | 'ALL' = 'ALL';
   showAddModal: boolean = false;
-  showEditModal: boolean = false;
-  selectedAppointment: Appointment | null = null;
 
   newAppointment: Partial<Appointment> = {
     patientId: 0,
@@ -43,7 +41,7 @@ export class AppointmentManagementComponent implements OnInit {
   constructor(
     private appointmentService: AppointmentService,
     private doctorService: DoctorService,
-    private patientService: PatientService
+    private patientService: PatientService,
   ) {}
 
   ngOnInit(): void {
@@ -65,7 +63,7 @@ export class AppointmentManagementComponent implements OnInit {
           doctorName:
             doctors.find((d) => d.id === apt.doctorId)?.name || apt.doctorName,
         }));
-      })
+      }),
     );
     this.doctors$ = this.doctorService.getAllDoctors();
     this.patients$ = this.patientService.getAllPatients();
@@ -88,16 +86,6 @@ export class AppointmentManagementComponent implements OnInit {
     this.showAddModal = false;
   }
 
-  openEditModal(appointment: Appointment): void {
-    this.selectedAppointment = { ...appointment };
-    this.showEditModal = true;
-  }
-
-  closeEditModal(): void {
-    this.showEditModal = false;
-    this.selectedAppointment = null;
-  }
-
   createAppointment(): void {
     if (
       this.newAppointment.patientId &&
@@ -115,20 +103,6 @@ export class AppointmentManagementComponent implements OnInit {
         .subscribe(() => {
           this.loadData();
           this.closeAddModal();
-        });
-    }
-  }
-
-  updateAppointment(): void {
-    if (this.selectedAppointment) {
-      this.appointmentService
-        .updateAppointment(
-          this.selectedAppointment.id,
-          this.selectedAppointment
-        )
-        .subscribe(() => {
-          this.loadData();
-          this.closeEditModal();
         });
     }
   }
@@ -154,7 +128,7 @@ export class AppointmentManagementComponent implements OnInit {
         (a) =>
           a.patientName?.toLowerCase().includes(term) ||
           a.doctorName?.toLowerCase().includes(term) ||
-          a.reason?.toLowerCase().includes(term)
+          a.reason?.toLowerCase().includes(term),
       );
     }
 
