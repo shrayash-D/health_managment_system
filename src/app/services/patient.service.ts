@@ -41,6 +41,20 @@ export class PatientService {
     return data;
   }
 
+  uploadProfileImage(file: File, description?: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('File', file);
+    if (description) {
+      formData.append('FileDescription', description);
+    }
+
+    return this.http.post(`${USER_API_ENDPOINTS.updateProfileImage}`, formData);
+  }
+
+  deleteProfileImage(): Observable<any> {
+    return this.http.delete(`${USER_API_ENDPOINTS.deleteProfileImage}`);
+  }
+
   private mockPatients: Patient[] = [
     {
       id: 1,

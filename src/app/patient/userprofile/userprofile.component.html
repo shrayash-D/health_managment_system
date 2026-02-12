@@ -57,6 +57,17 @@
                 Remove photo
               </button>
             </div>
+            <div
+              *ngIf="photoUploadSuccess || photoUploadError"
+              class="photo-messages"
+            >
+              <div *ngIf="photoUploadSuccess" class="success-message">
+                Profile image updated successfully!
+              </div>
+              <div *ngIf="photoUploadError" class="error-message">
+                {{ photoUploadError }}
+              </div>
+            </div>
           </section>
         </div>
       </div>
@@ -180,7 +191,7 @@
           Update Password
         </button>
       </div>
-      <div *ngIf="passwordUpdateSuccess" class="success-message ">
+      <div *ngIf="passwordUpdateSuccess" class="success-message">
         Password updated successfully!
       </div>
       <div *ngIf="passwordUpdateError" class="error-message">

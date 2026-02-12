@@ -37,6 +37,9 @@ export class UserprofileComponent implements OnInit {
   patientData?: PatientApiResponse;
   passwordUpdateSuccess = false;
   passwordUpdateError = '';
+  selectedFile?: File;
+  photoUploadSuccess = false;
+  photoUploadError = '';
 
   private storageKey = 'userProfile';
 
@@ -155,6 +158,7 @@ export class UserprofileComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input?.files || input.files.length === 0) return;
     const file = input.files[0];
+    this.selectedFile = file; // Store the file for upload
     const reader = new FileReader();
     reader.onload = () => {
       this.tempPhotoUrl = reader.result as string;
@@ -164,43 +168,59 @@ export class UserprofileComponent implements OnInit {
   }
 
   removePhoto(): void {
-    // remove from both temp and persisted storage
-    this.tempPhotoUrl = null;
-    this.photoPreview = null;
-    this.showSavePhotoBtn = false;
-    // clear stored photo in profile if present
-    const raw = localStorage.getItem(this.storageKey);
-    if (raw) {
-      try {
-        const p = JSON.parse(raw);
-        if (p && typeof p === 'object') {
-          delete p.photo;
-          localStorage.setItem(this.storageKey, JSON.stringify(p));
+    this.patientService.deleteProfileImage().subscribe({
+      next: (response) => {
+        this.photoUploadSuccess = true;
+        this.photoUploadError = '';
+        // Clear the photo preview
+        this.photoPreview = null;
+        this.tempPhotoUrl = null;
+        this.selectedFile = undefined;
+        this.showSavePhotoBtn = false;
+        // Update local patient data
+        if (this.patientData) {
+          this.patientData.profileImage = '';
         }
-      } catch {}
-    }
+        setTimeout(() => (this.photoUploadSuccess = false), 3000);
+      },
+      error: (error) => {
+        console.error('Error deleting profile image:', error);
+        this.photoUploadError =
+          error.error?.message || 'Failed to delete image';
+        setTimeout(() => (this.photoUploadError = ''), 5000);
+      },
+    });
   }
 
   savePhoto(): void {
-    if (!this.tempPhotoUrl) return;
-    // persist into profile object
-    const raw = localStorage.getItem(this.storageKey);
-    let p: any = {};
-    if (raw) {
-      try {
-        p = JSON.parse(raw) || {};
-      } catch {
-        p = {};
-      }
-    }
-    p.photo = this.tempPhotoUrl;
-    localStorage.setItem(this.storageKey, JSON.stringify(p));
-    // update current preview and clear temp
-    this.photoPreview = this.tempPhotoUrl;
-    this.tempPhotoUrl = null;
-    this.showSavePhotoBtn = false;
-    this.saved = true;
-    setTimeout(() => (this.saved = false), 1200);
+    if (!this.selectedFile) return;
+
+    this.patientService
+      .uploadProfileImage(this.selectedFile, 'Profile image')
+      .subscribe({
+        next: (response) => {
+          this.photoUploadSuccess = true;
+          this.photoUploadError = '';
+          // Update the photo preview with the new image URL from response
+          if (response.data?.filePath) {
+            this.photoPreview = response.data.filePath;
+            // Update local patient data
+            if (this.patientData) {
+              this.patientData.profileImage = response.data.filePath;
+            }
+          }
+          this.tempPhotoUrl = null;
+          this.selectedFile = undefined;
+          this.showSavePhotoBtn = false;
+          setTimeout(() => (this.photoUploadSuccess = false), 3000);
+        },
+        error: (error) => {
+          console.error('Error uploading profile image:', error);
+          this.photoUploadError =
+            error.error?.message || 'Failed to upload image';
+          setTimeout(() => (this.photoUploadError = ''), 5000);
+        },
+      });
   }
 
   onSave(): void {
@@ -266,7 +286,7 @@ export class UserprofileComponent implements OnInit {
 
     this.patientService.updatePassword(payload).subscribe({
       next: (response) => {
-        console.log("response: ", response)
+        console.log('response: ', response);
         this.passwordUpdateSuccess = true;
         this.passwordUpdateError = '';
         this.passwordForm.reset();
