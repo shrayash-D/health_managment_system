@@ -113,13 +113,13 @@
 
       <div class="form-actions span-2">
         <div class="buttons">
-          <button
+          <!-- <button
             type="button"
             class="btn btn-outline"
             (click)="loadPatientData()"
           >
             Reset
-          </button>
+          </button> -->
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
         <div *ngIf="saved" class="save-indicator">Saved</div>
@@ -130,25 +130,61 @@
   <!-- Security Card -->
   <section class="card form-card">
     <h2 class="form-title">Security</h2>
-    <form class="form-grid" novalidate>
+    <form
+      [formGroup]="passwordForm"
+      (ngSubmit)="onUpdatePassword()"
+      class="form-grid"
+      novalidate
+    >
       <div class="form-field">
         <label for="currPass">Current Password</label>
-        <input id="currPass" type="password" placeholder="••••••••" />
+        <input
+          id="currPass"
+          type="password"
+          formControlName="currentPassword"
+          placeholder="••••••••"
+        />
       </div>
       <div class="form-field">
         <label for="newPass">New Password</label>
-        <input id="newPass" type="password" placeholder="Min 8 chars" />
+        <input
+          id="newPass"
+          type="password"
+          formControlName="newPassword"
+          placeholder="Min 8 chars"
+        />
       </div>
       <div class="form-field">
         <label for="confirmPass">Confirm New Password</label>
         <input
           id="confirmPass"
           type="password"
+          formControlName="confirmPassword"
           placeholder="Re-enter password"
         />
+        <div
+          *ngIf="
+            passwordForm.get('confirmPassword')?.hasError('passwordMismatch')
+          "
+          class="error-message"
+        >
+          Passwords do not match
+        </div>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Update Password</button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="passwordForm.invalid"
+        >
+          Update Password
+        </button>
+      </div>
+      <div *ngIf="passwordUpdateSuccess" class="success-message ">
+        Password updated successfully!
+      </div>
+      <div *ngIf="passwordUpdateError" class="error-message">
+        {{ passwordUpdateError }}
       </div>
     </form>
   </section>

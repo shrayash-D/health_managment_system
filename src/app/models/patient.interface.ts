@@ -15,6 +15,7 @@ export interface PatientApiResponse {
   userId: string;
   doctorId: string | null;
   bloodGroup: string;
+  address: string;
   profileImage: string;
   user: {
     id: string;

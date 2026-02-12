@@ -3,7 +3,10 @@ import { Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Patient, PatientApiResponse } from '../models/patient.interface';
 import { environment } from '../../environments/environment';
-import { PATIENT_API_ENDPOINTS } from '../constants/api/api-endpoints';
+import {
+  PATIENT_API_ENDPOINTS,
+  USER_API_ENDPOINTS,
+} from '../constants/api/api-endpoints';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +19,25 @@ export class PatientService {
       `${PATIENT_API_ENDPOINTS.getPatientById}/${userId}?isUserId=true`,
     );
 
-    console.log('ajhcdbajdhc', data);
+    return data;
+  }
+
+  updatePatientProfile(userId: string, profileData: any): Observable<any> {
+    console.log(profileData);
+    return this.http.put(
+      `${PATIENT_API_ENDPOINTS.updateProfile}/${userId}`,
+      profileData,
+    );
+  }
+
+  updatePassword(passwordData: {
+    currentPassword: string;
+    newPassword: string;
+  }): Observable<any> {
+    var data = this.http.put(
+      `${USER_API_ENDPOINTS.updatePassword}`,
+      passwordData,
+    );
     return data;
   }
 
