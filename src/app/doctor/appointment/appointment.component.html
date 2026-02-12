@@ -1,6 +1,5 @@
 <div class="d-flex">
   <div class="container-fluid p-2">
-
     <!-- Upcoming Appointments -->
     <section class="table-scroll card">
       <h2 class="form-title">Upcoming Appointments</h2>
@@ -30,9 +29,9 @@
           <thead>
             <tr>
               <th>Patient Name</th>
-              <th [ngClass]="{'active': appointmentFilterDate}">Date</th>
+              <th [ngClass]="{ active: appointmentFilterDate }">Date</th>
               <th>Time</th>
-              <th [ngClass]="{'active': appointmentFilterStatus}">Status</th>
+              <th [ngClass]="{ active: appointmentFilterStatus }">Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -68,163 +67,225 @@
       </div>
     </section>
 
-    <!-- Manage Doctor Availability -->
-    <section class="card">
-      <h2 class="form-title">Available Slots</h2>
-      <form #slotForm="ngForm" (ngSubmit)="addSlot()" novalidate>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="slotDate">Date</label>
-            <input id="slotDate" type="date" [(ngModel)]="slotDate" name="slotDate" required />
-          </div>
-
-          <div class="form-field">
-            <label>Time Slot</label>
-            <div class="d-flex">
-              <input
-                id="slotStartTime"
-                type="time"
-                [(ngModel)]="slotStartTime"
-                name="slotStartTime"
-                required
-              />
-              <span class="slot-separator">to</span>
-              <input
-                id="slotEndTime"
-                type="time"
-                [(ngModel)]="slotEndTime"
-                name="slotEndTime"
-                required
-              />
-  </div>
-</div>
-
-        </div>
-        <br>
-        <div class="text-center">
-          <button class="btn btn-success" type="submit" [disabled]="slotForm.invalid">
-            Add Slot
-          </button>
-        </div>
-      </form>
-
-      <!-- Show current slots -->
-      <ul>
-        <li *ngFor="let slot of availableSlots">
-          <strong>{{ slot.date }}</strong>:
-          <span *ngFor="let t of slot.times">
-            {{ t }}
-            <button class="btn btn-sm btn-danger" (click)="removeSlot(slot.date, t)">x</button>
-          </span>
-        </li>
-      </ul>
-    </section>
+   
 
     <!-- Completion Popup Card -->
-    <div *ngIf="showCompletionModal" class="modal-overlay" (click)="showCompletionModal = false">
+    <div
+      *ngIf="showCompletionModal"
+      class="modal-overlay"
+      (click)="showCompletionModal = false"
+    >
       <div class="modal-content" (click)="$event.stopPropagation()">
-    <div *ngIf="selectedAppointment">
-      <div class="modal-header">
-        <h2 class="modal-title">Report</h2>
-        <button class="close-btn" (click)="showCompletionModal = false">&times;</button>
-      </div>
+        <div *ngIf="selectedAppointment">
+          <div class="modal-header">
+            <h2 class="modal-title">Report</h2>
+            <button class="close-btn" (click)="showCompletionModal = false">
+              &times;
+            </button>
+          </div>
 
           <!-- Modal Actions -->
-      <ul class="nav nav-pills nav-fill">
-        <li class="nav-item">
-          <a class="nav-link" [ngClass]="{'active': activeSection === 'diagnosis'}" (click)="startAddDiagnosis()">Diagnosis</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" [ngClass]="{'active': activeSection === 'vitals'}" (click)="startAddVitals()">Vitals</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" [ngClass]="{'active': activeSection === 'medications'}" (click)="startAddMedications()">Medications</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" [ngClass]="{'active': activeSection === 'billing'}" (click)="startAddBilling()">Billing</a>
-        </li>
-      </ul>
+          <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [ngClass]="{ active: activeSection === 'diagnosis' }"
+                (click)="startAddDiagnosis()"
+                >Diagnosis</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [ngClass]="{ active: activeSection === 'vitals' }"
+                (click)="startAddVitals()"
+                >Vitals</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [ngClass]="{ active: activeSection === 'medications' }"
+                (click)="startAddMedications()"
+                >Medications</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [ngClass]="{ active: activeSection === 'billing' }"
+                (click)="startAddBilling()"
+                >Billing</a
+              >
+            </li>
+          </ul>
 
-      <div class="profile-details">
-        <div class="form-group">
-          <label>Patient:</label>
-          <p>{{ selectedAppointment.patientName }}</p>
-        </div>
-        <div class="form-group">
-          <label>Date:</label>
-          <p>{{ selectedAppointment.date }}</p>
-        </div>
-      </div>
-
-      <!-- Display Saved Details -->
-      <div class="saved-details" *ngIf="!addingDiagnosis && !addingVitals && !addingMedications && !addingBilling">
-        <div *ngIf="completionData.diagnosis" class="detail-section">
-          <h5>Diagnosis</h5>
-          <p>{{ completionData.diagnosis }}</p>
-        </div>
-        <div *ngIf="completionData.vitals.bloodPressure || completionData.vitals.heartRate || completionData.vitals.temperature || completionData.vitals.spO2" class="detail-section">
-          <h5>Vitals</h5>
-          <p *ngIf="completionData.vitals.bloodPressure">Blood Pressure: {{ completionData.vitals.bloodPressure }}</p>
-          <p *ngIf="completionData.vitals.heartRate">Heart Rate: {{ completionData.vitals.heartRate }}</p>
-          <p *ngIf="completionData.vitals.temperature">Temperature: {{ completionData.vitals.temperature }}</p>
-          <p *ngIf="completionData.vitals.spO2">SpO2: {{ completionData.vitals.spO2 }}</p>
-        </div>
-        <div *ngIf="hasMedications" class="detail-section">
-          <h5>Medications</h5>
-          <div *ngFor="let med of completionData.medications; let i = index">
-            <p *ngIf="med.drug">{{ med.drug }} - {{ med.dose }}, {{ med.route }}, {{ med.frequency }}, {{ med.activity }}</p>
+          <div class="profile-details">
+            <div class="form-group">
+              <label>Patient:</label>
+              <p>{{ selectedAppointment.patientName }}</p>
+            </div>
+            <div class="form-group">
+              <label>Date:</label>
+              <p>{{ selectedAppointment.date }}</p>
+            </div>
           </div>
-        </div>
-        <div *ngIf="completionData.billing.consultationFee || completionData.billing.labFee || completionData.billing.medicineFee" class="detail-section">
-          <h5>Billing</h5>
-          <p *ngIf="completionData.billing.consultationType">Type: {{ completionData.billing.consultationType }}</p>
-          <p *ngIf="completionData.billing.consultationFee">Consultation Fee: {{ completionData.billing.consultationFee }}</p>
-          <p *ngIf="completionData.billing.labFee">Lab Fee: {{ completionData.billing.labFee }}</p>
-          <p *ngIf="completionData.billing.medicineFee">Medicine Fee: {{ completionData.billing.medicineFee }}</p>
-          <p *ngIf="completionData.billing.total">Total: {{ completionData.billing.total }}</p>
-          <p *ngIf="completionData.billing.outstanding">Outstanding: {{ completionData.billing.outstanding }}</p>
-        </div>
-      </div>
+
+          <!-- Display Saved Details -->
+          <div
+            class="saved-details"
+            *ngIf="
+              !addingDiagnosis &&
+              !addingVitals &&
+              !addingMedications &&
+              !addingBilling
+            "
+          >
+            <div *ngIf="completionData.diagnosis" class="detail-section">
+              <h5>Diagnosis</h5>
+              <p>{{ completionData.diagnosis }}</p>
+            </div>
+            <div
+              *ngIf="
+                completionData.vitals.bloodPressure ||
+                completionData.vitals.heartRate ||
+                completionData.vitals.temperature ||
+                completionData.vitals.spO2
+              "
+              class="detail-section"
+            >
+              <h5>Vitals</h5>
+              <p *ngIf="completionData.vitals.bloodPressure">
+                Blood Pressure: {{ completionData.vitals.bloodPressure }}
+              </p>
+              <p *ngIf="completionData.vitals.heartRate">
+                Heart Rate: {{ completionData.vitals.heartRate }}
+              </p>
+              <p *ngIf="completionData.vitals.temperature">
+                Temperature: {{ completionData.vitals.temperature }}
+              </p>
+              <p *ngIf="completionData.vitals.spO2">
+                SpO2: {{ completionData.vitals.spO2 }}
+              </p>
+            </div>
+            <div *ngIf="hasMedications" class="detail-section">
+              <h5>Medications</h5>
+              <div
+                *ngFor="let med of completionData.medications; let i = index"
+              >
+                <p *ngIf="med.drug">
+                  {{ med.drug }} - {{ med.dose }}, {{ med.route }},
+                  {{ med.frequency }}, {{ med.activity }}
+                </p>
+              </div>
+            </div>
+            <div
+              *ngIf="
+                completionData.billing.consultationFee ||
+                completionData.billing.labFee ||
+                completionData.billing.medicineFee
+              "
+              class="detail-section"
+            >
+              <h5>Billing</h5>
+              <p *ngIf="completionData.billing.consultationType">
+                Type: {{ completionData.billing.consultationType }}
+              </p>
+              <p *ngIf="completionData.billing.consultationFee">
+                Consultation Fee: {{ completionData.billing.consultationFee }}
+              </p>
+              <p *ngIf="completionData.billing.labFee">
+                Lab Fee: {{ completionData.billing.labFee }}
+              </p>
+              <p *ngIf="completionData.billing.medicineFee">
+                Medicine Fee: {{ completionData.billing.medicineFee }}
+              </p>
+              <p *ngIf="completionData.billing.total">
+                Total: {{ completionData.billing.total }}
+              </p>
+              <p *ngIf="completionData.billing.outstanding">
+                Outstanding: {{ completionData.billing.outstanding }}
+              </p>
+            </div>
+          </div>
 
           <!-- Add Diagnosis Form -->
           <div *ngIf="addingDiagnosis" class="form-card">
             <h4 class="form-title">Add Diagnosis</h4>
             <div class="form-field">
               <label for="diagnosisField">Diagnosis</label>
-              <textarea id="diagnosisField" [(ngModel)]="completionData.diagnosis" placeholder="Enter diagnosis"></textarea>
+              <textarea
+                id="diagnosisField"
+                [(ngModel)]="completionData.diagnosis"
+                placeholder="Enter diagnosis"
+              ></textarea>
             </div>
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="addingDiagnosis = false">Save</button>
-              <button class="btn btn-secondary" (click)="addingDiagnosis = false; completionData.diagnosis = ''">Cancel</button>
+              <button class="btn btn-primary" (click)="addingDiagnosis = false">
+                Save
+              </button>
+              <button
+                class="btn btn-secondary"
+                (click)="addingDiagnosis = false; completionData.diagnosis = ''"
+              >
+                Cancel
+              </button>
             </div>
           </div>
-
-
-
-
 
           <!-- Add Vitals Form -->
           <div *ngIf="addingVitals" class="form-card">
             <h4 class="form-title">Add Vitals</h4>
             <div class="form-field">
               <label for="bloodPressure">Blood Pressure</label>
-              <input id="bloodPressure" [(ngModel)]="completionData.vitals.bloodPressure" placeholder="e.g. 120/80" />
+              <input
+                id="bloodPressure"
+                [(ngModel)]="completionData.vitals.bloodPressure"
+                placeholder="e.g. 120/80"
+              />
             </div>
             <div class="form-field">
               <label for="heartRate">Heart Rate</label>
-              <input id="heartRate" [(ngModel)]="completionData.vitals.heartRate" placeholder="e.g. 72" />
+              <input
+                id="heartRate"
+                [(ngModel)]="completionData.vitals.heartRate"
+                placeholder="e.g. 72"
+              />
             </div>
             <div class="form-field">
               <label for="temperature">Temperature</label>
-              <input id="temperature" [(ngModel)]="completionData.vitals.temperature" placeholder="e.g. 98.6" />
+              <input
+                id="temperature"
+                [(ngModel)]="completionData.vitals.temperature"
+                placeholder="e.g. 98.6"
+              />
             </div>
             <div class="form-field">
               <label for="spO2">SpO2</label>
-              <input id="spO2" [(ngModel)]="completionData.vitals.spO2" placeholder="e.g. 98" />
+              <input
+                id="spO2"
+                [(ngModel)]="completionData.vitals.spO2"
+                placeholder="e.g. 98"
+              />
             </div>
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="addingVitals = false">Save</button>
-              <button class="btn btn-secondary" (click)="addingVitals = false; completionData.vitals = { bloodPressure: '', heartRate: '', temperature: '', spO2: '' }">Cancel</button>
+              <button class="btn btn-primary" (click)="addingVitals = false">
+                Save
+              </button>
+              <button
+                class="btn btn-secondary"
+                (click)="
+                  addingVitals = false;
+                  completionData.vitals = {
+                    bloodPressure: '',
+                    heartRate: '',
+                    temperature: '',
+                    spO2: '',
+                  }
+                "
+              >
+                Cancel
+              </button>
             </div>
           </div>
 
@@ -257,12 +318,35 @@
                   <option value="pending">Pending</option>
                 </select>
               </div>
-              <button class="btn btn-danger" (click)="removeMedication(i)">Remove</button>
+              <button class="btn btn-danger" (click)="removeMedication(i)">
+                Remove
+              </button>
             </div>
-            <button class="btn btn-secondary" (click)="addMedication()" *ngIf="completionData.medications.length > 0 && completionData.medications[0].drug">Add Medication</button>
+            <button
+              class="btn btn-secondary"
+              (click)="addMedication()"
+              *ngIf="
+                completionData.medications.length > 0 &&
+                completionData.medications[0].drug
+              "
+            >
+              Add Medication
+            </button>
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="addingMedications = false">Save</button>
-              <button class="btn btn-secondary" (click)="addingMedications = false; completionData.medications = []">Cancel</button>
+              <button
+                class="btn btn-primary"
+                (click)="addingMedications = false"
+              >
+                Save
+              </button>
+              <button
+                class="btn btn-secondary"
+                (click)="
+                  addingMedications = false; completionData.medications = []
+                "
+              >
+                Cancel
+              </button>
             </div>
           </div>
 
@@ -271,43 +355,102 @@
             <h4 class="form-title">Add Billing</h4>
             <div class="form-field">
               <label for="consultationType">Consultation Type</label>
-              <input id="consultationType" [(ngModel)]="completionData.billing.consultationType" placeholder="e.g. General" />
+              <input
+                id="consultationType"
+                [(ngModel)]="completionData.billing.consultationType"
+                placeholder="e.g. General"
+              />
             </div>
             <div class="form-field">
               <label for="consultationFee">Consultation Fee</label>
-              <input id="consultationFee" type="text" [(ngModel)]="completionData.billing.consultationFee" (input)="calculateTotal()" />
+              <input
+                id="consultationFee"
+                type="text"
+                [(ngModel)]="completionData.billing.consultationFee"
+                (input)="calculateTotal()"
+              />
             </div>
             <div class="form-field">
               <label for="labFee">Lab Fee</label>
-              <input id="labFee" type="text" [(ngModel)]="completionData.billing.labFee" (input)="calculateTotal()" />
+              <input
+                id="labFee"
+                type="text"
+                [(ngModel)]="completionData.billing.labFee"
+                (input)="calculateTotal()"
+              />
             </div>
             <div class="form-field">
               <label for="medicineFee">Medicine Fee</label>
-              <input id="medicineFee" type="text" [(ngModel)]="completionData.billing.medicineFee" (input)="calculateTotal()" />
+              <input
+                id="medicineFee"
+                type="text"
+                [(ngModel)]="completionData.billing.medicineFee"
+                (input)="calculateTotal()"
+              />
             </div>
             <div class="form-field">
               <label for="total">Total</label>
-              <input id="total" type="text" [(ngModel)]="completionData.billing.total" readonly />
+              <input
+                id="total"
+                type="text"
+                [(ngModel)]="completionData.billing.total"
+                readonly
+              />
             </div>
             <div class="form-field">
               <label for="outstanding">Outstanding</label>
-              <input id="outstanding" type="text" [(ngModel)]="completionData.billing.outstanding" />
+              <input
+                id="outstanding"
+                type="text"
+                [(ngModel)]="completionData.billing.outstanding"
+              />
             </div>
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="addingBilling = false">Save</button>
-              <button class="btn btn-secondary" (click)="addingBilling = false; completionData.billing = { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' }">Cancel</button>
+              <button class="btn btn-primary" (click)="addingBilling = false">
+                Save
+              </button>
+              <button
+                class="btn btn-secondary"
+                (click)="
+                  addingBilling = false;
+                  completionData.billing = {
+                    consultationType: '',
+                    consultationFee: '',
+                    labFee: '',
+                    medicineFee: '',
+                    total: '',
+                    outstanding: '',
+                  }
+                "
+              >
+                Cancel
+              </button>
             </div>
           </div>
 
           <!-- Submit Button -->
-          <div class="modal-actions" style="text-align: center; margin-top: 20px;" *ngIf="completionData.billing.consultationFee || completionData.billing.labFee || completionData.billing.medicineFee">
-            <button class="btn btn-success" (click)="submitCompletion()">Submit Completion</button>
-            <button class="btn btn-primary" (click)="downloadAppointmentReport()" style="margin-left: 10px;">Download Report</button>
+          <div
+            class="modal-actions"
+            style="text-align: center; margin-top: 20px"
+            *ngIf="
+              completionData.billing.consultationFee ||
+              completionData.billing.labFee ||
+              completionData.billing.medicineFee
+            "
+          >
+            <button class="btn btn-success" (click)="submitCompletion()">
+              Submit Completion
+            </button>
+            <button
+              class="btn btn-primary"
+              (click)="downloadAppointmentReport()"
+              style="margin-left: 10px"
+            >
+              Download Report
+            </button>
           </div>
-
+        </div>
       </div>
     </div>
-
-
   </div>
 </div>
