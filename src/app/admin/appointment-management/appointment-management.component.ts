@@ -26,17 +26,6 @@ export class AppointmentManagementComponent implements OnInit {
 
   searchTerm: string = '';
   statusFilter: AppointmentStatus | 'ALL' = 'ALL';
-  showAddModal: boolean = false;
-
-  newAppointment: Partial<Appointment> = {
-    patientId: 0,
-    doctorId: 0,
-    date: '',
-    time: '',
-    status: 'BOOKED',
-    reason: '',
-    notes: '',
-  };
 
   constructor(
     private appointmentService: AppointmentService,
@@ -67,44 +56,6 @@ export class AppointmentManagementComponent implements OnInit {
     );
     this.doctors$ = this.doctorService.getAllDoctors();
     this.patients$ = this.patientService.getAllPatients();
-  }
-
-  openAddModal(): void {
-    this.newAppointment = {
-      patientId: 0,
-      doctorId: 0,
-      date: '',
-      time: '',
-      status: 'BOOKED',
-      reason: '',
-      notes: '',
-    };
-    this.showAddModal = true;
-  }
-
-  closeAddModal(): void {
-    this.showAddModal = false;
-  }
-
-  createAppointment(): void {
-    if (
-      this.newAppointment.patientId &&
-      this.newAppointment.doctorId &&
-      this.newAppointment.date &&
-      this.newAppointment.time
-    ) {
-      // Ensure status is set
-      if (!this.newAppointment.status) {
-        this.newAppointment.status = 'BOOKED';
-      }
-
-      this.appointmentService
-        .createAppointment(this.newAppointment as Appointment)
-        .subscribe(() => {
-          this.loadData();
-          this.closeAddModal();
-        });
-    }
   }
 
   cancelAppointment(id: number): void {

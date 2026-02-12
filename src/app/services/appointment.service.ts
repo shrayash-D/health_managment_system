@@ -92,13 +92,6 @@ export class AppointmentService {
     return of(appointments);
   }
 
-  createAppointment(appointment: Appointment): Observable<Appointment> {
-    const newId = Math.max(...this.mockAppointments.map((a) => a.id), 0) + 1;
-    const newAppointment: Appointment = { ...appointment, id: newId };
-    this.mockAppointments.push(newAppointment);
-    return of(newAppointment);
-  }
-
   cancelAppointment(id: number): Observable<boolean> {
     const index = this.mockAppointments.findIndex((a) => a.id === id);
     if (index !== -1) {

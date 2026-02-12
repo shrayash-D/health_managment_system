@@ -103,13 +103,6 @@ export class PatientService {
     return of(patient);
   }
 
-  addPatient(patient: Patient): Observable<Patient> {
-    const newId = Math.max(...this.mockPatients.map((p) => p.id), 0) + 1;
-    const newPatient: Patient = { ...patient, id: newId };
-    this.mockPatients.push(newPatient);
-    return of(newPatient);
-  }
-
   updatePatient(id: number, patient: Patient): Observable<Patient> {
     const index = this.mockPatients.findIndex((p) => p.id === id);
     if (index !== -1) {
