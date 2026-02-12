@@ -16,4 +16,6 @@ export const PATIENT_API_ENDPOINTS = {
 
 export const USER_API_ENDPOINTS = {
   updatePassword: `${PATIENT_API_BASE_URL}/User/update-password`,
+  updateProfileImage: `${PATIENT_API_BASE_URL}/User/update-profile-image`,
+  deleteProfileImage: `${PATIENT_API_BASE_URL}/User/delete-profile-image`,
 };
