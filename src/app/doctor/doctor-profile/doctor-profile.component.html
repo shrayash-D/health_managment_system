@@ -9,7 +9,7 @@
             <section class="card profile-header">
               <div class="left">
                 <div class="avatar" aria-hidden="true">
-                  <img *ngIf="photoUrl" [src]="photoUrl" alt="Doctor Photo" />
+                  <img *ngIf="tempPhotoUrl || photoUrl" [src]="tempPhotoUrl || photoUrl" alt="Doctor Photo" />
                 </div>
                 <div class="info">
                   <h2 class="name">{{ doctor.fullName }}</h2>
@@ -24,8 +24,18 @@
               </div>
               <div class="actions">
                 <input type="file" accept="image/*" #photoInput (change)="onPhotoSelected($event)" hidden />
-                <button class="btn btn-outline" (click)="photoInput.click()" aria-label="Upload photo">Change photo</button>
-                <button class="btn btn-primary" *ngIf="showSavePhotoBtn" (click)="savePhoto()">Save Photo</button>
+                <button class="btn btn-outline" (click)="photoInput.click()" [disabled]="isUploadingPhoto" aria-label="Upload photo">
+                  Change photo
+                </button>
+                <button class="btn btn-primary" *ngIf="showSavePhotoBtn && !isUploadingPhoto" (click)="savePhoto()">
+                  Save Photo
+                </button>
+                <button class="btn btn-secondary" *ngIf="showSavePhotoBtn && !isUploadingPhoto" (click)="cancelPhoto()">
+                  Cancel
+                </button>
+                <button class="btn btn-primary" *ngIf="isUploadingPhoto" disabled>
+                  Uploading...
+                </button>
               </div>
             </section>
           </div>

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Appointment {
   id: number;
@@ -93,6 +95,10 @@ export interface Invoice {
   providedIn: 'root'
 })
 export class DoctorDataService {
+  private apiUrl = environment.apiUrl || '';
+
+  constructor(private http: HttpClient) {}
+
   // 🔹 Doctor profile data
   private doctorSubject = new BehaviorSubject<any>({
     id: 'p123',
@@ -119,6 +125,21 @@ export class DoctorDataService {
     if (updated.photoUrl) {
       localStorage.setItem('doctorPhoto', updated.photoUrl);
     }
+  }
+
+  // 🔹 Profile photo upload using backend API
+  uploadProfilePhoto(file: File, description?: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (description) {
+      formData.append('fileDescription', description);
+    }
+    
+    const url = `${this.apiUrl}/user/update-profile-image`;
+    console.log('Uploading to URL:', url);
+    console.log('API URL from environment:', this.apiUrl);
+    
+    return this.http.post(url, formData);
   }
 
   // 🔹 Appointment management

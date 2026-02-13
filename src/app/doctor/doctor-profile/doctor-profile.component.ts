@@ -18,6 +18,7 @@ export class DoctorProfileComponent  {
   photoUrl: string | null = null;
   tempPhotoUrl: string | null = null;
   showSavePhotoBtn = false;
+  isUploadingPhoto = false;
 
   countryCodes = [
     { code: '+91', country: 'India' },
@@ -68,21 +69,94 @@ export class DoctorProfileComponent  {
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
+      const file = input.files[0];
+      
+      // Validate file size (5MB max, matching backend validation)
+      if (file.size > 5 * 1024 * 1024) {
+        this.showMessage('File size must be less than 5MB');
+        return;
+      }
+      
+      // Validate file type (matching backend validation)
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.showMessage('Only JPG, JPEG, PNG, GIF, and BMP files are allowed');
+        return;
+      }
+      
+      // Preview the image
       const reader = new FileReader();
       reader.onload = () => {
         this.tempPhotoUrl = reader.result as string;
         this.showSavePhotoBtn = true;
       };
-      reader.readAsDataURL(input.files[0]);
+      reader.readAsDataURL(file);
+      
+      // Store the file for uploading
+      (input as any).selectedFile = file;
     }
   }
 
   savePhoto() {
-    if (this.tempPhotoUrl) {
-      this.doctorService.updateDoctor({ photoUrl: this.tempPhotoUrl });
-      this.photoUrl = this.doctorService.getDoctor().photoUrl;
-      this.showSavePhotoBtn = false;
-      this.showMessage('Photo updated successfully!');
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = (fileInput as any)?.selectedFile;
+    
+    if (!file) {
+      this.showMessage('No file selected');
+      return;
+    }
+
+    console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+    this.isUploadingPhoto = true;
+    
+    this.doctorService.uploadProfilePhoto(file, 'Doctor profile photo')
+      .subscribe({
+        next: (response) => {
+          console.log('Upload successful:', response);
+          // Update the doctor's profile with the new photo path
+          this.doctorService.updateDoctor({ photoUrl: response.data.filePath });
+          this.photoUrl = response.data.filePath;
+          this.tempPhotoUrl = null;
+          this.showSavePhotoBtn = false;
+          this.isUploadingPhoto = false;
+          this.showMessage('Photo updated successfully!');
+        },
+        error: (error) => {
+          console.error('Photo upload failed:', error);
+          console.error('Error status:', error.status);
+          console.error('Error message:', error.error);
+          this.tempPhotoUrl = null;
+          this.showSavePhotoBtn = false;
+          this.isUploadingPhoto = false;
+          
+          // Show specific error message from backend if available
+          let errorMessage = 'Failed to update photo. Please try again.';
+          
+          if (error.status === 401) {
+            errorMessage = 'Authentication required. Please log in again.';
+          } else if (error.status === 400) {
+            errorMessage = error.error?.message || 'Invalid file. Please check file size and type.';
+          } else if (error.status === 0) {
+            errorMessage = 'Cannot connect to server. Please check your connection.';
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          }
+          
+          this.showMessage(errorMessage);
+        }
+      });
+  }
+
+  cancelPhoto() {
+    this.tempPhotoUrl = null;
+    this.showSavePhotoBtn = false;
+    this.isUploadingPhoto = false;
+    
+    // Clear the file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+      (fileInput as any).selectedFile = null;
     }
   }
 
