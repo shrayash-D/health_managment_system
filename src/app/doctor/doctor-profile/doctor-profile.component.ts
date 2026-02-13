@@ -13,12 +13,15 @@ import { RouterModule } from '@angular/router';
 })
 export class DoctorProfileComponent  {
   profileForm: FormGroup;
+  passwordForm!: FormGroup;
   isEditing = false;
   doctor: any;
   photoUrl: string | null = null;
   tempPhotoUrl: string | null = null;
   showSavePhotoBtn = false;
   isUploadingPhoto = false;
+  passwordUpdateSuccess = false;
+  passwordUpdateError = '';
 
   countryCodes = [
     { code: '+91', country: 'India' },
@@ -42,6 +45,7 @@ export class DoctorProfileComponent  {
       bio: [this.doctor.bio]
     });
     this.photoUrl = this.doctor.photoUrl; // ✅ initialize here
+    this.initializePasswordForm();
   }
 
  
@@ -158,6 +162,71 @@ export class DoctorProfileComponent  {
       fileInput.value = '';
       (fileInput as any).selectedFile = null;
     }
+  }
+
+  // 🔹 Password functionality
+  initializePasswordForm(): void {
+    this.passwordForm = this.fb.group(
+      {
+        currentPassword: ['', Validators.required],
+        newPassword: ['', [Validators.required, Validators.minLength(8)]],
+        confirmPassword: ['', Validators.required],
+      },
+      { validators: this.passwordMatchValidator }
+    );
+  }
+
+  passwordMatchValidator(form: FormGroup) {
+    const newPassword = form.get('newPassword');
+    const confirmPassword = form.get('confirmPassword');
+
+    if (
+      newPassword &&
+      confirmPassword &&
+      newPassword.value !== confirmPassword.value
+    ) {
+      confirmPassword.setErrors({ passwordMismatch: true });
+      return { passwordMismatch: true };
+    }
+    return null;
+  }
+
+  onUpdatePassword(): void {
+    if (this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.passwordForm.value;
+    const payload = {
+      currentPassword: formValue.currentPassword,
+      newPassword: formValue.newPassword,
+    };
+
+    this.doctorService.updatePassword(payload).subscribe({
+      next: (response) => {
+        console.log('Password update response: ', response);
+        this.passwordUpdateSuccess = true;
+        this.passwordUpdateError = '';
+        this.passwordForm.reset();
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          this.passwordUpdateSuccess = false;
+        }, 3000);
+      },
+      error: (error) => {
+        console.error('Error updating password:', error);
+        this.passwordUpdateSuccess = false;
+        this.passwordUpdateError =
+          error.error?.message || 'Failed to update password';
+          
+        // Hide error message after 5 seconds
+        setTimeout(() => {
+          this.passwordUpdateError = '';
+        }, 5000);
+      },
+    });
   }
 
   private showMessage(msg: string) {

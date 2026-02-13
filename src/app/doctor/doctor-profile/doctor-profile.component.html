@@ -109,6 +109,76 @@
             </div>
           </form>
         </section>
+
+        <!-- Security Card -->
+        <section class="card form-card">
+          <h2 class="form-title">Security</h2>
+          <form
+            [formGroup]="passwordForm"
+            (ngSubmit)="onUpdatePassword()"
+            class="form-grid"
+            novalidate
+          >
+            <div class="form-field">
+              <label for="currPass">Current Password</label>
+              <input
+                id="currPass"
+                type="password"
+                formControlName="currentPassword"
+                placeholder="••••••••"
+              />
+              <small class="error" *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched">
+                Current password is required
+              </small>
+            </div>
+
+            <div class="form-field">
+              <label for="newPass">New Password</label>
+              <input
+                id="newPass"
+                type="password"
+                formControlName="newPassword"
+                placeholder="Min 8 chars"
+              />
+              <small class="error" *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched">
+                <span *ngIf="passwordForm.get('newPassword')?.hasError('required')">New password is required</span>
+                <span *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">Password must be at least 8 characters</span>
+              </small>
+            </div>
+
+            <div class="form-field">
+              <label for="confirmPass">Confirm New Password</label>
+              <input
+                id="confirmPass"
+                type="password"
+                formControlName="confirmPassword"
+                placeholder="Re-enter password"
+              />
+              <small class="error" *ngIf="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched">
+                <span *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">Please confirm your password</span>
+                <span *ngIf="passwordForm.get('confirmPassword')?.hasError('passwordMismatch')">Passwords do not match</span>
+              </small>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="passwordForm.invalid"
+              >
+                Update Password
+              </button>
+            </div>
+
+            <div *ngIf="passwordUpdateSuccess" class="success-message">
+              Password updated successfully!
+            </div>
+            <div *ngIf="passwordUpdateError" class="error-message">
+              {{ passwordUpdateError }}
+            </div>
+          </form>
+        </section>
+
         <!-- <router-outlet></router-outlet> -->
       </main>
     </div>

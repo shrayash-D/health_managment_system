@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { USER_API_ENDPOINTS } from '../constants/api/api-endpoints';
 
 export interface Appointment {
   id: number;
@@ -140,6 +141,14 @@ export class DoctorDataService {
     console.log('API URL from environment:', this.apiUrl);
     
     return this.http.post(url, formData);
+  }
+
+  // 🔹 Password update using backend API
+  updatePassword(passwordData: {
+    currentPassword: string;
+    newPassword: string;
+  }): Observable<any> {
+    return this.http.put(USER_API_ENDPOINTS.updatePassword, passwordData);
   }
 
   // 🔹 Appointment management
