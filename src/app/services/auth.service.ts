@@ -192,21 +192,45 @@ export class AuthService {
       // Client-side error
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      // Server-side error
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+      // Server-side error - Try to extract backend error message
+      if (error.error) {
+        console.log('Backend error object:', error.error);
+        console.log('Type of error.error:', typeof error.error);
 
-      // Handle specific error cases
-      if (error.status === 401) {
-        errorMessage = 'Invalid credentials or role mismatch';
-      } else if (error.status === 400) {
-        errorMessage = 'Invalid request. Please check your input.';
-      } else if (error.status === 0) {
+        // Check for common backend error message formats
+        if (typeof error.error === 'string') {
+          errorMessage = error.error;
+        } else if (error.error.message) {
+          // This handles {"message": "User with this email already exists."}
+          errorMessage = error.error.message;
+        } else if (error.error.error) {
+          errorMessage = error.error.error;
+        } else if (error.error.title) {
+          errorMessage = error.error.title;
+        } else if (error.error.errors) {
+          // Handle validation errors from ASP.NET Core
+          const validationErrors = error.error.errors;
+          const errorMessages = Object.keys(validationErrors).map(
+            (key) => `${key}: ${validationErrors[key].join(', ')}`,
+          );
+          errorMessage = errorMessages.join('\n');
+        } else {
+          // Fallback: Try to stringify the error object
+          errorMessage = JSON.stringify(error.error);
+        }
+      } else {
+        errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+      }
+
+      // Handle specific status codes if no specific message
+      if (error.status === 0 && !error.error) {
         errorMessage =
           'Cannot connect to server. Please check if the backend is running.';
       }
     }
 
-    console.error(errorMessage);
+    console.error('Full error details:', error);
+    console.error('Extracted error message:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 }
