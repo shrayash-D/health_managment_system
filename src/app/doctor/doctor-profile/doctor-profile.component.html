@@ -2,22 +2,38 @@
   <div class="container-fluid p-2">
     <div class="page">
 
-      <!-- Hero Banner -->
-      <section class="hero">
-        <div class="container">
-          <div class="hero-inner">
-            <section class="card profile-header">
-              <div class="left">
-                <div class="avatar" aria-hidden="true">
-                  <img *ngIf="tempPhotoUrl || photoUrl" [src]="tempPhotoUrl || photoUrl" alt="Doctor Photo" />
-                </div>
-                <div class="info">
-                  <h2 class="name">{{ doctor.fullName }}</h2>
-                  <div class="meta">
-                    <span class="chip">Role: {{ doctor.role }}</span>
-                    <span class="chip">Specialization: {{ doctor.specialization }}</span>
-                    <span class="chip">Experience: {{ doctor.experience }}</span>
-                    <span class="chip">{{ doctor.email }}</span>
+      <!-- Loading State -->
+      <div *ngIf="isLoadingDoctor" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading doctor profile...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="doctorLoadError" class="error-container">
+        <div class="error-message">
+          {{ doctorLoadError }}
+        </div>
+        <button class="btn btn-primary" (click)="reloadPage()">Reload Page</button>
+      </div>
+
+      <!-- Main Content (shown when not loading and no error) -->
+      <div *ngIf="!isLoadingDoctor && !doctorLoadError">
+        <!-- Hero Banner -->
+        <section class="hero">
+          <div class="container">
+            <div class="hero-inner">
+              <section class="card profile-header">
+                <div class="left">
+                  <div class="avatar" aria-hidden="true">
+                    <img *ngIf="tempPhotoUrl || photoUrl" [src]="tempPhotoUrl || photoUrl" alt="Doctor Photo" />
+                  </div>
+                  <div class="info">
+                    <h2 class="name">{{ doctor.fullName }}</h2>
+                    <div class="meta">
+                      <span class="chip">Role: {{ doctor.role }}</span>
+                      <span class="chip">Specialization: {{ doctor.specialization }}</span>
+                      <span class="chip">Experience: {{ doctor.experience }}</span>
+                      <span class="chip">{{ doctor.email }}</span>
                     <span class="chip">{{ doctor.countryCode }} {{ doctor.phone }}</span>
                   </div>
                 </div>
@@ -181,6 +197,7 @@
 
         <!-- <router-outlet></router-outlet> -->
       </main>
+      </div> <!-- End conditional content -->
     </div>
   </div>
 </div>

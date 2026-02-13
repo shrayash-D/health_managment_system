@@ -13,6 +13,11 @@ export const PATIENT_API_ENDPOINTS = {
   updateProfile: `${API_BASE_URL}/Patient/update-profile`,
 };
 
+export const DOCTOR_API_ENDPOINTS = {
+  getDoctorById: `${API_BASE_URL}/Doctor`,
+  updateProfile: `${API_BASE_URL}/Doctor/update-profile`,
+};
+
 export const USER_API_ENDPOINTS = {
   updatePassword: `${API_BASE_URL}/User/update-password`,
   updateProfileImage: `${API_BASE_URL}/User/update-profile-image`,

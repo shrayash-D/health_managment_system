@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { USER_API_ENDPOINTS } from '../constants/api/api-endpoints';
+import { USER_API_ENDPOINTS, DOCTOR_API_ENDPOINTS } from '../constants/api/api-endpoints';
+import { AuthService } from './auth.service';
 
 export interface Appointment {
   id: number;
@@ -91,14 +92,51 @@ export interface Invoice {
   subtotal: number;
 }
 
+// 🔹 API Response Interfaces
+export interface DoctorApiResponse {
+  id: string;
+  userId: string;
+  specialization: string;
+  yearsOfExperience: number;
+  memberSince?: string;
+  bio: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phoneNumber: string;
+    dob: string;
+  };
+  patients: any[];
+  appointments: any[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class DoctorDataService {
   private apiUrl = environment.apiUrl || '';
+  private authService = inject(AuthService);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Auto-load doctor data when user logs in with DOCTOR role
+    this.authService.currentUser$.subscribe(user => {
+      if (user && user.role === 'DOCTOR' && user.id) {
+        console.log('Doctor user logged in, loading profile data for ID:', user.id);
+        this.loadDoctorFromApi(user.id);
+      } else if (!user) {
+        // User logged out, reset to mock data
+        this.resetToMockData();
+      }
+    });
+    
+    // Check if there's already a logged-in doctor user on service init
+    const currentUser = this.authService.currentUserValue;
+    if (currentUser && currentUser.role === 'DOCTOR' && currentUser.id) {
+      console.log('Doctor already logged in on service init, loading data...');
+      this.loadDoctorFromApi(currentUser.id);
+    }
+  }
 
   // 🔹 Doctor profile data
   private doctorSubject = new BehaviorSubject<any>({
@@ -115,6 +153,23 @@ export class DoctorDataService {
   });
 
   doctor$ = this.doctorSubject.asObservable();
+
+  // 🔹 Reset to mock data (when user logs out)
+  private resetToMockData(): void {
+    const mockData = {
+      id: 'p123',
+      fullName: 'Dr. Sarah Johnson',
+      email: 'dr.sarah@example.com',
+      phone: '9876543210',
+      countryCode: '+91',
+      specialization: 'Cardiologist',
+      bio: 'Experienced cardiologist with 10+ years in patient care.',
+      role: 'Doctor',
+      experience: '10+ years',
+      photoUrl: localStorage.getItem('doctorPhoto') || null
+    };
+    this.doctorSubject.next(mockData);
+  }
 
   getDoctor() {
     return this.doctorSubject.value;
@@ -149,6 +204,64 @@ export class DoctorDataService {
     newPassword: string;
   }): Observable<any> {
     return this.http.put(USER_API_ENDPOINTS.updatePassword, passwordData);
+  }
+
+  // 🔹 Get doctor by user ID from backend API
+  getDoctorById(userId: string): Observable<DoctorApiResponse> {
+    return this.http.get<DoctorApiResponse>(`${DOCTOR_API_ENDPOINTS.getDoctorById}/${userId}?isUserId=true`);
+  }
+
+  // 🔹 Load doctor data from API and update local state
+  loadDoctorFromApi(userId: string): void {
+    this.getDoctorById(userId).subscribe({
+      next: (apiResponse) => {
+        console.log('Doctor API Response:', apiResponse);
+        
+        // Helper function to parse phone number
+        const parsePhoneNumber = (phoneNumber: string) => {
+          if (!phoneNumber) return { countryCode: '+91', phone: '' };
+          
+          // If phone starts with +, extract country code
+          if (phoneNumber.startsWith('+')) {
+            const match = phoneNumber.match(/^(\+\d{1,3})(.*)$/);
+            if (match) {
+              return { countryCode: match[1], phone: match[2].trim() };
+            }
+          }
+          
+          // Default to +91 if no country code
+          return { countryCode: '+91', phone: phoneNumber };
+        };
+        
+        const { countryCode, phone } = parsePhoneNumber(apiResponse.user.phoneNumber || '');
+        
+        // Map API response to local doctor structure
+        const mappedDoctor = {
+          id: apiResponse.id,
+          userId: apiResponse.userId,
+          fullName: apiResponse.user.name || 'Doctor',
+          email: apiResponse.user.email || '',
+          phone: phone,
+          countryCode: countryCode,
+          specialization: apiResponse.specialization || 'Not specified',
+          bio: apiResponse.bio || '',
+          role: 'Doctor',
+          experience: `${apiResponse.yearsOfExperience || 0} years`,
+          dob: apiResponse.user.dob || '',
+          memberSince: apiResponse.memberSince || '',
+          photoUrl: localStorage.getItem('doctorPhoto') || null // Keep existing photo logic
+        };
+
+        console.log('Mapped Doctor Data:', mappedDoctor);
+        
+        // Update the BehaviorSubject with real data
+        this.doctorSubject.next(mappedDoctor);
+      },
+      error: (error) => {
+        console.error('Error loading doctor data:', error);
+        // Keep mock data if API fails
+      }
+    });
   }
 
   // 🔹 Appointment management

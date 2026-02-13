@@ -1,8 +1,9 @@
-import { Component} from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DoctorDataService } from '../../services/doctor-data.service';
 import { RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-doctor-profile',
@@ -11,8 +12,8 @@ import { RouterModule } from '@angular/router';
   templateUrl: './doctor-profile.component.html',
   styleUrls: ['./doctor-profile.component.css']
 })
-export class DoctorProfileComponent  {
-  profileForm: FormGroup;
+export class DoctorProfileComponent implements OnInit, OnDestroy {
+  profileForm!: FormGroup;
   passwordForm!: FormGroup;
   isEditing = false;
   doctor: any;
@@ -22,6 +23,10 @@ export class DoctorProfileComponent  {
   isUploadingPhoto = false;
   passwordUpdateSuccess = false;
   passwordUpdateError = '';
+  isLoadingDoctor = true;
+  doctorLoadError = '';
+  
+  private doctorSubscription?: Subscription;
 
   countryCodes = [
     { code: '+91', country: 'India' },
@@ -34,21 +39,85 @@ export class DoctorProfileComponent  {
   ];
 
   constructor(private fb: FormBuilder, private doctorService: DoctorDataService) {
+    // Initialize with current doctor data (could be mock initially)
     this.doctor = this.doctorService.getDoctor();
+    this.initializeForms();
+  }
+
+  ngOnInit(): void {
+    // Doctor data will automatically load via auth service subscription
+    // Just subscribe to doctor data changes
+    this.doctorSubscription = this.doctorService.doctor$.subscribe({
+      next: (doctorData) => {
+        console.log('Component received doctor data:', doctorData);
+        this.doctor = doctorData;
+        this.photoUrl = doctorData.photoUrl;
+        this.updateFormWithDoctorData();
+        this.isLoadingDoctor = false;
+        this.doctorLoadError = '';
+      },
+      error: (error) => {
+        console.error('Error loading doctor data:', error);
+        this.isLoadingDoctor = false;
+        this.doctorLoadError = 'Failed to load doctor profile';
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.doctorSubscription) {
+      this.doctorSubscription.unsubscribe();
+    }
+  }
+
+  private initializeForms(): void {
+    // Initialize profile form
     this.profileForm = this.fb.group({
       fullName: [this.doctor.fullName, Validators.required],
-      email: [this.doctor.email, [Validators.required, Validators.email]], // ✅ added email validator
+      email: [this.doctor.email, [Validators.required, Validators.email]],
       countryCode: [this.doctor.countryCode, Validators.required],
       phone: [this.doctor.phone, [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
       specialization: [this.doctor.specialization, Validators.required],
       experience: [this.doctor.experience, Validators.required],
       bio: [this.doctor.bio]
     });
-    this.photoUrl = this.doctor.photoUrl; // ✅ initialize here
+    
     this.initializePasswordForm();
   }
 
- 
+  private updateFormWithDoctorData(): void {
+    if (this.profileForm && this.doctor) {
+      console.log('Updating form with doctor data:', this.doctor);
+      
+      const formData = {
+        fullName: this.doctor.fullName || '',
+        email: this.doctor.email || '',
+        countryCode: this.doctor.countryCode || '+91',
+        phone: this.doctor.phone || '',
+        specialization: this.doctor.specialization || '',
+        experience: this.doctor.experience || '',
+        bio: this.doctor.bio || ''
+      };
+      
+      console.log('Form data to update:', formData);
+      
+      this.profileForm.patchValue(formData);
+      
+      // Force change detection
+      this.profileForm.markAsPristine();
+      this.profileForm.updateValueAndValidity();
+    } else {
+      console.warn('Cannot update form - form or doctor data missing', {
+        hasForm: !!this.profileForm,
+        hasDoctorData: !!this.doctor
+      });
+    }
+  }
+
+  // 🔹 Reload page on error
+  reloadPage(): void {
+    window.location.reload();
+  }
 
   enableEdit() {
     this.isEditing = true;
