@@ -100,12 +100,18 @@
 
             <div class="form-field">
               <label for="specialization">Specialization</label>
-              <input id="specialization" type="text" formControlName="specialization" readonly />
+              <input id="specialization" type="text" formControlName="specialization" [readonly]="!isEditing" />
+              <small class="error" *ngIf="profileForm.get('specialization')?.invalid && profileForm.get('specialization')?.touched">
+                Specialization is required
+              </small>
             </div>
 
             <div class="form-field">
               <label for="experience">Experience</label>
               <input id="experience" type="text" formControlName="experience" [readonly]="!isEditing" />
+              <small class="error" *ngIf="profileForm.get('experience')?.invalid && profileForm.get('experience')?.touched">
+                Experience is required
+              </small>
             </div>
 
             <div class="form-field span-2">
@@ -121,7 +127,18 @@
             <!-- Save/Cancel buttons (visible only when editing) -->
             <div class="form-actions span-2" *ngIf="isEditing">
               <button type="button" class="btn btn-outline" (click)="cancelEdit()">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <button type="submit" class="btn btn-primary" [disabled]="isSavingProfile">
+                <span *ngIf="!isSavingProfile">Save Changes</span>
+                <span *ngIf="isSavingProfile">Saving...</span>
+              </button>
+            </div>
+
+            <!-- Profile Save Success/Error Messages -->
+            <div *ngIf="profileSaveSuccess" class="success-message">
+              Profile updated successfully!
+            </div>
+            <div *ngIf="profileSaveError" class="error-message">
+              {{ profileSaveError }}
             </div>
           </form>
         </section>

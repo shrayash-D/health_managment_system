@@ -111,12 +111,20 @@ export interface DoctorApiResponse {
   appointments: any[];
 }
 
+export interface UpdateDoctorProfileDto {
+  name: string;
+  specialization: string;
+  yearsOfExperience: number;
+  bio: string;
+  phoneNumber: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class DoctorDataService {
   private apiUrl = environment.apiUrl || '';
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
 
   constructor(private http: HttpClient) {
     // Auto-load doctor data when user logs in with DOCTOR role
@@ -175,12 +183,36 @@ export class DoctorDataService {
     return this.doctorSubject.value;
   }
 
-  updateDoctor(updated: any) {
-    const newDoctor = { ...this.doctorSubject.value, ...updated };
-    this.doctorSubject.next(newDoctor);
-    if (updated.photoUrl) {
+  updateDoctor(updated: any): Observable<any> | void {
+    // If only photoUrl is updated, handle locally (for photo upload)
+    if (updated.photoUrl && Object.keys(updated).length === 1) {
+      const newDoctor = { ...this.doctorSubject.value, ...updated };
+      this.doctorSubject.next(newDoctor);
       localStorage.setItem('doctorPhoto', updated.photoUrl);
+      return;
     }
+
+    // For profile data updates, use API
+    const currentUser = this.authService.currentUserValue;
+    if (!currentUser || !currentUser.id) {
+      console.error('No authenticated user found for profile update');
+      return;
+    }
+
+    // Map form data to API format
+    const profileData: UpdateDoctorProfileDto = {
+      name: updated.fullName || this.doctorSubject.value.fullName,
+      specialization: updated.specialization || this.doctorSubject.value.specialization,
+      yearsOfExperience: parseInt(updated.experience?.replace(/\D/g, '') || '0') || 0,
+      bio: updated.bio || this.doctorSubject.value.bio || '',
+      phoneNumber: `${updated.countryCode || this.doctorSubject.value.countryCode}${updated.phone || this.doctorSubject.value.phone}`
+    };
+
+    console.log('Updating profile with data:', profileData);
+    console.log('Phone number being sent:', profileData.phoneNumber);
+    console.log('Specialization being sent:', profileData.specialization);
+
+    return this.updateDoctorProfile(currentUser.id, profileData);
   }
 
   // 🔹 Profile photo upload using backend API
@@ -206,34 +238,63 @@ export class DoctorDataService {
     return this.http.put(USER_API_ENDPOINTS.updatePassword, passwordData);
   }
 
+  // 🔹 Update doctor profile using backend API
+  updateDoctorProfile(userId: string, profileData: UpdateDoctorProfileDto): Observable<any> {
+    return this.http.put(`${DOCTOR_API_ENDPOINTS.updateProfile}/${userId}`, profileData);
+  }
+
   // 🔹 Get doctor by user ID from backend API
   getDoctorById(userId: string): Observable<DoctorApiResponse> {
     return this.http.get<DoctorApiResponse>(`${DOCTOR_API_ENDPOINTS.getDoctorById}/${userId}?isUserId=true`);
   }
 
   // 🔹 Load doctor data from API and update local state
-  loadDoctorFromApi(userId: string): void {
+  public loadDoctorFromApi(userId: string): void {
     this.getDoctorById(userId).subscribe({
       next: (apiResponse) => {
         console.log('Doctor API Response:', apiResponse);
+        console.log('Raw phone number from API:', apiResponse.user.phoneNumber);
         
-        // Helper function to parse phone number
+        // Helper function to parse phone number - ensuring 10-digit display
         const parsePhoneNumber = (phoneNumber: string) => {
+          console.log('Parsing phone number:', phoneNumber);
           if (!phoneNumber) return { countryCode: '+91', phone: '' };
           
-          // If phone starts with +, extract country code
-          if (phoneNumber.startsWith('+')) {
-            const match = phoneNumber.match(/^(\+\d{1,3})(.*)$/);
+          // Remove all spaces and non-digit characters except +
+          const cleanedPhone = phoneNumber.replace(/[^\d+]/g, '');
+          console.log('Cleaned phone number:', cleanedPhone);
+          
+          // If phone starts with +91, extract it properly for Indian numbers
+          if (cleanedPhone.startsWith('+91')) {
+            const phoneWithoutCountryCode = cleanedPhone.substring(3); // Remove +91
+            console.log('Indian number without country code:', phoneWithoutCountryCode);
+            return { countryCode: '+91', phone: phoneWithoutCountryCode };
+          }
+          
+          // If phone starts with other country codes like +1, +86, etc.
+          if (cleanedPhone.startsWith('+')) {
+            // Match country code patterns (+1, +86, +44, etc.)
+            const match = cleanedPhone.match(/^(\+\d{1,3})(\d+)$/);
             if (match) {
-              return { countryCode: match[1], phone: match[2].trim() };
+              console.log('Matched with country code:', { countryCode: match[1], phone: match[2] });
+              return { countryCode: match[1], phone: match[2] };
             }
           }
           
-          // Default to +91 if no country code
-          return { countryCode: '+91', phone: phoneNumber };
+          // If it's just digits (like 9545820848), assume it's without country code
+          if (/^\d{10,15}$/.test(cleanedPhone)) {
+            console.log('Phone number without country code:', { countryCode: '+91', phone: cleanedPhone });
+            return { countryCode: '+91', phone: cleanedPhone };
+          }
+          
+          // Default fallback
+          const result = { countryCode: '+91', phone: cleanedPhone.replace(/^\+/, '') };
+          console.log('Default parsing result:', result);
+          return result;
         };
         
         const { countryCode, phone } = parsePhoneNumber(apiResponse.user.phoneNumber || '');
+        console.log('Final parsed phone data:', { countryCode, phone });
         
         // Map API response to local doctor structure
         const mappedDoctor = {
@@ -253,6 +314,7 @@ export class DoctorDataService {
         };
 
         console.log('Mapped Doctor Data:', mappedDoctor);
+        console.log('Final phone values - Country Code:', mappedDoctor.countryCode, 'Phone:', mappedDoctor.phone);
         
         // Update the BehaviorSubject with real data
         this.doctorSubject.next(mappedDoctor);

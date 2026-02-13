@@ -25,6 +25,9 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
   passwordUpdateError = '';
   isLoadingDoctor = true;
   doctorLoadError = '';
+  isSavingProfile = false;
+  profileSaveSuccess = false;
+  profileSaveError = '';
   
   private doctorSubscription?: Subscription;
 
@@ -88,6 +91,7 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
   private updateFormWithDoctorData(): void {
     if (this.profileForm && this.doctor) {
       console.log('Updating form with doctor data:', this.doctor);
+      console.log('Doctor phone details - Country Code:', this.doctor.countryCode, 'Phone:', this.doctor.phone);
       
       const formData = {
         fullName: this.doctor.fullName || '',
@@ -130,11 +134,63 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
 
   onSave() {
     if (this.profileForm.valid) {
-      this.doctorService.updateDoctor(this.profileForm.getRawValue());
-      this.doctor = this.doctorService.getDoctor();
-      this.isEditing = false;
-      this.showMessage('Profile saved successfully!');
+      this.isSavingProfile = true;
+      this.profileSaveError = '';
+      this.profileSaveSuccess = false;
+
+      const formData = this.profileForm.getRawValue();
+      console.log('Form data to save:', formData);
+
+      const updateResult = this.doctorService.updateDoctor(formData);
+      
+      // Handle API response
+      if (updateResult && typeof updateResult.subscribe === 'function') {
+        updateResult.subscribe({
+          next: (response) => {
+            console.log('Profile update successful:', response);
+            this.profileSaveSuccess = true;
+            this.profileSaveError = '';
+            this.isSavingProfile = false;
+            this.isEditing = false;
+            
+            // Reload doctor data to get updated information
+            const currentUser = this.doctorService.authService?.currentUserValue;
+            if (currentUser?.id) {
+              this.doctorService.loadDoctorFromApi(currentUser.id);
+            }
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+              this.profileSaveSuccess = false;
+            }, 3000);
+          },
+          error: (error) => {
+            console.error('Profile update failed:', error);
+            this.isSavingProfile = false;
+            this.profileSaveSuccess = false;
+            
+            let errorMessage = 'Failed to update profile. Please try again.';
+            if (error.status === 401) {
+              errorMessage = 'Authentication required. Please log in again.';
+            } else if (error.error?.message) {
+              errorMessage = error.error.message;
+            }
+            
+            this.profileSaveError = errorMessage;
+            
+            // Hide error message after 5 seconds
+            setTimeout(() => {
+              this.profileSaveError = '';
+            }, 5000);
+          }
+        });
+      } else {
+        // Handle photo-only updates (no API call)
+        this.isEditing = false;
+        this.showMessage('Profile updated successfully!');
+      }
     } else {
+      this.profileForm.markAllAsTouched();
       this.showMessage('Please fix the errors before saving.');
     }
   }
