@@ -112,30 +112,14 @@
 
         <!-- Error Message -->
         <div class="form-field span-2" *ngIf="errorMessage">
-          <div
-            class="error-message"
-            style="
-              color: red;
-              padding: 10px;
-              background-color: #ffe6e6;
-              border-radius: 4px;
-            "
-          >
-            {{ errorMessage }}
+          <div class="error-message">
+            <div style="white-space: pre-line">{{ errorMessage }}</div>
           </div>
         </div>
 
         <!-- Success Message -->
         <div class="form-field span-2" *ngIf="successMessage">
-          <div
-            class="success-message"
-            style="
-              color: green;
-              padding: 10px;
-              background-color: #e6ffe6;
-              border-radius: 4px;
-            "
-          >
+          <div class="success-message">
             {{ successMessage }}
           </div>
         </div>

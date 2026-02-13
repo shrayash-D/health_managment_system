@@ -114,7 +114,21 @@ export class UsersignupComponent implements OnInit {
       error: (error) => {
         console.error('Signup failed:', error);
         this.isLoading = false;
-        this.errorMessage = error.message || 'Signup failed. Please try again.';
+
+        // Extract the error message from the error object
+        let errorMsg = 'Signup failed. Please try again.';
+
+        if (error.message) {
+          errorMsg = error.message;
+        } else if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMsg = error.error;
+          } else if (error.error.message) {
+            errorMsg = error.error.message;
+          }
+        }
+
+        this.errorMessage = errorMsg;
       },
     });
   }

@@ -71,7 +71,21 @@ export class LoginComponent {
       error: (error) => {
         console.error('Login failed:', error);
         this.isLoading = false;
-        this.errorMessage = error.message || 'Login failed. Please try again.';
+
+        // Extract the error message from the error object
+        let errorMsg = 'Login failed. Please try again.';
+
+        if (error.message) {
+          errorMsg = error.message;
+        } else if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMsg = error.error;
+          } else if (error.error.message) {
+            errorMsg = error.error.message;
+          }
+        }
+
+        this.errorMessage = errorMsg;
       },
     });
   }
