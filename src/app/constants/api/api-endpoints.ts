@@ -19,3 +19,16 @@ export const USER_API_ENDPOINTS = {
   updateProfileImage: `${PATIENT_API_BASE_URL}/User/update-profile-image`,
   deleteProfileImage: `${PATIENT_API_BASE_URL}/User/delete-profile-image`,
 };
+
+export const ADMIN_API_ENDPOINTS = {
+  getDoctors: `${PATIENT_API_BASE_URL}/Admin/doctors`,
+};
+
+export const DOCTOR_SLOT_API_ENDPOINTS = {
+  getAvailableSlots: (doctorId: string) =>
+    `${PATIENT_API_BASE_URL}/DoctorSlot/doctor/${doctorId}/available`,
+};
+
+export const APPOINTMENT_API_ENDPOINTS = {
+  bookAppointment: `${PATIENT_API_BASE_URL}/Patient/appointments`,
+};

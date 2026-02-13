@@ -17,7 +17,7 @@ export class AdminService {
     private patientService: PatientService,
     private appointmentService: AppointmentService,
     private billingService: BillingService,
-    private doctorService: DoctorService
+    private doctorService: DoctorService,
   ) {}
 
   getDashboardMetrics(): Observable<DashboardMetrics> {
@@ -31,10 +31,10 @@ export class AdminService {
         const today = new Date().toISOString().split('T')[0];
         const todayAppointments = appointments.filter((a) => a.date === today);
         const pendingAppointments = appointments.filter(
-          (a) => a.status === 'BOOKED'
+          (a) => a.status === 'BOOKED',
         );
         const pendingInvoices = invoices.filter(
-          (i) => i.paymentStatus === 'UNPAID'
+          (i) => i.paymentStatus === 'UNPAID',
         );
         const todayInvoices = invoices.filter((i) => i.date === today);
 
@@ -48,7 +48,7 @@ export class AdminService {
 
         const pendingPayments = pendingInvoices.reduce(
           (sum, inv) => sum + inv.amount,
-          0
+          0,
         );
 
         const recentActivity: ActivityItem[] = [
@@ -106,7 +106,7 @@ export class AdminService {
           activeDoctors: doctors.length,
           recentActivity,
         };
-      })
+      }),
     );
   }
 
@@ -143,7 +143,7 @@ export class AdminService {
           }),
           data: revenueByDay,
         };
-      })
+      }),
     );
   }
 
@@ -152,17 +152,17 @@ export class AdminService {
       map((appointments) => {
         const booked = appointments.filter((a) => a.status === 'BOOKED').length;
         const completed = appointments.filter(
-          (a) => a.status === 'COMPLETED'
+          (a) => a.status === 'COMPLETED',
         ).length;
         const cancelled = appointments.filter(
-          (a) => a.status === 'CANCELLED'
+          (a) => a.status === 'CANCELLED',
         ).length;
 
         return {
           labels: ['Booked', 'Completed', 'Cancelled'],
           data: [booked, completed, cancelled],
         };
-      })
+      }),
     );
   }
 
@@ -171,14 +171,14 @@ export class AdminService {
       map((invoices) => {
         const paid = invoices.filter((i) => i.paymentStatus === 'PAID').length;
         const unpaid = invoices.filter(
-          (i) => i.paymentStatus === 'UNPAID'
+          (i) => i.paymentStatus === 'UNPAID',
         ).length;
 
         return {
           labels: ['Paid', 'Unpaid'],
           data: [paid, unpaid],
         };
-      })
+      }),
     );
   }
 
@@ -189,15 +189,17 @@ export class AdminService {
     ]).pipe(
       map(([doctors, appointments]) => {
         const doctorAppointments = doctors.map((doctor) => {
-          return appointments.filter((apt) => apt.doctorId === doctor.id)
-            .length;
+          return appointments.filter((apt) => apt.doctorId == doctor.id).length; // Use == for loose equality
         });
 
         return {
-          labels: doctors.map((d) => d.name.split(' ').pop() || d.name),
+          labels: doctors.map((d) => {
+            const name = d.user?.name || d.name || 'Unknown';
+            return name.split(' ').pop() || name;
+          }),
           data: doctorAppointments,
         };
-      })
+      }),
     );
   }
 
@@ -218,7 +220,7 @@ export class AdminService {
           const actualRevenue = invoices
             .filter(
               (inv) =>
-                inv.date.startsWith(month) && inv.paymentStatus === 'PAID'
+                inv.date.startsWith(month) && inv.paymentStatus === 'PAID',
             )
             .reduce((sum, inv) => sum + inv.amount, 0);
 
@@ -235,7 +237,7 @@ export class AdminService {
           }),
           data: revenueByMonth,
         };
-      })
+      }),
     );
   }
 }

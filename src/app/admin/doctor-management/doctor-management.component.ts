@@ -59,8 +59,8 @@ export class DoctorManagementComponent implements OnInit {
             username: '',
             password: '',
             role: 'DOCTOR',
-            email: doctor.email || '',
-            name: doctor.name,
+            email: doctor.user?.email || doctor.email || '',
+            name: doctor.user?.name || doctor.name || '',
           };
         }
         this.showAccountModal = true;
@@ -88,8 +88,10 @@ export class DoctorManagementComponent implements OnInit {
     if (this.selectedDoctor && this.selectedDoctorUser) {
       if (this.selectedDoctorUser.id === 0) {
         // Create new account
-        this.selectedDoctorUser.name = this.selectedDoctor.name;
-        this.selectedDoctorUser.email = this.selectedDoctor.email;
+        this.selectedDoctorUser.name =
+          this.selectedDoctor.user?.name || this.selectedDoctor.name || '';
+        this.selectedDoctorUser.email =
+          this.selectedDoctor.user?.email || this.selectedDoctor.email || '';
         this.userService.createUser(this.selectedDoctorUser).subscribe(() => {
           this.closeAccountModal();
         });
@@ -117,7 +119,7 @@ export class DoctorManagementComponent implements OnInit {
     }
   }
 
-  deleteDoctor(id: number): void {
+  deleteDoctor(id: number | string): void {
     if (confirm('Are you sure you want to delete this doctor?')) {
       this.doctorService.deleteDoctor(id).subscribe(() => {
         this.loadDoctors();
@@ -128,12 +130,15 @@ export class DoctorManagementComponent implements OnInit {
   getFilteredDoctors(doctors: Doctor[]): Doctor[] {
     if (!this.searchTerm) return doctors;
     const term = this.searchTerm.toLowerCase();
-    return doctors.filter(
-      (d) =>
-        d.name.toLowerCase().includes(term) ||
+    return doctors.filter((d) => {
+      const name = d.user?.name || d.name || '';
+      const email = d.user?.email || d.email || '';
+      return (
+        name.toLowerCase().includes(term) ||
         d.specialization.toLowerCase().includes(term) ||
         (d.department && d.department.toLowerCase().includes(term)) ||
-        (d.email && d.email.toLowerCase().includes(term)),
-    );
+        email.toLowerCase().includes(term)
+      );
+    });
   }
 }

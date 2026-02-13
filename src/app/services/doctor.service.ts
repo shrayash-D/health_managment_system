@@ -89,13 +89,13 @@ export class DoctorService {
     return of([...this.mockDoctors]);
   }
 
-  getDoctorById(id: number): Observable<Doctor | undefined> {
-    const doctor = this.mockDoctors.find((d) => d.id === id);
+  getDoctorById(id: number | string): Observable<Doctor | undefined> {
+    const doctor = this.mockDoctors.find((d) => d.id == id); // Use == for loose equality
     return of(doctor);
   }
 
-  updateDoctor(id: number, doctor: Doctor): Observable<Doctor> {
-    const index = this.mockDoctors.findIndex((d) => d.id === id);
+  updateDoctor(id: number | string, doctor: Doctor): Observable<Doctor> {
+    const index = this.mockDoctors.findIndex((d) => d.id == id); // Use == for loose equality
     if (index !== -1) {
       this.mockDoctors[index] = { ...doctor, id };
       return of(this.mockDoctors[index]);
@@ -103,8 +103,8 @@ export class DoctorService {
     return of(doctor);
   }
 
-  deleteDoctor(id: number): Observable<boolean> {
-    const index = this.mockDoctors.findIndex((d) => d.id === id);
+  deleteDoctor(id: number | string): Observable<boolean> {
+    const index = this.mockDoctors.findIndex((d) => d.id == id); // Use == for loose equality
     if (index !== -1) {
       this.mockDoctors.splice(index, 1);
       return of(true);

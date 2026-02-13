@@ -29,14 +29,18 @@ export class DoctorListComponent implements OnInit {
     const q = this.search.trim().toLowerCase();
     const spec = this.specialization.trim().toLowerCase();
 
+    const name = d.user?.name || d.name || '';
+    const email = d.user?.email || d.email || '';
+    const department = d.department || '';
+
     const haystack = (
-      d.name +
+      name +
       ' ' +
       d.specialization +
       ' ' +
-      d.department +
+      department +
       ' ' +
-      d.email
+      email
     ).toLowerCase();
 
     const okQ = q ? haystack.includes(q) : true;
