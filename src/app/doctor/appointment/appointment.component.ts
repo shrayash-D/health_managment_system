@@ -37,7 +37,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     vitals: { bloodPressure: '', heartRate: '', temperature: '', spO2: '' },
     medications: [] as { drug: string; dose: string; route: string; frequency: string; activity: string }[],
     labTests: { cbc: '', lft: '', creatinine: '', hba1c: '' },
-    billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' }
+    billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' }
   };
 
   addingVitals = false;
@@ -117,12 +117,11 @@ export class AppointmentComponent implements OnInit, OnDestroy {
         vitals: { bloodPressure: '', heartRate: '', temperature: '', spO2: '' },
         medications: [{ drug: '', dose: '', route: '', frequency: '', activity: 'active' }],
         labTests: { cbc: '', lft: '', creatinine: '', hba1c: '' },
-        billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' }
+        billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' }
       };
       // Set current date
       this.completionData.date = new Date().toISOString().split('T')[0];
-      // Calculate outstanding from pending bills
-      this.calculateOutstanding();
+
       this.addingDiagnosis = false;
       this.addingVitals = false;
       this.addingMedications = false;
@@ -162,13 +161,12 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
     // Create invoice
     const totalAmount = parseFloat(this.completionData.billing.total) || 0;
-    const outstandingAmount = parseFloat(this.completionData.billing.outstanding) || 0;
     const invoice: Invoice = {
       id: 'INV' + Date.now(),
       patientId: this.selectedAppointment.id,
       patientName: this.selectedAppointment.patientName,
       amount: totalAmount,
-      paymentStatus: outstandingAmount > 0 ? 'PENDING' : 'PAID',
+      paymentStatus: 'PAID',
       issueDate: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
       paymentMethod: '',
@@ -271,7 +269,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   cancelBilling() {
     this.addingBilling = false;
     // Optionally reset billing data
-    this.completionData.billing = { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' };
+    this.completionData.billing = { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' };
   }
 
   // EMR Navigation method
@@ -343,7 +341,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       doc.text(`Lab Fee: $${this.completionData.billing.labFee}`, 30, yPos + 30);
       doc.text(`Medicine Fee: $${this.completionData.billing.medicineFee}`, 30, yPos + 40);
       doc.text(`Total: $${this.completionData.billing.total}`, 30, yPos + 50);
-      doc.text(`Outstanding: $${this.completionData.billing.outstanding}`, 30, yPos + 60);
+      
     }
 
     doc.save(`${this.selectedAppointment.patientName}_Appointment_Report.pdf`);
@@ -369,15 +367,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     this.newLabResult = { testName: '', value: '', unit: '', notes: '' };
   }
 
-  calculateOutstanding() {
-    if (!this.selectedAppointment) return;
-    // Get pending invoices for this patient
-    const pendingInvoices = this.doctorService.getInvoices().filter(inv =>
-      inv.patientId === this.selectedAppointment!.id && inv.paymentStatus === 'PENDING'
-    );
-    const outstandingAmount = pendingInvoices.reduce((sum, inv) => sum + inv.amount, 0);
-    this.completionData.billing.outstanding = outstandingAmount > 0 ? outstandingAmount.toString() : '';
-  }
+
 
   calculateTotal() {
     const consultation = parseFloat(this.completionData.billing.consultationFee) || 0;

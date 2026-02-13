@@ -63,7 +63,6 @@ export interface Consultation {
     labFee: string;
     medicineFee: string;
     total: string;
-    outstanding: string;
   };
 }
 

@@ -1,0 +1,9 @@
+- [x] Remove outstanding display from appointment.component.html
+- [x] Remove outstanding input field from appointment.component.html
+- [x] Update reset objects in appointment.component.html
+- [x] Remove outstanding from completionData in appointment.component.ts
+- [x] Remove calculateOutstanding method from appointment.component.ts
+- [x] Remove calculateOutstanding call in openCompletionModal
+- [x] Remove outstanding from downloadAppointmentReport
+- [x] Update cancelBilling reset in appointment.component.ts
+- [x] Update submitCompletion to remove outstanding logic
