@@ -80,35 +80,16 @@ export class AppointmentService {
 
   getAppointmentsByPatientId(patientId: number): Observable<Appointment[]> {
     const appointments = this.mockAppointments.filter(
-      (a) => a.patientId === patientId
+      (a) => a.patientId === patientId,
     );
     return of(appointments);
   }
 
   getAppointmentsByDoctorId(doctorId: number): Observable<Appointment[]> {
     const appointments = this.mockAppointments.filter(
-      (a) => a.doctorId === doctorId
+      (a) => a.doctorId === doctorId,
     );
     return of(appointments);
-  }
-
-  createAppointment(appointment: Appointment): Observable<Appointment> {
-    const newId = Math.max(...this.mockAppointments.map((a) => a.id), 0) + 1;
-    const newAppointment: Appointment = { ...appointment, id: newId };
-    this.mockAppointments.push(newAppointment);
-    return of(newAppointment);
-  }
-
-  updateAppointment(
-    id: number,
-    appointment: Appointment
-  ): Observable<Appointment> {
-    const index = this.mockAppointments.findIndex((a) => a.id === id);
-    if (index !== -1) {
-      this.mockAppointments[index] = { ...appointment, id };
-      return of(this.mockAppointments[index]);
-    }
-    return of(appointment);
   }
 
   cancelAppointment(id: number): Observable<boolean> {

@@ -114,21 +114,21 @@
 /* Avatar inside Profile Header */
 .profile-header .avatar {
   width: 84px;
-  height: 84px;            /* Use explicit height to avoid grid “auto” weirdness */
+  height: 84px; /* Use explicit height to avoid grid “auto” weirdness */
   border-radius: 50%;
   background: linear-gradient(180deg, #eaf2f9 0%, #dde9f6 100%);
   border: 1px solid var(--blue-300);
   box-shadow: var(--shadow-1);
-  overflow: hidden;         /* Critical: clips image inside the circle */
-  position: relative;       /* Enables absolute children if needed */
+  overflow: hidden; /* Critical: clips image inside the circle */
+  position: relative; /* Enables absolute children if needed */
 }
 
 /* Make sure the <img> fits perfectly */
 .profile-header .avatar img {
-  display: block;           /* Removes inline-gap issues */
+  display: block; /* Removes inline-gap issues */
   width: 100%;
   height: 100%;
-  object-fit: cover;        /* Crops image to fill circle without distortion */
+  object-fit: cover; /* Crops image to fill circle without distortion */
 }
 
 /* Placeholder initials */
@@ -200,7 +200,7 @@
   border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
-  transition: .15s ease;
+  transition: 0.15s ease;
 }
 
 .btn-back:hover {
@@ -262,7 +262,9 @@
   background: #fafcfe;
   color: var(--text-900);
   outline: none;
-  transition: border-color .15s ease, box-shadow .15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 /* --- Restricted Fields --- */
@@ -330,7 +332,6 @@
   }
 }
 
- 
 .form-field input:focus,
 .form-field textarea:focus {
   border-color: var(--primary);
@@ -386,11 +387,11 @@
 .alert-popup {
   position: absolute;
   top: 45px;
-  right: 0;           /* Aligns the popup box to the right edge of the bell */
+  right: 0; /* Aligns the popup box to the right edge of the bell */
   width: 280px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   color: #333;
   z-index: 1000;
   overflow: hidden;
@@ -424,4 +425,46 @@
   font-size: 13px;
 }
 
+/* --- Success and Error Messages --- */
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.success-message::before {
+  content: "✓";
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-message::before {
+  content: "⚠";
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* --- Photo Messages --- */
+.photo-messages {
+  margin-top: 12px;
+}

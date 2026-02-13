@@ -11,7 +11,7 @@ import {
 } from '../models/auth.interface';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { AUTH_API_ENDPOINTS } from '../constants/api/auth-endpoints';
+import { AUTH_API_ENDPOINTS } from '../constants/api/api-endpoints';
 
 @Injectable({
   providedIn: 'root',

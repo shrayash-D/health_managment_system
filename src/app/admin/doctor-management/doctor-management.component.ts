@@ -17,34 +17,14 @@ import { Observable, combineLatest, map } from 'rxjs';
 export class DoctorManagementComponent implements OnInit {
   doctors$!: Observable<Doctor[]>;
   searchTerm: string = '';
-  showAddModal: boolean = false;
   showEditModal: boolean = false;
   showAccountModal: boolean = false;
   selectedDoctor: Doctor | null = null;
   selectedDoctorUser: User | null = null;
 
-  newDoctor: Doctor = {
-    id: 0,
-    name: '',
-    specialization: '',
-    contactInfo: '',
-    email: '',
-    department: '',
-    availability: [],
-  };
-
-  newUser: User = {
-    id: 0,
-    username: '',
-    password: '',
-    role: 'DOCTOR',
-    email: '',
-    name: '',
-  };
-
   constructor(
     private doctorService: DoctorService,
-    private userService: UserService
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
@@ -53,31 +33,6 @@ export class DoctorManagementComponent implements OnInit {
 
   loadDoctors(): void {
     this.doctors$ = this.doctorService.getAllDoctors();
-  }
-
-  openAddModal(): void {
-    this.newDoctor = {
-      id: 0,
-      name: '',
-      specialization: '',
-      contactInfo: '',
-      email: '',
-      department: '',
-      availability: [],
-    };
-    this.newUser = {
-      id: 0,
-      username: '',
-      password: '',
-      role: 'DOCTOR',
-      email: '',
-      name: '',
-    };
-    this.showAddModal = true;
-  }
-
-  closeAddModal(): void {
-    this.showAddModal = false;
   }
 
   openEditModal(doctor: Doctor): void {
@@ -116,25 +71,6 @@ export class DoctorManagementComponent implements OnInit {
     this.showAccountModal = false;
     this.selectedDoctor = null;
     this.selectedDoctorUser = null;
-  }
-
-  addDoctor(): void {
-    if (
-      this.newDoctor.name &&
-      this.newDoctor.specialization &&
-      this.newDoctor.contactInfo
-    ) {
-      this.doctorService.addDoctor(this.newDoctor).subscribe((doctor) => {
-        // Create user account if username provided
-        if (this.newUser.username) {
-          this.newUser.name = doctor.name;
-          this.newUser.email = doctor.email;
-          this.userService.createUser(this.newUser).subscribe();
-        }
-        this.loadDoctors();
-        this.closeAddModal();
-      });
-    }
   }
 
   updateDoctor(): void {
@@ -197,7 +133,7 @@ export class DoctorManagementComponent implements OnInit {
         d.name.toLowerCase().includes(term) ||
         d.specialization.toLowerCase().includes(term) ||
         (d.department && d.department.toLowerCase().includes(term)) ||
-        (d.email && d.email.toLowerCase().includes(term))
+        (d.email && d.email.toLowerCase().includes(term)),
     );
   }
 }

@@ -6,7 +6,10 @@
         <div>
           <!-- Profile Header -->
           <section class="card profile-header">
-            <div class="left">
+            <div *ngIf="loading" style="text-align: center; padding: 20px">
+              Loading...
+            </div>
+            <div *ngIf="!loading" class="left">
               <div class="avatar" aria-hidden="true">
                 <img
                   *ngIf="tempPhotoUrl || photoPreview"
@@ -17,12 +20,12 @@
               <div class="info">
                 <h2 class="name">{{ displayName }}</h2>
                 <div class="meta">
-                  <span class="chip">Role: {{ displayRole }}</span>
-                  <span class="chip">Member since: 2023</span>
+                  <span class="chip">{{ displayEmail }}</span>
+                  <!-- <span class="chip">Member since: 2023</span> -->
                 </div>
               </div>
             </div>
-            <div class="actions">
+            <div *ngIf="!loading" class="actions">
               <input
                 type="file"
                 #fileInput
@@ -53,6 +56,17 @@
               >
                 Remove photo
               </button>
+            </div>
+            <div
+              *ngIf="photoUploadSuccess || photoUploadError"
+              class="photo-messages"
+            >
+              <div *ngIf="photoUploadSuccess" class="success-message">
+                Profile image updated successfully!
+              </div>
+              <div *ngIf="photoUploadError" class="error-message">
+                {{ photoUploadError }}
+              </div>
             </div>
           </section>
         </div>
@@ -88,6 +102,16 @@
         <input id="dob" type="date" formControlName="dob" />
       </div>
 
+      <div class="form-field">
+        <label for="bloodGroup">Blood Group</label>
+        <input
+          id="bloodGroup"
+          type="text"
+          formControlName="bloodGroup"
+          placeholder="e.g., A+, O-, B+"
+        />
+      </div>
+
       <div class="form-field span-2">
         <label for="address">Address</label>
         <textarea
@@ -100,9 +124,13 @@
 
       <div class="form-actions span-2">
         <div class="buttons">
-          <button type="button" class="btn btn-outline" (click)="ngOnInit()">
+          <!-- <button
+            type="button"
+            class="btn btn-outline"
+            (click)="loadPatientData()"
+          >
             Reset
-          </button>
+          </button> -->
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
         <div *ngIf="saved" class="save-indicator">Saved</div>
@@ -113,25 +141,61 @@
   <!-- Security Card -->
   <section class="card form-card">
     <h2 class="form-title">Security</h2>
-    <form class="form-grid" novalidate>
+    <form
+      [formGroup]="passwordForm"
+      (ngSubmit)="onUpdatePassword()"
+      class="form-grid"
+      novalidate
+    >
       <div class="form-field">
         <label for="currPass">Current Password</label>
-        <input id="currPass" type="password" placeholder="••••••••" />
+        <input
+          id="currPass"
+          type="password"
+          formControlName="currentPassword"
+          placeholder="••••••••"
+        />
       </div>
       <div class="form-field">
         <label for="newPass">New Password</label>
-        <input id="newPass" type="password" placeholder="Min 8 chars" />
+        <input
+          id="newPass"
+          type="password"
+          formControlName="newPassword"
+          placeholder="Min 8 chars"
+        />
       </div>
       <div class="form-field">
         <label for="confirmPass">Confirm New Password</label>
         <input
           id="confirmPass"
           type="password"
+          formControlName="confirmPassword"
           placeholder="Re-enter password"
         />
+        <div
+          *ngIf="
+            passwordForm.get('confirmPassword')?.hasError('passwordMismatch')
+          "
+          class="error-message"
+        >
+          Passwords do not match
+        </div>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Update Password</button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="passwordForm.invalid"
+        >
+          Update Password
+        </button>
+      </div>
+      <div *ngIf="passwordUpdateSuccess" class="success-message">
+        Password updated successfully!
+      </div>
+      <div *ngIf="passwordUpdateError" class="error-message">
+        {{ passwordUpdateError }}
       </div>
     </form>
   </section>

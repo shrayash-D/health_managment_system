@@ -36,4 +36,17 @@ export class NotificationComponent {
     event?.stopPropagation();
     this.delete.emit(id);
   }
+
+  getNotificationIcon(type?: string): string {
+    const icons: { [key: string]: string } = {
+      info: 'ℹ️',
+      success: '✅',
+      warning: '⚠️',
+      error: '❌',
+      appointment: '📅',
+      message: '💬',
+      alert: '🔔',
+    };
+    return icons[type || 'info'] || '📢';
+  }
 }

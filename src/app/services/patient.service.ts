@@ -1,11 +1,60 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { Patient } from '../models/patient.interface';
+import { HttpClient } from '@angular/common/http';
+import { Patient, PatientApiResponse } from '../models/patient.interface';
+import { environment } from '../../environments/environment';
+import {
+  PATIENT_API_ENDPOINTS,
+  USER_API_ENDPOINTS,
+} from '../constants/api/api-endpoints';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PatientService {
+  constructor(private http: HttpClient) {}
+
+  getPatientByUserId(userId: string): Observable<PatientApiResponse> {
+    var data = this.http.get<PatientApiResponse>(
+      `${PATIENT_API_ENDPOINTS.getPatientById}/${userId}?isUserId=true`,
+    );
+
+    return data;
+  }
+
+  updatePatientProfile(userId: string, profileData: any): Observable<any> {
+    console.log(profileData);
+    return this.http.put(
+      `${PATIENT_API_ENDPOINTS.updateProfile}/${userId}`,
+      profileData,
+    );
+  }
+
+  updatePassword(passwordData: {
+    currentPassword: string;
+    newPassword: string;
+  }): Observable<any> {
+    var data = this.http.put(
+      `${USER_API_ENDPOINTS.updatePassword}`,
+      passwordData,
+    );
+    return data;
+  }
+
+  uploadProfileImage(file: File, description?: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('File', file);
+    if (description) {
+      formData.append('FileDescription', description);
+    }
+
+    return this.http.post(`${USER_API_ENDPOINTS.updateProfileImage}`, formData);
+  }
+
+  deleteProfileImage(): Observable<any> {
+    return this.http.delete(`${USER_API_ENDPOINTS.deleteProfileImage}`);
+  }
+
   private mockPatients: Patient[] = [
     {
       id: 1,
@@ -66,13 +115,6 @@ export class PatientService {
   getPatientById(id: number): Observable<Patient | undefined> {
     const patient = this.mockPatients.find((p) => p.id === id);
     return of(patient);
-  }
-
-  addPatient(patient: Patient): Observable<Patient> {
-    const newId = Math.max(...this.mockPatients.map((p) => p.id), 0) + 1;
-    const newPatient: Patient = { ...patient, id: newId };
-    this.mockPatients.push(newPatient);
-    return of(newPatient);
   }
 
   updatePatient(id: number, patient: Patient): Observable<Patient> {

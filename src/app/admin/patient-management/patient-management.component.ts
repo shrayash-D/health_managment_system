@@ -17,35 +17,14 @@ import { Observable } from 'rxjs';
 export class PatientManagementComponent implements OnInit {
   patients$!: Observable<Patient[]>;
   searchTerm: string = '';
-  showAddModal: boolean = false;
   showEditModal: boolean = false;
   showAccountModal: boolean = false;
   selectedPatient: Patient | null = null;
   selectedPatientUser: User | null = null;
 
-  newPatient: Patient = {
-    id: 0,
-    name: '',
-    contactInfo: '',
-    dob: '',
-    medicalHistory: '',
-    bloodGroup: '',
-    allergies: [],
-    primaryPhysician: '',
-  };
-
-  newUser: User = {
-    id: 0,
-    username: '',
-    password: '',
-    role: 'PATIENT',
-    email: '',
-    name: '',
-  };
-
   constructor(
     private patientService: PatientService,
-    private userService: UserService
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
@@ -54,32 +33,6 @@ export class PatientManagementComponent implements OnInit {
 
   loadPatients(): void {
     this.patients$ = this.patientService.getAllPatients();
-  }
-
-  openAddModal(): void {
-    this.newPatient = {
-      id: 0,
-      name: '',
-      contactInfo: '',
-      dob: '',
-      medicalHistory: '',
-      bloodGroup: '',
-      allergies: [],
-      primaryPhysician: '',
-    };
-    this.newUser = {
-      id: 0,
-      username: '',
-      password: '',
-      role: 'PATIENT',
-      email: '',
-      name: '',
-    };
-    this.showAddModal = true;
-  }
-
-  closeAddModal(): void {
-    this.showAddModal = false;
   }
 
   openEditModal(patient: Patient): void {
@@ -118,24 +71,6 @@ export class PatientManagementComponent implements OnInit {
     this.showAccountModal = false;
     this.selectedPatient = null;
     this.selectedPatientUser = null;
-  }
-
-  addPatient(): void {
-    if (
-      this.newPatient.name &&
-      this.newPatient.contactInfo &&
-      this.newPatient.dob
-    ) {
-      this.patientService.addPatient(this.newPatient).subscribe((patient) => {
-        // Create user account if username provided
-        if (this.newUser.username) {
-          this.newUser.name = patient.name;
-          this.userService.createUser(this.newUser).subscribe();
-        }
-        this.loadPatients();
-        this.closeAddModal();
-      });
-    }
   }
 
   saveAccount(): void {
@@ -196,7 +131,7 @@ export class PatientManagementComponent implements OnInit {
       (p) =>
         p.name.toLowerCase().includes(term) ||
         p.contactInfo.toLowerCase().includes(term) ||
-        (p.bloodGroup && p.bloodGroup.toLowerCase().includes(term))
+        (p.bloodGroup && p.bloodGroup.toLowerCase().includes(term)),
     );
   }
 }
