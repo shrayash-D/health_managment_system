@@ -203,24 +203,32 @@ export class AdminService {
   }
 
   getDoctorWorkloadData(): Observable<{ labels: string[]; data: number[] }> {
-    return combineLatest([
-      this.doctorService.getAllDoctors(),
-      this.appointmentService.getAllAppointments(),
-    ]).pipe(
-      map(([doctors, appointments]) => {
-        const doctorAppointments = doctors.map((doctor) => {
-          return appointments.filter((apt) => apt.doctorId == doctor.id).length; // Use == for loose equality
-        });
-
-        return {
-          labels: doctors.map((d) => {
-            const name = d.user?.name || d.name || 'Unknown';
-            return name.split(' ').pop() || name;
-          }),
-          data: doctorAppointments,
-        };
-      }),
-    );
+    return this.http
+      .get<{
+        doctors: Array<{
+          doctorId: string;
+          doctorName: string;
+          totalAppointments: number;
+          completedAppointments: number;
+          pendingAppointments: number;
+          cancelledAppointments: number;
+          averageAppointmentsPerDay: number;
+          lastAppointmentDate: string | null;
+        }>;
+        totalCount: number;
+      }>(ADMIN_API_ENDPOINTS.getDoctorWorkload)
+      .pipe(
+        map((response) => {
+          return {
+            labels: response.doctors.map((d) => {
+              // Extract last name from full name
+              const nameParts = d.doctorName.split(' ');
+              return nameParts[nameParts.length - 1];
+            }),
+            data: response.doctors.map((d) => d.totalAppointments),
+          };
+        }),
+      );
   }
 
   getMonthlyRevenueData(): Observable<{ labels: string[]; data: number[] }> {

@@ -26,6 +26,7 @@ export const ADMIN_API_ENDPOINTS = {
   getTotalDoctors: `${PATIENT_API_BASE_URL}/Admin/doctors/total`,
   getTotalAppointments: `${PATIENT_API_BASE_URL}/Admin/appointments/total`,
   getTotalRevenue: `${PATIENT_API_BASE_URL}/Admin/invoices/paid/total-amount`,
+  getDoctorWorkload: `${PATIENT_API_BASE_URL}/Admin/doctors/workload`,
 
   // Data Lists
   getAllPatients: `${PATIENT_API_BASE_URL}/Admin/patients`,
