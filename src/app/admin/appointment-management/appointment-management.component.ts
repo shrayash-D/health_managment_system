@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AppointmentService } from '../../services/appointment.service';
 import { DoctorService } from '../../services/doctor.service';
 import { PatientService } from '../../services/patient.service';
+import { IdFormatterService } from '../../services/id-formatter.service';
 import {
   Appointment,
   AppointmentStatus,
@@ -31,6 +32,7 @@ export class AppointmentManagementComponent implements OnInit {
     private appointmentService: AppointmentService,
     private doctorService: DoctorService,
     private patientService: PatientService,
+    public idFormatter: IdFormatterService,
   ) {}
 
   ngOnInit(): void {

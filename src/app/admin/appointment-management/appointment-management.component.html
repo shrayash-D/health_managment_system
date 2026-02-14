@@ -37,7 +37,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let appointment of getFilteredAppointments(appointments)">
-          <td>{{ appointment.id }}</td>
+          <td>{{ idFormatter.formatAppointmentId(appointment.id) }}</td>
           <td>
             <strong>{{ appointment.patientName }}</strong>
           </td>

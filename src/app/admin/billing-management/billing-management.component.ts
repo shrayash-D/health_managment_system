@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BillingService } from '../../services/billing.service';
 import { PatientService } from '../../services/patient.service';
+import { IdFormatterService } from '../../services/id-formatter.service';
 import { Invoice, PaymentStatus } from '../../models/invoice.interface';
 import { Patient } from '../../models/patient.interface';
 import { Observable, combineLatest, map, take } from 'rxjs';
@@ -26,6 +27,7 @@ export class BillingManagementComponent implements OnInit {
   constructor(
     private billingService: BillingService,
     private patientService: PatientService,
+    public idFormatter: IdFormatterService,
   ) {}
 
   ngOnInit(): void {

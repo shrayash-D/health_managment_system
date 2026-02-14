@@ -29,7 +29,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let doctor of getFilteredDoctors(doctors)">
-          <td>{{ doctor.id }}</td>
+          <td>{{ idFormatter.formatDoctorId(doctor.id) }}</td>
           <td>
             <strong>{{ doctor.user?.name || doctor.name || "N/A" }}</strong>
           </td>

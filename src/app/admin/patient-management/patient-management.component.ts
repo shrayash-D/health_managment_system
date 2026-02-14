@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientService } from '../../services/patient.service';
 import { AdminService } from '../../services/admin.service';
+import { IdFormatterService } from '../../services/id-formatter.service';
 import { Patient } from '../../models/patient.interface';
 import { Observable } from 'rxjs';
 
@@ -20,6 +21,7 @@ export class PatientManagementComponent implements OnInit {
   constructor(
     private patientService: PatientService,
     private adminService: AdminService,
+    public idFormatter: IdFormatterService,
   ) {}
 
   ngOnInit(): void {
