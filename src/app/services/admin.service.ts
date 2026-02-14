@@ -254,4 +254,19 @@ export class AdminService {
       }),
     );
   }
+
+  // ==========================================
+  // USER MANAGEMENT METHODS
+  // ==========================================
+
+  /**
+   * Update user password by admin
+   * @param userId The user ID (GUID)
+   * @param newPassword The new password
+   */
+  updateUserPassword(userId: string, newPassword: string): Observable<any> {
+    return this.http.put(ADMIN_API_ENDPOINTS.updateUserPassword(userId), {
+      newPassword: newPassword,
+    });
+  }
 }

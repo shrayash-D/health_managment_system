@@ -2,9 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientService } from '../../services/patient.service';
-import { UserService } from '../../services/user.service';
+import { AdminService } from '../../services/admin.service';
 import { Patient } from '../../models/patient.interface';
-import { User } from '../../models/user.interface';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -20,7 +19,7 @@ export class PatientManagementComponent implements OnInit {
 
   constructor(
     private patientService: PatientService,
-    private userService: UserService,
+    private adminService: AdminService,
   ) {}
 
   ngOnInit(): void {
@@ -31,27 +30,23 @@ export class PatientManagementComponent implements OnInit {
     this.patients$ = this.patientService.getAllPatients();
   }
 
-  resetPassword(patientId: number, patientName: string): void {
-    const newPassword = prompt(`Enter new password for ${patientName}:`);
+  resetPassword(patient: Patient): void {
+    const newPassword = prompt(`Enter new password for ${patient.name}:`);
     if (newPassword && newPassword.trim()) {
-      // Find user by patient ID and reset password
-      this.userService
-        .getUserByEntityId(patientId, 'PATIENT')
-        .subscribe((user) => {
-          if (user && user.id) {
-            this.userService.resetPassword(user.id, newPassword).subscribe(
-              () => {
-                alert('Password reset successfully');
-              },
-              (error) => {
-                alert('Failed to reset password. Please try again.');
-                console.error('Password reset error:', error);
-              },
-            );
-          } else {
-            alert('No user account found for this patient.');
-          }
+      const userId = patient.userId;
+      if (userId) {
+        this.adminService.updateUserPassword(userId, newPassword).subscribe({
+          next: () => {
+            alert('Password reset successfully');
+          },
+          error: (error) => {
+            alert('Failed to reset password. Please try again.');
+            console.error('Password reset error:', error);
+          },
         });
+      } else {
+        alert('Unable to reset password: User ID not found');
+      }
     }
   }
 
