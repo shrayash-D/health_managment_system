@@ -12,6 +12,8 @@ export interface Appointment {
   time: string;
   type: 'new' | 'followup';
   status: 'BOOKED' | 'COMPLETED' | 'CANCELLED' | '';
+  // Optional API data for enhanced functionality
+  apiData?: AppointmentFromAPI;
 }
 
 
@@ -117,6 +119,26 @@ export interface UpdateDoctorProfileDto {
   yearsOfExperience: number;
   bio: string;
   phoneNumber: string;
+}
+
+// 🔹 Appointments API Interfaces
+export interface AppointmentApiResponse {
+  doctorId: string;
+  totalAppointments: number;
+  appointments: AppointmentFromAPI[];
+}
+
+export interface AppointmentFromAPI {
+  id: string;
+  doctorId: string;
+  patientId: string;
+  slotId: string;
+  appointmentDate: string; // "2026-02-13T00:00:00"
+  startTime: string; // "09:00:00"
+  endTime: string; // "10:00:00"
+  status: number; // 0 = BOOKED, 1 = COMPLETED, 2 = CANCELLED
+  reason: string;
+  patientName: string; // Real patient name from API
 }
 
 @Injectable({
@@ -248,6 +270,84 @@ export class DoctorDataService {
     return this.http.get<DoctorApiResponse>(`${DOCTOR_API_ENDPOINTS.getDoctorById}/${userId}?isUserId=true`);
   }
 
+  // 🔹 Get doctor appointments from backend API
+  getDoctorAppointments(doctorId: string): Observable<AppointmentApiResponse> {
+    return this.http.get<AppointmentApiResponse>(`${DOCTOR_API_ENDPOINTS.getAppointments}/${doctorId}`);
+  }
+
+  // 🔹 Load appointments from API and update local state
+  public loadAppointmentsFromApi(doctorId: string): void {
+    console.log('Loading appointments for doctor:', doctorId);
+    
+    this.getDoctorAppointments(doctorId).subscribe({
+      next: (apiResponse) => {
+        console.log('Appointments API Response:', apiResponse);
+        
+        // Transform API appointments to local format
+        const transformedAppointments: Appointment[] = apiResponse.appointments.map(apiAppointment => {
+          // Convert status number to string
+          const statusMap = {
+            0: 'BOOKED' as const,
+            1: 'COMPLETED' as const, 
+            2: 'CANCELLED' as const
+          };
+          
+          // Format date and time
+          const appointmentDate = new Date(apiAppointment.appointmentDate);
+          const formattedDate = appointmentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+          const formattedTime = `${apiAppointment.startTime.substring(0, 5)}-${apiAppointment.endTime.substring(0, 5)}`;
+          
+          // Use the real patient name from API response
+          const patientName = apiAppointment.patientName || `Patient-${apiAppointment.patientId.substring(0, 8)}`;
+          
+          return {
+            id: parseInt(apiAppointment.id.replace(/-/g, '').substring(0, 8), 16), // Convert UUID to number for compatibility
+            patientName: patientName, // Use real patient name from API
+            date: formattedDate,
+            time: formattedTime,
+            status: statusMap[apiAppointment.status as keyof typeof statusMap] || 'BOOKED',
+            type: 'new' as const,
+            // Store original API data for reference
+            apiData: apiAppointment
+          } as Appointment & { apiData: AppointmentFromAPI };
+        });
+        
+        console.log('Transformed appointments:', transformedAppointments);
+        
+        // Update the BehaviorSubject with real data
+        this.appointmentsSubject.next(transformedAppointments);
+        
+        // Update API stats
+        this.appointmentStatsSubject.next({
+          doctorId: apiResponse.doctorId,
+          totalAppointments: apiResponse.totalAppointments
+        });
+      },
+      error: (error) => {
+        console.error('Error loading appointments:', error);
+        // Keep empty array on error - no mock data
+        this.appointmentsSubject.next([]);
+        this.appointmentStatsSubject.next(null);
+      }
+    });
+  }
+
+  // 🔹 Generate readable patient names from patient IDs
+  private generatePatientName(patientId: string): string {
+    // Common first names and last names for generating readable patient names
+    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'Robert', 'Lisa', 'James', 'Anna', 'William', 'Maria'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez'];
+    
+    // Use patient ID as seed for consistent name generation
+    const seed = patientId.replace(/-/g, '').substring(0, 8);
+    const numericSeed = parseInt(seed, 16);
+    
+    const firstName = firstNames[numericSeed % firstNames.length];
+    const lastName = lastNames[Math.floor(numericSeed / firstNames.length) % lastNames.length];
+    
+    return `${firstName} ${lastName}`;
+  }
+
   // 🔹 Load doctor data from API and update local state
   public loadDoctorFromApi(userId: string): void {
     this.getDoctorById(userId).subscribe({
@@ -327,14 +427,15 @@ export class DoctorDataService {
   }
 
   // 🔹 Appointment management
-  private appointmentsSubject = new BehaviorSubject<Appointment[]>([
-    { id: 1, patientName: 'John Doe', date: '2023-10-15', time: '10:00-11:00 ', status: 'BOOKED', type: 'new' },
-    { id: 2, patientName: 'Jane Smith', date: '2023-10-16', time: '14:00-15:30 ', status: 'COMPLETED', type: 'followup' },
-    { id: 3, patientName: 'Bob Johnson', date: '2023-10-17', time: '11:00-13:00 ', status: 'CANCELLED', type: 'new' }
-  ]);
+  private appointmentsSubject = new BehaviorSubject<Appointment[]>([]);
+
+  // 🔹 Appointment API Stats
+  private appointmentStatsSubject = new BehaviorSubject<{ doctorId: string; totalAppointments: number } | null>(null);
+  
 // 🔹 Mock available slots (doctor-defined)
 
   appointments$ = this.appointmentsSubject.asObservable();
+  appointmentStats$ = this.appointmentStatsSubject.asObservable();
 
   updateAppointment(updated: Appointment) {
     this.appointmentsSubject.next(

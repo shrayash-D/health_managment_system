@@ -16,6 +16,7 @@ export const PATIENT_API_ENDPOINTS = {
 export const DOCTOR_API_ENDPOINTS = {
   getDoctorById: `${API_BASE_URL}/Doctor`,
   updateProfile: `${API_BASE_URL}/Doctor/update-profile`,
+  getAppointments: `${API_BASE_URL}/Doctor/appointments`,
 };
 
 export const USER_API_ENDPOINTS = {

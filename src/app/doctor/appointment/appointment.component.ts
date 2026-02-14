@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DoctorDataService, Appointment, Consultation, Invoice} from '../../services/doctor-data.service';
+import { AuthService } from '../../services/auth.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import jsPDF from 'jspdf';
@@ -28,6 +29,9 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   slotStartTime = '';
   slotEndTime = '';
   availableSlots: { date: string; times: string[] }[] = [];
+
+  // API Statistics
+  appointmentApiStats: { doctorId: string; totalAppointments: number } | null = null;
 
   showCompletionModal: boolean = false;
   selectedAppointment: Appointment | null = null;
@@ -55,13 +59,27 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(private doctorService: DoctorDataService, private router: Router) {}
+  constructor(
+    private doctorService: DoctorDataService, 
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
+    // Load appointments from API first
+    this.loadAppointmentsFromAPI();
+    
     this.doctorService.appointments$
       .pipe(takeUntil(this.destroy$))
       .subscribe((appointments) => {
         this.appointments = appointments;
+      });
+
+    // Subscribe to appointment API stats
+    this.doctorService.appointmentStats$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((stats) => {
+        this.appointmentApiStats = stats;
       });
 
     this.doctorService.slots$
@@ -69,6 +87,40 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       .subscribe((slots) => {
         this.availableSlots = slots;
       });
+  }
+
+  private loadAppointmentsFromAPI(): void {
+    // Try to get doctor ID from multiple sources
+    const currentDoctor = this.doctorService.getDoctor();
+    const currentUser = this.authService.currentUserValue;
+    
+    console.log('Current doctor data:', currentDoctor);
+    console.log('Current user data:', currentUser);
+    
+    let doctorId = null;
+    
+    // Try to get doctor ID from doctor service first
+    if (currentDoctor && currentDoctor.id) {
+      doctorId = currentDoctor.id;
+    }
+    // Fallback to user ID from auth service (assuming user ID = doctor ID)
+    else if (currentUser && currentUser.id) {
+      doctorId = currentUser.id;
+    }
+    
+    if (doctorId) {
+      console.log('Loading appointments for doctor ID:', doctorId);
+      this.doctorService.loadAppointmentsFromApi(doctorId);
+    } else {
+      console.log('No doctor ID available, keeping mock data');
+      console.log('Available data - Doctor:', currentDoctor, 'User:', currentUser);
+    }
+  }
+
+  // 🔹 Get patient name from appointment data
+  getPatientName(appointment: Appointment): string {
+    // Return the patient identifier (already set by the service based on patient ID)
+    return appointment.patientName || 'Unknown Patient';
   }
 
   ngOnDestroy() {

@@ -28,7 +28,9 @@
         <table>
           <thead>
             <tr>
+              <th>Sr. No.</th>
               <th>Patient Name</th>
+              <th>Reason</th>
               <th [ngClass]="{ active: appointmentFilterDate }">Date</th>
               <th>Time</th>
               <th [ngClass]="{ active: appointmentFilterStatus }">Status</th>
@@ -36,8 +38,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let appointment of filteredAppointments">
-              <td data-label="Patient Name">{{ appointment.patientName }}</td>
+            <tr *ngFor="let appointment of filteredAppointments; let i = index">
+              <td data-label="Sr. No.">{{ i + 1 }}</td>
+              <td data-label="Patient Name">{{ getPatientName(appointment) }}</td>
+              <td data-label="Reason">{{ appointment.apiData?.reason || 'General Consultation' }}</td>
               <td data-label="Date">{{ appointment.date }}</td>
               <td data-label="Time">{{ appointment.time }}</td>
               <td data-label="Status">
@@ -51,7 +55,7 @@
                   (click)="openCompletionModal(appointment.id)"
                   [disabled]="appointment.status !== 'BOOKED'"
                 >
-                  Completed
+                  Complete
                 </button>
                 <button
                   class="btn btn-danger"
