@@ -268,4 +268,12 @@ export class AdminService {
       newPassword: newPassword,
     });
   }
+
+  /**
+   * Mark an invoice as paid
+   * @param invoiceId The invoice ID (GUID)
+   */
+  markInvoiceAsPaid(invoiceId: string): Observable<any> {
+    return this.http.put(ADMIN_API_ENDPOINTS.markInvoiceAsPaid(invoiceId), {});
+  }
 }

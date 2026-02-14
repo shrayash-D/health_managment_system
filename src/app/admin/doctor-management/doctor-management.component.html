@@ -9,7 +9,7 @@
     <input
       type="text"
       class="form-control input-brand"
-      placeholder="Search doctors by name, specialization, department, or email..."
+      placeholder="Search doctors by name, specialization, or email..."
       [(ngModel)]="searchTerm"
     />
   </div>
@@ -22,7 +22,6 @@
           <th>ID</th>
           <th>Name</th>
           <th>Specialization</th>
-          <th>Department</th>
           <th>Contact</th>
           <th>Email</th>
           <th>Actions</th>
@@ -35,26 +34,20 @@
             <strong>{{ doctor.user?.name || doctor.name || "N/A" }}</strong>
           </td>
           <td>{{ doctor.specialization }}</td>
-          <td>{{ doctor.department || "-" }}</td>
-          <td>{{ doctor.contactInfo || "-" }}</td>
+          <td>{{ doctor.user?.phoneNumber || doctor.contactInfo || "-" }}</td>
           <td>{{ doctor.user?.email || doctor.email || "-" }}</td>
           <td>
             <div class="action-buttons">
               <button
                 class="btn btn-sm btn-outline-warning"
-                (click)="
-                  resetPassword(
-                    doctor.id,
-                    doctor.user?.name || doctor.name || 'Doctor'
-                  )
-                "
+                (click)="resetPassword(doctor)"
                 title="Reset doctor password"
               >
                 Reset Password
               </button>
               <button
                 class="btn btn-sm btn-outline-danger"
-                (click)="deleteDoctor(doctor.id)"
+                (click)="deleteDoctor(doctor)"
               >
                 Delete
               </button>
@@ -62,7 +55,7 @@
           </td>
         </tr>
         <tr *ngIf="getFilteredDoctors(doctors).length === 0">
-          <td colspan="7" class="text-center text-muted-500">
+          <td colspan="6" class="text-center text-muted-500">
             No doctors found
           </td>
         </tr>

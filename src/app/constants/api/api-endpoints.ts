@@ -42,6 +42,8 @@ export const ADMIN_API_ENDPOINTS = {
     `${PATIENT_API_BASE_URL}/Admin/doctors/${userId}`,
   updateUserPassword: (userId: string) =>
     `${PATIENT_API_BASE_URL}/Admin/users/password/${userId}`,
+  markInvoiceAsPaid: (invoiceId: string) =>
+    `${PATIENT_API_BASE_URL}/Admin/invoices/mark-paid/${invoiceId}`,
 };
 
 export const DOCTOR_SLOT_API_ENDPOINTS = {

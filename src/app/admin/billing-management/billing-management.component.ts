@@ -5,7 +5,7 @@ import { BillingService } from '../../services/billing.service';
 import { PatientService } from '../../services/patient.service';
 import { Invoice, PaymentStatus } from '../../models/invoice.interface';
 import { Patient } from '../../models/patient.interface';
-import { Observable, combineLatest, map } from 'rxjs';
+import { Observable, combineLatest, map, take } from 'rxjs';
 
 @Component({
   selector: 'app-billing-management',
@@ -17,22 +17,11 @@ import { Observable, combineLatest, map } from 'rxjs';
 export class BillingManagementComponent implements OnInit {
   invoices$!: Observable<Invoice[]>;
   patients$!: Observable<Patient[]>;
-  patients: Patient[] = []; // Cache patients list for use in generateInvoice
 
   searchTerm: string = '';
   statusFilter: PaymentStatus | 'ALL' = 'ALL';
-  showAddModal: boolean = false;
   showViewModal: boolean = false;
   selectedInvoice: Invoice | null = null;
-
-  newInvoice: Partial<Invoice> = {
-    patientId: 0,
-    amount: 0,
-    paymentStatus: 'UNPAID',
-    date: new Date().toISOString().split('T')[0],
-    description: '',
-    items: [],
-  };
 
   constructor(
     private billingService: BillingService,
@@ -45,11 +34,6 @@ export class BillingManagementComponent implements OnInit {
 
   loadData(): void {
     this.patients$ = this.patientService.getAllPatients();
-
-    // Cache patients for use in generateInvoice
-    this.patients$.subscribe((patients) => {
-      this.patients = patients;
-    });
 
     this.invoices$ = combineLatest([
       this.billingService.getAllInvoices(),
@@ -68,25 +52,6 @@ export class BillingManagementComponent implements OnInit {
         });
       }),
     );
-    this.patients$ = this.patientService.getAllPatients();
-  }
-
-  openAddModal(): void {
-    this.newInvoice = {
-      patientId: 0,
-      amount: 0,
-      paymentStatus: 'UNPAID',
-      date: new Date().toISOString().split('T')[0],
-      description: '',
-      items: [],
-    };
-    // Refresh patients list before opening modal so newly added patients are available
-    this.patients$ = this.patientService.getAllPatients();
-    this.showAddModal = true;
-  }
-
-  closeAddModal(): void {
-    this.showAddModal = false;
   }
 
   openViewModal(invoice: Invoice): void {
@@ -99,30 +64,25 @@ export class BillingManagementComponent implements OnInit {
     this.selectedInvoice = null;
   }
 
-  generateInvoice(): void {
-    if (this.newInvoice.patientId && this.newInvoice.amount) {
-      // Get patient name from cached patients list
-      const pid = Number(this.newInvoice.patientId);
-      const patient = this.patients.find((p) => p.id === pid);
-
-      const invoiceToCreate: Invoice = {
-        ...(this.newInvoice as Invoice),
-        patientId: pid,
-        patientName:
-          patient?.name || (this.newInvoice as any).patientName || '',
-      };
-
-      this.billingService.generateInvoice(invoiceToCreate).subscribe(() => {
-        this.loadData();
-        this.closeAddModal();
-      });
-    }
-  }
-
   markAsPaid(id: number): void {
     if (confirm('Mark this invoice as paid?')) {
-      this.billingService.markAsPaid(id).subscribe(() => {
-        this.loadData();
+      // Find the invoice to get its apiId using take(1) to auto-unsubscribe
+      this.invoices$.pipe(take(1)).subscribe((invoices) => {
+        const invoice = invoices.find((inv) => inv.id === id);
+        if (invoice?.apiId) {
+          this.billingService.markAsPaid(invoice.apiId).subscribe({
+            next: () => {
+              alert('Invoice marked as paid successfully!');
+              this.loadData();
+            },
+            error: (error) => {
+              console.error('Error marking invoice as paid:', error);
+              alert('Failed to mark invoice as paid. Please try again.');
+            },
+          });
+        } else {
+          alert('Unable to find invoice ID. Please refresh and try again.');
+        }
       });
     }
   }

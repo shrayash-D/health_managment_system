@@ -2,10 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DoctorService } from '../../services/doctor.service';
-import { UserService } from '../../services/user.service';
+import { AdminService } from '../../services/admin.service';
 import { Doctor } from '../../models/doctor.interface';
-import { User } from '../../models/user.interface';
-import { Observable, combineLatest, map } from 'rxjs';
+import { Observable, take } from 'rxjs';
 
 @Component({
   selector: 'app-doctor-management',
@@ -20,7 +19,7 @@ export class DoctorManagementComponent implements OnInit {
 
   constructor(
     private doctorService: DoctorService,
-    private userService: UserService,
+    private adminService: AdminService,
   ) {}
 
   ngOnInit(): void {
@@ -31,35 +30,55 @@ export class DoctorManagementComponent implements OnInit {
     this.doctors$ = this.doctorService.getAllDoctors();
   }
 
-  resetPassword(doctorId: number | string, doctorName: string): void {
+  resetPassword(doctor: Doctor): void {
+    const doctorName = doctor.user?.name || doctor.name || 'Doctor';
     const newPassword = prompt(`Enter new password for Dr. ${doctorName}:`);
+
     if (newPassword && newPassword.trim()) {
-      // Find user by doctor ID and reset password
-      this.userService
-        .getUserByEntityId(Number(doctorId), 'DOCTOR')
-        .subscribe((user) => {
-          if (user && user.id) {
-            this.userService.resetPassword(user.id, newPassword).subscribe(
-              () => {
-                alert('Password reset successfully');
-              },
-              (error) => {
-                alert('Failed to reset password. Please try again.');
-                console.error('Password reset error:', error);
-              },
-            );
-          } else {
-            alert('No user account found for this doctor.');
-          }
+      // Use the user ID from the doctor object
+      const userId = doctor.user?.id || doctor.userId;
+
+      if (userId) {
+        this.adminService.updateUserPassword(userId, newPassword).subscribe({
+          next: () => {
+            alert('Password updated successfully!');
+          },
+          error: (error) => {
+            console.error('Password update error:', error);
+            alert('Failed to update password. Please try again.');
+          },
         });
+      } else {
+        alert('Unable to find user ID for this doctor.');
+      }
     }
   }
 
-  deleteDoctor(id: number | string): void {
-    if (confirm('Are you sure you want to delete this doctor?')) {
-      this.doctorService.deleteDoctor(id).subscribe(() => {
-        this.loadDoctors();
-      });
+  deleteDoctor(doctor: Doctor): void {
+    const doctorName = doctor.user?.name || doctor.name || 'this doctor';
+
+    if (
+      confirm(
+        `Are you sure you want to delete ${doctorName}? This action cannot be undone.`,
+      )
+    ) {
+      // Use the user ID from the doctor object
+      const userId = doctor.user?.id || doctor.userId;
+
+      if (userId) {
+        this.doctorService.deleteDoctor(userId).subscribe({
+          next: () => {
+            alert('Doctor deleted successfully!');
+            this.loadDoctors();
+          },
+          error: (error) => {
+            console.error('Delete error:', error);
+            alert('Failed to delete doctor. Please try again.');
+          },
+        });
+      } else {
+        alert('Unable to find user ID for this doctor.');
+      }
     }
   }
 
@@ -72,7 +91,6 @@ export class DoctorManagementComponent implements OnInit {
       return (
         name.toLowerCase().includes(term) ||
         d.specialization.toLowerCase().includes(term) ||
-        (d.department && d.department.toLowerCase().includes(term)) ||
         email.toLowerCase().includes(term)
       );
     });

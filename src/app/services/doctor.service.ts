@@ -1,114 +1,94 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { Doctor } from '../models/doctor.interface';
+import { HttpClient } from '@angular/common/http';
+import { ADMIN_API_ENDPOINTS } from '../constants/api/api-endpoints';
+import { map, catchError } from 'rxjs/operators';
+
+// API Response interface for doctors - API returns array directly
+interface DoctorApiItem {
+  id: string;
+  userId: string;
+  specialization: string;
+  yearsOfExperience: number;
+  memberSince: number | null;
+  bio: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phoneNumber: string;
+    dob?: string;
+  };
+  patients?: any[];
+  appointments?: any[];
+}
+
+type DoctorApiResponse = DoctorApiItem[];
 
 @Injectable({
   providedIn: 'root',
 })
 export class DoctorService {
-  private mockDoctors: Doctor[] = [
-    {
-      id: 1,
-      name: 'Dr. Sarah Johnson',
-      specialization: 'Cardiology',
-      contactInfo: '+1 234-567-8001',
-      email: 'sarah.johnson@healthconnect.com',
-      department: 'Cardiology',
-      availability: [
-        { dayOfWeek: 'Monday', startTime: '09:00', endTime: '17:00' },
-        { dayOfWeek: 'Wednesday', startTime: '09:00', endTime: '17:00' },
-        { dayOfWeek: 'Friday', startTime: '09:00', endTime: '13:00' },
-      ],
-    },
-    {
-      id: 2,
-      name: 'Dr. Michael Chen',
-      specialization: 'Pediatrics',
-      contactInfo: '+1 234-567-8002',
-      email: 'michael.chen@healthconnect.com',
-      department: 'Pediatrics',
-      availability: [
-        { dayOfWeek: 'Tuesday', startTime: '10:00', endTime: '18:00' },
-        { dayOfWeek: 'Thursday', startTime: '10:00', endTime: '18:00' },
-        { dayOfWeek: 'Saturday', startTime: '09:00', endTime: '14:00' },
-      ],
-    },
-    {
-      id: 3,
-      name: 'Dr. Emily Rodriguez',
-      specialization: 'Neurology',
-      contactInfo: '+1 234-567-8003',
-      email: 'emily.rodriguez@healthconnect.com',
-      department: 'Neurology',
-      availability: [
-        { dayOfWeek: 'Monday', startTime: '08:00', endTime: '16:00' },
-        { dayOfWeek: 'Wednesday', startTime: '08:00', endTime: '16:00' },
-        { dayOfWeek: 'Friday', startTime: '08:00', endTime: '12:00' },
-      ],
-    },
-    {
-      id: 4,
-      name: 'Dr. James Wilson',
-      specialization: 'Orthopedics',
-      contactInfo: '+1 234-567-8004',
-      email: 'james.wilson@healthconnect.com',
-      department: 'Orthopedics',
-      availability: [
-        { dayOfWeek: 'Tuesday', startTime: '09:00', endTime: '17:00' },
-        { dayOfWeek: 'Thursday', startTime: '09:00', endTime: '17:00' },
-      ],
-    },
-    // ✅ Add new doctors below
-    {
-      id: 5,
-      name: 'Dr. Olivia Brown',
-      specialization: 'Dermatology',
-      contactInfo: '+1 234-567-8005',
-      email: 'olivia.brown@healthconnect.com',
-      department: 'Dermatology',
-      availability: [
-        { dayOfWeek: 'Monday', startTime: '10:00', endTime: '16:00' },
-        { dayOfWeek: 'Thursday', startTime: '12:00', endTime: '18:00' },
-      ],
-    },
-    {
-      id: 6,
-      name: 'Dr. Robert Smith',
-      specialization: 'General Surgery',
-      contactInfo: '+1 234-567-8006',
-      email: 'robert.smith@healthconnect.com',
-      department: 'Surgery',
-      availability: [
-        { dayOfWeek: 'Wednesday', startTime: '09:00', endTime: '15:00' },
-        { dayOfWeek: 'Friday', startTime: '09:00', endTime: '15:00' },
-      ],
-    },
-  ];
+  constructor(private http: HttpClient) {}
 
+  // ==========================================
+  // ADMIN API METHODS
+  // ==========================================
+
+  /**
+   * Get all doctors from the API
+   */
   getAllDoctors(): Observable<Doctor[]> {
-    return of([...this.mockDoctors]);
+    return this.http
+      .get<DoctorApiResponse>(ADMIN_API_ENDPOINTS.getAllDoctors)
+      .pipe(
+        map((response) => {
+          // API returns an array directly
+          return response.map((apiDoctor: DoctorApiItem) => ({
+            id: apiDoctor.id,
+            userId: apiDoctor.userId,
+            specialization: apiDoctor.specialization || 'Not specified',
+            yearsOfExperience: apiDoctor.yearsOfExperience || 0,
+            memberSince: apiDoctor.memberSince || undefined,
+            bio: apiDoctor.bio || '',
+            user: {
+              id: apiDoctor.user.id,
+              name: apiDoctor.user.name,
+              email: apiDoctor.user.email,
+              phoneNumber: apiDoctor.user.phoneNumber,
+            },
+          }));
+        }),
+        catchError((error) => {
+          console.error('Error fetching doctors:', error);
+          return of([]); // Return empty array on error
+        }),
+      );
   }
 
+  /**
+   * Get doctor by ID
+   */
   getDoctorById(id: number | string): Observable<Doctor | undefined> {
-    const doctor = this.mockDoctors.find((d) => d.id == id); // Use == for loose equality
-    return of(doctor);
+    return this.getAllDoctors().pipe(
+      map((doctors) => doctors.find((d) => d.id == id)),
+    );
   }
 
+  /**
+   * Delete doctor by user ID
+   * @param userId The user ID (GUID) of the doctor to delete
+   */
+  deleteDoctor(userId: string): Observable<any> {
+    return this.http.delete(ADMIN_API_ENDPOINTS.deleteDoctor(userId));
+  }
+
+  /**
+   * Update doctor information (placeholder for future implementation)
+   */
   updateDoctor(id: number | string, doctor: Doctor): Observable<Doctor> {
-    const index = this.mockDoctors.findIndex((d) => d.id == id); // Use == for loose equality
-    if (index !== -1) {
-      this.mockDoctors[index] = { ...doctor, id };
-      return of(this.mockDoctors[index]);
-    }
+    // TODO: Implement with actual API when backend provides update doctor endpoint
     return of(doctor);
-  }
-
-  deleteDoctor(id: number | string): Observable<boolean> {
-    const index = this.mockDoctors.findIndex((d) => d.id == id); // Use == for loose equality
-    if (index !== -1) {
-      this.mockDoctors.splice(index, 1);
-      return of(true);
-    }
-    return of(false);
   }
 }
