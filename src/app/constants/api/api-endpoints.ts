@@ -21,7 +21,27 @@ export const USER_API_ENDPOINTS = {
 };
 
 export const ADMIN_API_ENDPOINTS = {
-  getDoctors: `${PATIENT_API_BASE_URL}/Admin/doctors`,
+  // Dashboard Metrics
+  getTotalPatients: `${PATIENT_API_BASE_URL}/Admin/patients/total`,
+  getTotalDoctors: `${PATIENT_API_BASE_URL}/Admin/doctors/total`,
+  getTotalAppointments: `${PATIENT_API_BASE_URL}/Admin/appointments/total`,
+  getTotalRevenue: `${PATIENT_API_BASE_URL}/Admin/invoices/paid/total-amount`,
+
+  // Data Lists
+  getAllPatients: `${PATIENT_API_BASE_URL}/Admin/patients`,
+  getAllDoctors: `${PATIENT_API_BASE_URL}/Admin/doctors`,
+  getAllAppointments: `${PATIENT_API_BASE_URL}/Admin/appointments`,
+  getPendingAppointments: `${PATIENT_API_BASE_URL}/Admin/appointments/pending`,
+  getAllInvoices: `${PATIENT_API_BASE_URL}/Admin/invoices`,
+  getPendingInvoices: `${PATIENT_API_BASE_URL}/Admin/invoices/pending`,
+
+  // Operations
+  deletePatient: (userId: string) =>
+    `${PATIENT_API_BASE_URL}/Admin/patients/${userId}`,
+  deleteDoctor: (userId: string) =>
+    `${PATIENT_API_BASE_URL}/Admin/doctors/${userId}`,
+  updateUserPassword: (userId: string) =>
+    `${PATIENT_API_BASE_URL}/Admin/users/password/${userId}`,
 };
 
 export const DOCTOR_SLOT_API_ENDPOINTS = {

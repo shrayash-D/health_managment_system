@@ -58,7 +58,7 @@ export class AdminDashboardComponent
         'Revenue Trend (Last 7 Days)',
         data.labels,
         data.data,
-        'rgba(10, 91, 143, 0.8)'
+        'rgba(10, 91, 143, 0.8)',
       );
     });
 
@@ -68,7 +68,7 @@ export class AdminDashboardComponent
         this.appointmentStatusChartRef.nativeElement,
         'Appointment Status',
         data.labels,
-        data.data
+        data.data,
       );
     });
 
@@ -78,7 +78,7 @@ export class AdminDashboardComponent
         this.paymentStatusChartRef.nativeElement,
         'Payment Status',
         data.labels,
-        data.data
+        data.data,
       );
     });
 
@@ -88,7 +88,7 @@ export class AdminDashboardComponent
         this.doctorWorkloadChartRef.nativeElement,
         'Doctor Workload (Appointments)',
         data.labels,
-        data.data
+        data.data,
       );
     });
 
@@ -99,7 +99,7 @@ export class AdminDashboardComponent
         'Monthly Revenue (Last 6 Months)',
         data.labels,
         data.data,
-        'rgba(61, 220, 151, 0.8)'
+        'rgba(61, 220, 151, 0.8)',
       );
     });
   }
@@ -109,7 +109,7 @@ export class AdminDashboardComponent
     label: string,
     labels: string[],
     data: number[],
-    color: string = 'rgba(10, 91, 143, 0.8)'
+    color: string = 'rgba(10, 91, 143, 0.8)',
   ): void {
     const chart = new Chart(canvas, {
       type: 'line',
@@ -156,7 +156,7 @@ export class AdminDashboardComponent
     label: string,
     labels: string[],
     data: number[],
-    color: string = 'rgba(10, 91, 143, 0.8)'
+    color: string = 'rgba(10, 91, 143, 0.8)',
   ): void {
     const chart = new Chart(canvas, {
       type: 'bar',
@@ -203,7 +203,7 @@ export class AdminDashboardComponent
     canvas: HTMLCanvasElement,
     label: string,
     labels: string[],
-    data: number[]
+    data: number[],
   ): void {
     const chart = new Chart(canvas, {
       type: 'doughnut',
@@ -245,7 +245,7 @@ export class AdminDashboardComponent
     canvas: HTMLCanvasElement,
     label: string,
     labels: string[],
-    data: number[]
+    data: number[],
   ): void {
     const chart = new Chart(canvas, {
       type: 'pie',
@@ -277,30 +277,6 @@ export class AdminDashboardComponent
 
   formatCurrency(amount: number): string {
     return `₹ ${amount.toLocaleString('en-IN')}`;
-  }
-
-  formatActivityTime(timestamp: string): string {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  }
-
-  getActivityIcon(type: string): string {
-    const icons: { [key: string]: string } = {
-      PATIENT_REGISTERED: '👤',
-      APPOINTMENT_CREATED: '📅',
-      APPOINTMENT_COMPLETED: '✅',
-      PAYMENT_RECEIVED: '💰',
-      INVOICE_GENERATED: '📄',
-    };
-    return icons[type] || '📌';
   }
 
   ngOnDestroy(): void {

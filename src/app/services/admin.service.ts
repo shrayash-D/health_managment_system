@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable, combineLatest, map } from 'rxjs';
-import {
-  DashboardMetrics,
-  ActivityItem,
-} from '../models/dashboard-metrics.interface';
+import { Observable, combineLatest, map, forkJoin } from 'rxjs';
+import { DashboardMetrics } from '../models/dashboard-metrics.interface';
 import { PatientService } from './patient.service';
 import { AppointmentService } from './appointment.service';
 import { BillingService } from './billing.service';
 import { DoctorService } from './doctor.service';
+import { HttpClient } from '@angular/common/http';
+import { ADMIN_API_ENDPOINTS } from '../constants/api/api-endpoints';
 
 @Injectable({
   providedIn: 'root',
@@ -18,97 +17,112 @@ export class AdminService {
     private appointmentService: AppointmentService,
     private billingService: BillingService,
     private doctorService: DoctorService,
+    private http: HttpClient,
   ) {}
 
+  // ==========================================
+  // API METHODS FOR DASHBOARD METRICS
+  // ==========================================
+
+  /**
+   * Get total number of patients
+   */
+  getTotalPatients(): Observable<number> {
+    return this.http
+      .get<{ totalPatients: number }>(ADMIN_API_ENDPOINTS.getTotalPatients)
+      .pipe(map((response) => response.totalPatients));
+  }
+
+  /**
+   * Get total and today's appointments count
+   */
+  getTotalAppointments(): Observable<{
+    totalAppointments: number;
+    todaysAppointments: number;
+  }> {
+    return this.http.get<{
+      totalAppointments: number;
+      todaysAppointments: number;
+    }>(ADMIN_API_ENDPOINTS.getTotalAppointments);
+  }
+
+  /**
+   * Get pending appointments
+   */
+  getPendingAppointmentsCount(): Observable<number> {
+    return this.http
+      .get<any[]>(ADMIN_API_ENDPOINTS.getPendingAppointments)
+      .pipe(map((appointments) => appointments.length));
+  }
+
+  /**
+   * Get total revenue (paid invoices) for all time and today
+   */
+  getTotalRevenue(): Observable<{
+    totalAmount: number;
+    todaysAmount: number;
+  }> {
+    return this.http.get<{
+      totalAmount: number;
+      todaysAmount: number;
+    }>(ADMIN_API_ENDPOINTS.getTotalRevenue);
+  }
+
+  /**
+   * Get pending payments (unpaid invoices)
+   */
+  getPendingPayments(): Observable<number> {
+    return this.http
+      .get<{
+        totalCount: number;
+        invoices: any[];
+      }>(ADMIN_API_ENDPOINTS.getPendingInvoices)
+      .pipe(
+        map((response) =>
+          response.invoices.reduce((sum, invoice) => sum + invoice.amount, 0),
+        ),
+      );
+  }
+
+  /**
+   * Get total number of doctors (active doctors)
+   */
+  getActiveDoctors(): Observable<number> {
+    return this.http
+      .get<{ totalDoctors: number }>(ADMIN_API_ENDPOINTS.getTotalDoctors)
+      .pipe(map((response) => response.totalDoctors));
+  }
+
+  /**
+   * Get complete dashboard metrics using real API calls
+   */
   getDashboardMetrics(): Observable<DashboardMetrics> {
-    return combineLatest([
-      this.patientService.getAllPatients(),
-      this.appointmentService.getAllAppointments(),
-      this.billingService.getAllInvoices(),
-      this.doctorService.getAllDoctors(),
-    ]).pipe(
-      map(([patients, appointments, invoices, doctors]) => {
-        const today = new Date().toISOString().split('T')[0];
-        const todayAppointments = appointments.filter((a) => a.date === today);
-        const pendingAppointments = appointments.filter(
-          (a) => a.status === 'BOOKED',
-        );
-        const pendingInvoices = invoices.filter(
-          (i) => i.paymentStatus === 'UNPAID',
-        );
-        const todayInvoices = invoices.filter((i) => i.date === today);
-
-        const totalRevenue = invoices
-          .filter((i) => i.paymentStatus === 'PAID')
-          .reduce((sum, inv) => sum + inv.amount, 0);
-
-        const todayRevenue = todayInvoices
-          .filter((i) => i.paymentStatus === 'PAID')
-          .reduce((sum, inv) => sum + inv.amount, 0);
-
-        const pendingPayments = pendingInvoices.reduce(
-          (sum, inv) => sum + inv.amount,
-          0,
-        );
-
-        const recentActivity: ActivityItem[] = [
-          {
-            id: 1,
-            type: 'PATIENT_REGISTERED',
-            description: 'New patient registered: Emily Davis',
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            userId: 4,
-            userName: 'Emily Davis',
-          },
-          {
-            id: 2,
-            type: 'APPOINTMENT_CREATED',
-            description:
-              'Appointment created for John Doe with Dr. Sarah Johnson',
-            timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-            userId: 1,
-            userName: 'John Doe',
-          },
-          {
-            id: 3,
-            type: 'PAYMENT_RECEIVED',
-            description: 'Payment received for invoice INV-10018 - ₹2,050',
-            timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-            userId: 2,
-            userName: 'Jane Smith',
-          },
-          {
-            id: 4,
-            type: 'APPOINTMENT_COMPLETED',
-            description: 'Appointment completed for Robert Williams',
-            timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-            userId: 3,
-            userName: 'Robert Williams',
-          },
-          {
-            id: 5,
-            type: 'INVOICE_GENERATED',
-            description: 'Invoice generated for Emily Davis - ₹3,200',
-            timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            userId: 4,
-            userName: 'Emily Davis',
-          },
-        ];
-
+    return forkJoin({
+      totalPatients: this.getTotalPatients(),
+      appointmentData: this.getTotalAppointments(),
+      pendingAppointments: this.getPendingAppointmentsCount(),
+      revenueData: this.getTotalRevenue(),
+      pendingPayments: this.getPendingPayments(),
+      activeDoctors: this.getActiveDoctors(),
+    }).pipe(
+      map((data) => {
         return {
-          totalPatients: patients.length,
-          totalAppointments: appointments.length,
-          todayAppointments: todayAppointments.length,
-          pendingAppointments: pendingAppointments.length,
-          totalRevenue,
-          todayRevenue,
-          pendingPayments,
-          activeDoctors: doctors.length,
-          recentActivity,
+          totalPatients: data.totalPatients,
+          totalAppointments: data.appointmentData.totalAppointments,
+          todayAppointments: data.appointmentData.todaysAppointments,
+          pendingAppointments: data.pendingAppointments,
+          totalRevenue: data.revenueData.totalAmount,
+          todayRevenue: data.revenueData.todaysAmount,
+          pendingPayments: data.pendingPayments,
+          activeDoctors: data.activeDoctors,
         };
       }),
     );
   }
+
+  // ==========================================
+  // CHART DATA METHODS
+  // ==========================================
 
   getRevenueData(): Observable<{ labels: string[]; data: number[] }> {
     return this.billingService.getAllInvoices().pipe(

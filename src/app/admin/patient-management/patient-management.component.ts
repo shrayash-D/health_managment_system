@@ -55,11 +55,23 @@ export class PatientManagementComponent implements OnInit {
     }
   }
 
-  deletePatient(id: number): void {
+  deletePatient(patient: Patient): void {
     if (confirm('Are you sure you want to delete this patient?')) {
-      this.patientService.deletePatient(id).subscribe(() => {
-        this.loadPatients();
-      });
+      const userId = patient.userId;
+      if (userId) {
+        this.patientService.deletePatient(userId).subscribe({
+          next: () => {
+            alert('Patient deleted successfully');
+            this.loadPatients();
+          },
+          error: (error) => {
+            alert('Failed to delete patient. Please try again.');
+            console.error('Delete patient error:', error);
+          },
+        });
+      } else {
+        alert('Unable to delete patient: User ID not found');
+      }
     }
   }
 

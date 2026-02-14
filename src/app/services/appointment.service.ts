@@ -47,7 +47,7 @@ export class AppointmentService {
 
   // New API methods for booking appointments
   getDoctors(): Observable<Doctor[]> {
-    return this.http.get<Doctor[]>(ADMIN_API_ENDPOINTS.getDoctors, {
+    return this.http.get<Doctor[]>(ADMIN_API_ENDPOINTS.getAllDoctors, {
       headers: this.getAuthHeaders(),
     });
   }

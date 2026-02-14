@@ -1,12 +1,18 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Patient, PatientApiResponse } from '../models/patient.interface';
+import {
+  Patient,
+  PatientApiResponse,
+  PatientListApiResponse,
+} from '../models/patient.interface';
 import { environment } from '../../environments/environment';
 import {
   PATIENT_API_ENDPOINTS,
   USER_API_ENDPOINTS,
+  ADMIN_API_ENDPOINTS,
 } from '../constants/api/api-endpoints';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -109,7 +115,25 @@ export class PatientService {
   ];
 
   getAllPatients(): Observable<Patient[]> {
-    return of([...this.mockPatients]);
+    return this.http
+      .get<PatientListApiResponse[]>(ADMIN_API_ENDPOINTS.getAllPatients)
+      .pipe(
+        map((apiPatients) =>
+          apiPatients.map((apiPatient) => ({
+            id: parseInt(apiPatient.id) || 0,
+            userId: apiPatient.userId, // Keep the original userId for delete operations
+            name: apiPatient.user?.name || 'Unknown',
+            contactInfo: apiPatient.user?.phoneNumber || 'N/A',
+            dob: apiPatient.user?.dob
+              ? new Date(apiPatient.user.dob).toISOString().split('T')[0]
+              : 'N/A',
+            bloodGroup: apiPatient.bloodGroup || 'Unknown',
+            allergies: [], // Not provided by API
+            primaryPhysician: apiPatient.doctor?.user?.name || 'Not Assigned',
+            medicalHistory: apiPatient.address || undefined,
+          })),
+        ),
+      );
   }
 
   getPatientById(id: number): Observable<Patient | undefined> {
@@ -126,12 +150,10 @@ export class PatientService {
     return of(patient);
   }
 
-  deletePatient(id: number): Observable<boolean> {
-    const index = this.mockPatients.findIndex((p) => p.id === id);
-    if (index !== -1) {
-      this.mockPatients.splice(index, 1);
-      return of(true);
-    }
-    return of(false);
+  deletePatient(userId: string): Observable<boolean> {
+    // The admin API expects userId (GUID string)
+    return this.http
+      .delete<void>(ADMIN_API_ENDPOINTS.deletePatient(userId))
+      .pipe(map(() => true));
   }
 }
