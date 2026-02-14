@@ -141,6 +141,97 @@ export interface AppointmentFromAPI {
   patientName: string; // Real patient name from API
 }
 
+// 🔹 Diagnosis API Interfaces
+export interface DiagnosisRequest {
+  appointmentId: string;
+  patientId: string;
+  diagnosisDetails: string;
+}
+
+export interface DiagnosisResponse {
+  id: string;
+  appointmentId: string;
+  patientId: string;
+  diagnosisDetails: string;
+}
+
+// 🔹 Vitals API Interfaces
+export interface VitalsRequest {
+  appointmentId: string;
+  patientId: string;
+  bloodPressure: string;
+  heartRate: number;
+  temperature: number;
+  spO2: number;
+}
+
+export interface VitalsResponse {
+  id: string;
+  appointmentId: string;
+  patientId: string;
+  bloodPressure: string;
+  heartRate: number;
+  temperature: number;
+  spO2: number;
+}
+
+// 🔹 Medication API Interfaces
+export interface MedicationRequest {
+  appointmentId: string;
+  patientId: string;
+  drug: string;
+  dose: string;
+  route: string;
+  frequency: string;
+  activity: number;
+}
+
+export interface MedicationResponse {
+  id: string;
+  appointmentId: string;
+  patientId: string;
+  drug: string;
+  dose: string;
+  route: string;
+  frequency: string;
+  activity: number;
+}
+
+// 🔹 Invoice API Interfaces
+export interface InvoiceRequest {
+  appointmentId: string;
+  patientId: string;
+  consultationType: string;
+  consulationFee: number; // Note: API has typo "consulationFee" instead of "consultationFee"
+  labFee: number;
+  medicineFee: number;
+  total: number;
+}
+
+export interface InvoiceResponse {
+  id: string;
+  appointmentId: string;
+  patientId: string;
+  consultationType: string;
+  consulationFee: number;
+  labFee: number;
+  medicineFee: number;
+  total: number;
+}
+
+// 🔹 Appointment Status API Interfaces
+export interface AppointmentStatusRequest {
+  appointmentId: string;
+  status: string;
+}
+
+export interface AppointmentStatusResponse {
+  id: string;
+  appointmentId: string;
+  status: string;
+  updatedAt: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -273,6 +364,132 @@ export class DoctorDataService {
   // 🔹 Get doctor appointments from backend API
   getDoctorAppointments(doctorId: string): Observable<AppointmentApiResponse> {
     return this.http.get<AppointmentApiResponse>(`${DOCTOR_API_ENDPOINTS.getAppointments}/${doctorId}`);
+  }
+
+  // 🔹 Add diagnosis for appointment
+  addDiagnosis(appointmentId: string, diagnosisData: DiagnosisRequest): Observable<DiagnosisResponse> {
+    return this.http.post<DiagnosisResponse>(`${DOCTOR_API_ENDPOINTS.addDiagnosis}/${appointmentId}`, diagnosisData);
+  }
+
+  // 🔹 Complete appointment with diagnosis using backend API
+  completeAppointmentWithDiagnosis(appointment: any, diagnosisDetails: string): Observable<DiagnosisResponse> {
+    const diagnosisData: DiagnosisRequest = {
+      appointmentId: appointment.apiData?.id || appointment.id,
+      patientId: appointment.apiData?.patientId || 'unknown',
+      diagnosisDetails: diagnosisDetails
+    };
+
+    console.log('Completing appointment with diagnosis:', diagnosisData);
+    console.log('API URL:', `${DOCTOR_API_ENDPOINTS.addDiagnosis}/${diagnosisData.appointmentId}`);
+    
+    return this.addDiagnosis(diagnosisData.appointmentId, diagnosisData);
+  }
+
+  // 🔹 Add vitals for appointment
+  addVitals(appointmentId: string, vitalsData: VitalsRequest): Observable<VitalsResponse> {
+    return this.http.post<VitalsResponse>(`${DOCTOR_API_ENDPOINTS.addVitals}/${appointmentId}`, vitalsData);
+  }
+
+  // 🔹 Complete appointment with vitals using backend API
+  completeAppointmentWithVitals(appointment: any, vitalsData: any): Observable<VitalsResponse> {
+    const vitalsRequest: VitalsRequest = {
+      appointmentId: appointment.apiData?.id || appointment.id,
+      patientId: appointment.apiData?.patientId || 'unknown',
+      bloodPressure: vitalsData.bloodPressure || '',
+      heartRate: parseInt(vitalsData.heartRate) || 0,
+      temperature: parseFloat(vitalsData.temperature) || 0,
+      spO2: parseInt(vitalsData.spO2) || 0
+    };
+
+    console.log('Completing appointment with vitals:', vitalsRequest);
+    console.log('API URL:', `${DOCTOR_API_ENDPOINTS.addVitals}/${vitalsRequest.appointmentId}`);
+    
+    return this.addVitals(vitalsRequest.appointmentId, vitalsRequest);
+  }
+
+  // 🔹 Add medication for appointment
+  addMedication(appointmentId: string, medicationData: MedicationRequest): Observable<MedicationResponse> {
+    return this.http.post<MedicationResponse>(`${DOCTOR_API_ENDPOINTS.addMedications}/${appointmentId}`, medicationData);
+  }
+
+  // 🔹 Complete appointment with medications using backend API
+  completeAppointmentWithMedications(appointment: any, medicationsData: any[]): Observable<MedicationResponse[]> {
+    const medicationRequests: Observable<MedicationResponse>[] = [];
+
+    medicationsData.forEach(medication => {
+      if (medication.drug && medication.drug.trim()) { // Only process medications with a drug name
+        const medicationRequest: MedicationRequest = {
+          appointmentId: appointment.apiData?.id || appointment.id,
+          patientId: appointment.apiData?.patientId || 'unknown',
+          drug: medication.drug || '',
+          dose: medication.dose || '',
+          route: medication.route || '',
+          frequency: medication.frequency || '',
+          activity: parseInt(medication.activity) || 0
+        };
+
+        console.log('Adding medication:', medicationRequest);
+        medicationRequests.push(this.addMedication(medicationRequest.appointmentId, medicationRequest));
+      }
+    });
+
+    // Return all medication requests as a combined observable
+    if (medicationRequests.length > 0) {
+      return new Observable(observer => {
+        Promise.all(medicationRequests.map(req => req.toPromise()))
+          .then(results => {
+            observer.next(results as MedicationResponse[]);
+            observer.complete();
+          })
+          .catch(error => observer.error(error));
+      });
+    } else {
+      return new Observable(observer => {
+        observer.next([]);
+        observer.complete();
+      });
+    }
+  }
+
+  // 🔹 Add invoice for appointment (API call)
+  addInvoiceToAppointment(appointmentId: string, invoiceData: InvoiceRequest): Observable<InvoiceResponse> {
+    return this.http.post<InvoiceResponse>(`${DOCTOR_API_ENDPOINTS.addInvoice}/${appointmentId}`, invoiceData);
+  }
+
+  // 🔹 Complete appointment with invoice using backend API
+  completeAppointmentWithInvoice(appointment: any, billingData: any): Observable<InvoiceResponse> {
+    const invoiceRequest: InvoiceRequest = {
+      appointmentId: appointment.apiData?.id || appointment.id,
+      patientId: appointment.apiData?.patientId || 'unknown',
+      consultationType: billingData.consultationType || 'general',
+      consulationFee: parseFloat(billingData.consultationFee) || 0, // Note: API expects "consulationFee"
+      labFee: parseFloat(billingData.labFee) || 0,
+      medicineFee: parseFloat(billingData.medicineFee) || 0,
+      total: parseFloat(billingData.total) || 0
+    };
+
+    console.log('Completing appointment with invoice:', invoiceRequest);
+    console.log('API URL:', `${DOCTOR_API_ENDPOINTS.addInvoice}/${invoiceRequest.appointmentId}`);
+    
+    return this.addInvoiceToAppointment(invoiceRequest.appointmentId, invoiceRequest);
+  }
+
+  // 🔹 Update appointment status
+  updateAppointmentStatus(appointmentId: string, status: string): Observable<any> {
+    // Backend expects a plain string ("Completed" or "Cancelled") as the request body
+    console.log('Updating appointment status:', status);
+    console.log('API URL:', `${DOCTOR_API_ENDPOINTS.updateAppointmentStatus}/${appointmentId}`);
+    return this.http.put(
+      `${DOCTOR_API_ENDPOINTS.updateAppointmentStatus}/${appointmentId}`,
+      JSON.stringify(status),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // 🔹 Mark appointment as completed
+  markAppointmentCompleted(appointment: any): Observable<any> {
+    const appointmentId = appointment.apiData?.id || appointment.id;
+    return this.updateAppointmentStatus(appointmentId, 'COMPLETED');
   }
 
   // 🔹 Load appointments from API and update local state

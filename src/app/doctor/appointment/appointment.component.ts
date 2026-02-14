@@ -195,6 +195,61 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     // Calculate total
     this.calculateTotal();
 
+    // First, submit diagnosis to backend API if diagnosis is provided
+    if (this.completionData.diagnosis && this.completionData.diagnosis.trim()) {
+      console.log('Submitting diagnosis for appointment:', this.selectedAppointment);
+      
+      this.doctorService.completeAppointmentWithDiagnosis(
+        this.selectedAppointment, 
+        this.completionData.diagnosis
+      ).subscribe({
+        next: (diagnosisResponse) => {
+          console.log('Diagnosis submitted successfully:', diagnosisResponse);
+          
+          // After successful diagnosis submission, update appointment status to COMPLETED
+          this.updateAppointmentStatusToCompleted();
+        },
+        error: (error) => {
+          console.error('Error submitting diagnosis:', error);
+          alert('Error completing appointment with diagnosis. Please try again.');
+        }
+      });
+    } else {
+      // If no diagnosis provided, just update status to completed
+      this.updateAppointmentStatusToCompleted();
+    }
+  }
+
+  private updateAppointmentStatusToCompleted() {
+    if (!this.selectedAppointment) return;
+
+    console.log('Updating appointment status to COMPLETED for:', this.selectedAppointment);
+    
+    this.doctorService.markAppointmentCompleted(this.selectedAppointment).subscribe({
+      next: (statusResponse) => {
+        console.log('Appointment status updated to COMPLETED:', statusResponse);
+        // Only update local appointment status in the UI if API call succeeded
+        if (this.selectedAppointment) {
+          this.selectedAppointment.status = 'COMPLETED';
+          const appointmentIndex = this.appointments.findIndex(app => app.id === this.selectedAppointment!.id);
+          if (appointmentIndex !== -1) {
+            this.appointments[appointmentIndex].status = 'COMPLETED';
+          }
+          this.processLocalCompletionData();
+          alert('Appointment completed successfully! Status updated to COMPLETED ✅');
+        }
+      },
+      error: (error) => {
+        console.error('Error updating appointment status:', error);
+        // Do NOT update status if API call failed
+        alert('Failed to update appointment status in database. Please try again.');
+      }
+    });
+  }
+
+  private processLocalCompletionData() {
+    if (!this.selectedAppointment) return;
+
     const consultation: Consultation = {
       id: Date.now(),
       patientId: this.selectedAppointment.id,
@@ -293,7 +348,38 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
 
   saveVitals() {
-    this.addingVitals = false;
+    // Check if vitals data exists and appointment is selected
+    if (!this.selectedAppointment) {
+      console.error('No appointment selected for vitals submission');
+      return;
+    }
+
+    const vitalsData = this.completionData.vitals;
+    
+    // Validate at least one vital is provided
+    if (!vitalsData.bloodPressure && !vitalsData.heartRate && !vitalsData.temperature && !vitalsData.spO2) {
+      console.warn('No vitals data provided');
+      this.addingVitals = false;
+      return;
+    }
+
+    // Call API to save vitals
+    console.log('Saving vitals for appointment:', this.selectedAppointment);
+    
+    this.doctorService.completeAppointmentWithVitals(this.selectedAppointment, vitalsData).subscribe({
+      next: (response) => {
+        console.log('Vitals saved successfully:', response);
+        this.addingVitals = false;
+        // Show success message (you can add a toast notification here)
+        alert('Vitals saved successfully!');
+      },
+      error: (error) => {
+        console.error('Error saving vitals:', error);
+        // Show error message (you can add a toast notification here)
+        alert('Failed to save vitals. Please try again.');
+        // Don't close the vitals section on error to allow retry
+      }
+    });
   }
 
   cancelVitals() {
@@ -303,7 +389,39 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   }
 
   saveMedications() {
-    this.addingMedications = false;
+    // Check if appointment is selected
+    if (!this.selectedAppointment) {
+      console.error('No appointment selected for medications submission');
+      return;
+    }
+
+    const medicationsData = this.completionData.medications;
+    
+    // Validate at least one medication with a drug name is provided
+    const validMedications = medicationsData.filter(med => med.drug && med.drug.trim());
+    if (validMedications.length === 0) {
+      console.warn('No valid medications data provided');
+      this.addingMedications = false;
+      return;
+    }
+
+    // Call API to save medications
+    console.log('Saving medications for appointment:', this.selectedAppointment);
+    
+    this.doctorService.completeAppointmentWithMedications(this.selectedAppointment, medicationsData).subscribe({
+      next: (responses) => {
+        console.log('Medications saved successfully:', responses);
+        this.addingMedications = false;
+        // Show success message
+        alert(`${responses.length} medication(s) saved successfully!`);
+      },
+      error: (error) => {
+        console.error('Error saving medications:', error);
+        // Show error message
+        alert('Failed to save medications. Please try again.');
+        // Don't close the medications section on error to allow retry
+      }
+    });
   }
 
   cancelMedications() {
@@ -315,7 +433,43 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
 
   saveBilling() {
-    this.addingBilling = false;
+    // Check if appointment is selected
+    if (!this.selectedAppointment) {
+      console.error('No appointment selected for billing submission');
+      return;
+    }
+
+    const billingData = this.completionData.billing;
+    
+    // Validate billing data - at least consultation type should be provided
+    if (!billingData.consultationType && !billingData.consultationFee && !billingData.total) {
+      console.warn('No billing data provided');
+      this.addingBilling = false;
+      return;
+    }
+
+    // Ensure total is calculated
+    if (!billingData.total) {
+      this.calculateTotal();
+    }
+
+    // Call API to save invoice
+    console.log('Saving billing for appointment:', this.selectedAppointment);
+    
+    this.doctorService.completeAppointmentWithInvoice(this.selectedAppointment, billingData).subscribe({
+      next: (response) => {
+        console.log('Invoice saved successfully:', response);
+        this.addingBilling = false;
+        // Show success message
+        alert('Invoice saved successfully!');
+      },
+      error: (error) => {
+        console.error('Error saving invoice:', error);
+        // Show error message
+        alert('Failed to save invoice. Please try again.');
+        // Don't close the billing section on error to allow retry
+      }
+    });
   }
 
   cancelBilling() {
