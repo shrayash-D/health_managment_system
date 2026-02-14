@@ -60,11 +60,23 @@ export class AppointmentManagementComponent implements OnInit {
     this.patients$ = this.patientService.getAllPatients();
   }
 
-  cancelAppointment(id: number): void {
+  cancelAppointment(appointment: Appointment): void {
     if (confirm('Are you sure you want to cancel this appointment?')) {
-      this.appointmentService.cancelAppointment(id).subscribe(() => {
-        this.loadData();
-      });
+      const appointmentId = appointment.appointmentId;
+      if (appointmentId) {
+        this.appointmentService.cancelAppointment(appointmentId).subscribe({
+          next: () => {
+            alert('Appointment cancelled successfully');
+            this.loadData();
+          },
+          error: (error) => {
+            alert('Failed to cancel appointment. Please try again.');
+            console.error('Cancel appointment error:', error);
+          },
+        });
+      } else {
+        alert('Unable to cancel appointment: Appointment ID not found');
+      }
     }
   }
 

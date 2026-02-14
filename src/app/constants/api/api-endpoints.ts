@@ -51,4 +51,6 @@ export const DOCTOR_SLOT_API_ENDPOINTS = {
 
 export const APPOINTMENT_API_ENDPOINTS = {
   bookAppointment: `${PATIENT_API_BASE_URL}/Patient/appointments`,
+  cancelAppointment: (appointmentId: string) =>
+    `${PATIENT_API_BASE_URL}/Patient/appointments/${appointmentId}/cancel`,
 };

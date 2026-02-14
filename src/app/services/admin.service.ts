@@ -8,6 +8,24 @@ import { DoctorService } from './doctor.service';
 import { HttpClient } from '@angular/common/http';
 import { ADMIN_API_ENDPOINTS } from '../constants/api/api-endpoints';
 
+// Interface for pending invoices API response
+interface PendingInvoiceResponse {
+  totalCount: number;
+  invoices: Array<{
+    id: string;
+    appointmentId: string;
+    patientId: string;
+    issuedDate: string;
+    status: number;
+    consultationType: string;
+    consulationFee: number;
+    labFee: number;
+    medicineFee: number;
+    total: number;
+    outstanding: number | null;
+  }>;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -73,13 +91,10 @@ export class AdminService {
    */
   getPendingPayments(): Observable<number> {
     return this.http
-      .get<{
-        totalCount: number;
-        invoices: any[];
-      }>(ADMIN_API_ENDPOINTS.getPendingInvoices)
+      .get<PendingInvoiceResponse>(ADMIN_API_ENDPOINTS.getPendingInvoices)
       .pipe(
         map((response) =>
-          response.invoices.reduce((sum, invoice) => sum + invoice.amount, 0),
+          response.invoices.reduce((sum, invoice) => sum + invoice.total, 0),
         ),
       );
   }
@@ -133,21 +148,12 @@ export class AdminService {
           return date.toISOString().split('T')[0];
         });
 
-        // Dummy revenue data for last 7 days (in rupees)
-        const dummyRevenueData = [
-          8500, 12000, 9500, 15000, 11000, 18000, 14000,
-        ];
-
-        // Combine actual data with dummy data
-        const revenueByDay = last7Days.map((day, index) => {
+        const revenueByDay = last7Days.map((day) => {
           const actualRevenue = invoices
             .filter((inv) => inv.date === day && inv.paymentStatus === 'PAID')
             .reduce((sum, inv) => sum + inv.amount, 0);
 
-          // Use dummy data if actual revenue is 0, otherwise add to actual
-          return actualRevenue > 0
-            ? actualRevenue + dummyRevenueData[index]
-            : dummyRevenueData[index];
+          return actualRevenue;
         });
 
         return {
@@ -226,11 +232,7 @@ export class AdminService {
           return date.toISOString().slice(0, 7); // YYYY-MM format
         });
 
-        // Dummy monthly revenue data (in rupees) - showing growth trend
-        const dummyMonthlyData = [85000, 92000, 105000, 118000, 132000, 145000];
-
-        // Combine actual data with dummy data
-        const revenueByMonth = last6Months.map((month, index) => {
+        const revenueByMonth = last6Months.map((month) => {
           const actualRevenue = invoices
             .filter(
               (inv) =>
@@ -238,10 +240,7 @@ export class AdminService {
             )
             .reduce((sum, inv) => sum + inv.amount, 0);
 
-          // Use dummy data if actual revenue is 0, otherwise add to actual
-          return actualRevenue > 0
-            ? actualRevenue + dummyMonthlyData[index]
-            : dummyMonthlyData[index];
+          return actualRevenue;
         });
 
         return {
