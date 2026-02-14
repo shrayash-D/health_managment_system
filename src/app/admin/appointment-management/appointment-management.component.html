@@ -59,7 +59,7 @@
               <button
                 class="btn btn-sm btn-outline-danger"
                 *ngIf="appointment.status === 'BOOKED'"
-                (click)="cancelAppointment(appointment.id)"
+                (click)="cancelAppointment(appointment)"
               >
                 Cancel
               </button>

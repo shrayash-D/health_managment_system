@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { Appointment } from '../models/appointment.interface';
+import {
+  Appointment,
+  AppointmentApiResponse,
+} from '../models/appointment.interface';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Doctor } from '../models/doctor.interface';
 import {
@@ -71,108 +74,55 @@ export class AppointmentService {
     );
   }
 
-  // Existing mock data methods below
-  private mockAppointments: Appointment[] = [
-    {
-      id: 1,
-      patientId: 1,
-      patientName: 'John Doe',
-      doctorId: 1,
-      doctorName: 'Dr. Sarah Johnson',
-      date: '2025-01-20',
-      time: '10:30',
-      status: 'BOOKED',
-      reason: 'General Checkup',
-      notes: 'Regular follow-up',
-    },
-    {
-      id: 2,
-      patientId: 2,
-      patientName: 'Jane Smith',
-      doctorId: 2,
-      doctorName: 'Dr. Michael Chen',
-      date: '2025-01-20',
-      time: '14:00',
-      status: 'BOOKED',
-      reason: 'Consultation',
-      notes: '',
-    },
-    {
-      id: 3,
-      patientId: 3,
-      patientName: 'Robert Williams',
-      doctorId: 1,
-      doctorName: 'Dr. Sarah Johnson',
-      date: '2025-01-19',
-      time: '11:00',
-      status: 'COMPLETED',
-      reason: 'Follow-up',
-      notes: 'Patient responded well to treatment',
-    },
-    {
-      id: 4,
-      patientId: 4,
-      patientName: 'Emily Davis',
-      doctorId: 2,
-      doctorName: 'Dr. Michael Chen',
-      date: '2025-01-18',
-      time: '15:30',
-      status: 'COMPLETED',
-      reason: 'Routine Check',
-      notes: '',
-    },
-    {
-      id: 5,
-      patientId: 5,
-      patientName: 'Michael Brown',
-      doctorId: 1,
-      doctorName: 'Dr. Sarah Johnson',
-      date: '2025-01-17',
-      time: '09:00',
-      status: 'CANCELLED',
-      reason: 'Emergency',
-      notes: 'Patient cancelled due to emergency',
-    },
-  ];
+  // ==========================================
+  // ADMIN API METHODS
+  // ==========================================
 
   getAllAppointments(): Observable<Appointment[]> {
-    return of([...this.mockAppointments]);
+    return this.http
+      .get<AppointmentApiResponse[]>(ADMIN_API_ENDPOINTS.getAllAppointments)
+      .pipe(
+        map((apiAppointments) =>
+          apiAppointments.map((apiApt) => {
+            // Map status number to string
+            const statusMap: {
+              [key: number]: 'BOOKED' | 'COMPLETED' | 'CANCELLED';
+            } = {
+              0: 'BOOKED',
+              1: 'COMPLETED',
+              2: 'CANCELLED',
+            };
+
+            // Format time from TimeSpan (HH:MM:SS) to HH:MM
+            const formatTime = (timeSpan: string): string => {
+              if (!timeSpan) return 'N/A';
+              const parts = timeSpan.split(':');
+              return `${parts[0]}:${parts[1]}`;
+            };
+
+            return {
+              id: parseInt(apiApt.id) || 0,
+              appointmentId: apiApt.id, // Keep the original GUID for cancel operations
+              patientId: parseInt(apiApt.patientId) || 0,
+              doctorId: parseInt(apiApt.doctorId) || 0,
+              date: apiApt.appointmentDate
+                ? new Date(apiApt.appointmentDate).toISOString().split('T')[0]
+                : 'N/A',
+              time: formatTime(apiApt.startTime),
+              status: statusMap[apiApt.status] || 'BOOKED',
+              reason: apiApt.reason || 'No reason provided',
+              notes: '',
+              // patientName and doctorName will be populated by the component
+            };
+          }),
+        ),
+      );
   }
 
-  getAppointmentById(id: number): Observable<Appointment | undefined> {
-    const appointment = this.mockAppointments.find((a) => a.id === id);
-    return of(appointment);
-  }
-
-  getAppointmentsByPatientId(patientId: number): Observable<Appointment[]> {
-    const appointments = this.mockAppointments.filter(
-      (a) => a.patientId === patientId,
-    );
-    return of(appointments);
-  }
-
-  getAppointmentsByDoctorId(doctorId: number): Observable<Appointment[]> {
-    const appointments = this.mockAppointments.filter(
-      (a) => a.doctorId === doctorId,
-    );
-    return of(appointments);
-  }
-
-  cancelAppointment(id: number): Observable<boolean> {
-    const index = this.mockAppointments.findIndex((a) => a.id === id);
-    if (index !== -1) {
-      this.mockAppointments[index].status = 'CANCELLED';
-      return of(true);
-    }
-    return of(false);
-  }
-
-  deleteAppointment(id: number): Observable<boolean> {
-    const index = this.mockAppointments.findIndex((a) => a.id === id);
-    if (index !== -1) {
-      this.mockAppointments.splice(index, 1);
-      return of(true);
-    }
-    return of(false);
+  cancelAppointment(appointmentId: string): Observable<boolean> {
+    // The API expects appointmentId (GUID string)
+    return this.http
+      .put<void>(APPOINTMENT_API_ENDPOINTS.cancelAppointment(appointmentId), {})
+      .pipe(map(() => true));
   }
 }

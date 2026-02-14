@@ -17,6 +17,7 @@ import { Observable, combineLatest, map } from 'rxjs';
 export class BillingManagementComponent implements OnInit {
   invoices$!: Observable<Invoice[]>;
   patients$!: Observable<Patient[]>;
+  patients: Patient[] = []; // Cache patients list for use in generateInvoice
 
   searchTerm: string = '';
   statusFilter: PaymentStatus | 'ALL' = 'ALL';
@@ -35,7 +36,7 @@ export class BillingManagementComponent implements OnInit {
 
   constructor(
     private billingService: BillingService,
-    private patientService: PatientService
+    private patientService: PatientService,
   ) {}
 
   ngOnInit(): void {
@@ -43,9 +44,16 @@ export class BillingManagementComponent implements OnInit {
   }
 
   loadData(): void {
+    this.patients$ = this.patientService.getAllPatients();
+
+    // Cache patients for use in generateInvoice
+    this.patients$.subscribe((patients) => {
+      this.patients = patients;
+    });
+
     this.invoices$ = combineLatest([
       this.billingService.getAllInvoices(),
-      this.patientService.getAllPatients(),
+      this.patients$,
     ]).pipe(
       map(([invoices, patients]) => {
         return invoices.map((inv) => {
@@ -58,7 +66,7 @@ export class BillingManagementComponent implements OnInit {
               patients.find((p) => p.id === pid)?.name || inv.patientName,
           } as typeof inv;
         });
-      })
+      }),
     );
     this.patients$ = this.patientService.getAllPatients();
   }
@@ -93,20 +101,20 @@ export class BillingManagementComponent implements OnInit {
 
   generateInvoice(): void {
     if (this.newInvoice.patientId && this.newInvoice.amount) {
-      // Ensure we include the patient's name on the invoice so the list shows it immediately
+      // Get patient name from cached patients list
       const pid = Number(this.newInvoice.patientId);
-      this.patientService.getPatientById(pid).subscribe((patient) => {
-        const invoiceToCreate: Invoice = {
-          ...(this.newInvoice as Invoice),
-          patientId: pid,
-          patientName:
-            patient?.name || (this.newInvoice as any).patientName || '',
-        };
+      const patient = this.patients.find((p) => p.id === pid);
 
-        this.billingService.generateInvoice(invoiceToCreate).subscribe(() => {
-          this.loadData();
-          this.closeAddModal();
-        });
+      const invoiceToCreate: Invoice = {
+        ...(this.newInvoice as Invoice),
+        patientId: pid,
+        patientName:
+          patient?.name || (this.newInvoice as any).patientName || '',
+      };
+
+      this.billingService.generateInvoice(invoiceToCreate).subscribe(() => {
+        this.loadData();
+        this.closeAddModal();
       });
     }
   }
@@ -132,7 +140,7 @@ export class BillingManagementComponent implements OnInit {
         (i) =>
           i.invoiceNumber.toLowerCase().includes(term) ||
           i.patientName?.toLowerCase().includes(term) ||
-          i.description?.toLowerCase().includes(term)
+          i.description?.toLowerCase().includes(term),
       );
     }
 
