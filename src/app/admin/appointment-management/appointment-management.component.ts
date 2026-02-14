@@ -50,7 +50,9 @@ export class AppointmentManagementComponent implements OnInit {
             patients.find((p) => p.id === apt.patientId)?.name ||
             apt.patientName,
           doctorName:
-            doctors.find((d) => d.id === apt.doctorId)?.name || apt.doctorName,
+            doctors.find((d) => d.id == apt.doctorId)?.user?.name ||
+            doctors.find((d) => d.id == apt.doctorId)?.name ||
+            apt.doctorName,
         }));
       }),
     );

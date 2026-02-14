@@ -2,9 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientService } from '../../services/patient.service';
-import { UserService } from '../../services/user.service';
+import { AdminService } from '../../services/admin.service';
 import { Patient } from '../../models/patient.interface';
-import { User } from '../../models/user.interface';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -17,14 +16,10 @@ import { Observable } from 'rxjs';
 export class PatientManagementComponent implements OnInit {
   patients$!: Observable<Patient[]>;
   searchTerm: string = '';
-  showEditModal: boolean = false;
-  showAccountModal: boolean = false;
-  selectedPatient: Patient | null = null;
-  selectedPatientUser: User | null = null;
 
   constructor(
     private patientService: PatientService,
-    private userService: UserService,
+    private adminService: AdminService,
   ) {}
 
   ngOnInit(): void {
@@ -35,92 +30,43 @@ export class PatientManagementComponent implements OnInit {
     this.patients$ = this.patientService.getAllPatients();
   }
 
-  openEditModal(patient: Patient): void {
-    this.selectedPatient = { ...patient };
-    this.showEditModal = true;
-  }
-
-  closeEditModal(): void {
-    this.showEditModal = false;
-    this.selectedPatient = null;
-  }
-
-  openAccountModal(patient: Patient): void {
-    this.selectedPatient = patient;
-    // Try to find existing user account
-    this.userService
-      .getUserByEntityId(patient.id, 'PATIENT')
-      .subscribe((user) => {
-        if (user) {
-          this.selectedPatientUser = { ...user };
-        } else {
-          this.selectedPatientUser = {
-            id: 0,
-            username: '',
-            password: '',
-            role: 'PATIENT',
-            email: '',
-            name: patient.name,
-          };
-        }
-        this.showAccountModal = true;
-      });
-  }
-
-  closeAccountModal(): void {
-    this.showAccountModal = false;
-    this.selectedPatient = null;
-    this.selectedPatientUser = null;
-  }
-
-  saveAccount(): void {
-    if (this.selectedPatient && this.selectedPatientUser) {
-      if (this.selectedPatientUser.id === 0) {
-        // Create new account
-        this.selectedPatientUser.name = this.selectedPatient.name;
-        this.userService.createUser(this.selectedPatientUser).subscribe(() => {
-          this.closeAccountModal();
+  resetPassword(patient: Patient): void {
+    const newPassword = prompt(`Enter new password for ${patient.name}:`);
+    if (newPassword && newPassword.trim()) {
+      const userId = patient.userId;
+      if (userId) {
+        this.adminService.updateUserPassword(userId, newPassword).subscribe({
+          next: () => {
+            alert('Password reset successfully');
+          },
+          error: (error) => {
+            alert('Failed to reset password. Please try again.');
+            console.error('Password reset error:', error);
+          },
         });
       } else {
-        // Update existing account
-        this.userService
-          .updateUser(this.selectedPatientUser.id, this.selectedPatientUser)
-          .subscribe(() => {
-            this.closeAccountModal();
-          });
+        alert('Unable to reset password: User ID not found');
       }
     }
   }
 
-  resetPassword(): void {
-    if (this.selectedPatientUser && this.selectedPatientUser.id) {
-      const newPassword = prompt('Enter new password:');
-      if (newPassword) {
-        this.userService
-          .resetPassword(this.selectedPatientUser.id, newPassword)
-          .subscribe(() => {
-            alert('Password reset successfully');
-          });
-      }
-    }
-  }
-
-  updatePatient(): void {
-    if (this.selectedPatient) {
-      this.patientService
-        .updatePatient(this.selectedPatient.id, this.selectedPatient)
-        .subscribe(() => {
-          this.loadPatients();
-          this.closeEditModal();
-        });
-    }
-  }
-
-  deletePatient(id: number): void {
+  deletePatient(patient: Patient): void {
     if (confirm('Are you sure you want to delete this patient?')) {
-      this.patientService.deletePatient(id).subscribe(() => {
-        this.loadPatients();
-      });
+      const userId = patient.userId;
+      if (userId) {
+        this.patientService.deletePatient(userId).subscribe({
+          next: () => {
+            alert('Patient deleted successfully');
+            this.loadPatients();
+          },
+          error: (error) => {
+            alert('Failed to delete patient. Please try again.');
+            console.error('Delete patient error:', error);
+          },
+        });
+      } else {
+        alert('Unable to delete patient: User ID not found');
+      }
     }
   }
 

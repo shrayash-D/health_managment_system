@@ -17,10 +17,6 @@ import { Observable, combineLatest, map } from 'rxjs';
 export class DoctorManagementComponent implements OnInit {
   doctors$!: Observable<Doctor[]>;
   searchTerm: string = '';
-  showEditModal: boolean = false;
-  showAccountModal: boolean = false;
-  selectedDoctor: Doctor | null = null;
-  selectedDoctorUser: User | null = null;
 
   constructor(
     private doctorService: DoctorService,
@@ -35,89 +31,31 @@ export class DoctorManagementComponent implements OnInit {
     this.doctors$ = this.doctorService.getAllDoctors();
   }
 
-  openEditModal(doctor: Doctor): void {
-    this.selectedDoctor = { ...doctor };
-    this.showEditModal = true;
-  }
-
-  closeEditModal(): void {
-    this.showEditModal = false;
-    this.selectedDoctor = null;
-  }
-
-  openAccountModal(doctor: Doctor): void {
-    this.selectedDoctor = doctor;
-    // Try to find existing user account
-    this.userService
-      .getUserByEntityId(doctor.id, 'DOCTOR')
-      .subscribe((user) => {
-        if (user) {
-          this.selectedDoctorUser = { ...user };
-        } else {
-          this.selectedDoctorUser = {
-            id: 0,
-            username: '',
-            password: '',
-            role: 'DOCTOR',
-            email: doctor.email || '',
-            name: doctor.name,
-          };
-        }
-        this.showAccountModal = true;
-      });
-  }
-
-  closeAccountModal(): void {
-    this.showAccountModal = false;
-    this.selectedDoctor = null;
-    this.selectedDoctorUser = null;
-  }
-
-  updateDoctor(): void {
-    if (this.selectedDoctor) {
-      this.doctorService
-        .updateDoctor(this.selectedDoctor.id, this.selectedDoctor)
-        .subscribe(() => {
-          this.loadDoctors();
-          this.closeEditModal();
+  resetPassword(doctorId: number | string, doctorName: string): void {
+    const newPassword = prompt(`Enter new password for Dr. ${doctorName}:`);
+    if (newPassword && newPassword.trim()) {
+      // Find user by doctor ID and reset password
+      this.userService
+        .getUserByEntityId(Number(doctorId), 'DOCTOR')
+        .subscribe((user) => {
+          if (user && user.id) {
+            this.userService.resetPassword(user.id, newPassword).subscribe(
+              () => {
+                alert('Password reset successfully');
+              },
+              (error) => {
+                alert('Failed to reset password. Please try again.');
+                console.error('Password reset error:', error);
+              },
+            );
+          } else {
+            alert('No user account found for this doctor.');
+          }
         });
     }
   }
 
-  saveAccount(): void {
-    if (this.selectedDoctor && this.selectedDoctorUser) {
-      if (this.selectedDoctorUser.id === 0) {
-        // Create new account
-        this.selectedDoctorUser.name = this.selectedDoctor.name;
-        this.selectedDoctorUser.email = this.selectedDoctor.email;
-        this.userService.createUser(this.selectedDoctorUser).subscribe(() => {
-          this.closeAccountModal();
-        });
-      } else {
-        // Update existing account
-        this.userService
-          .updateUser(this.selectedDoctorUser.id, this.selectedDoctorUser)
-          .subscribe(() => {
-            this.closeAccountModal();
-          });
-      }
-    }
-  }
-
-  resetPassword(): void {
-    if (this.selectedDoctorUser && this.selectedDoctorUser.id) {
-      const newPassword = prompt('Enter new password:');
-      if (newPassword) {
-        this.userService
-          .resetPassword(this.selectedDoctorUser.id, newPassword)
-          .subscribe(() => {
-            alert('Password reset successfully');
-          });
-      }
-    }
-  }
-
-  deleteDoctor(id: number): void {
+  deleteDoctor(id: number | string): void {
     if (confirm('Are you sure you want to delete this doctor?')) {
       this.doctorService.deleteDoctor(id).subscribe(() => {
         this.loadDoctors();
@@ -128,12 +66,15 @@ export class DoctorManagementComponent implements OnInit {
   getFilteredDoctors(doctors: Doctor[]): Doctor[] {
     if (!this.searchTerm) return doctors;
     const term = this.searchTerm.toLowerCase();
-    return doctors.filter(
-      (d) =>
-        d.name.toLowerCase().includes(term) ||
+    return doctors.filter((d) => {
+      const name = d.user?.name || d.name || '';
+      const email = d.user?.email || d.email || '';
+      return (
+        name.toLowerCase().includes(term) ||
         d.specialization.toLowerCase().includes(term) ||
         (d.department && d.department.toLowerCase().includes(term)) ||
-        (d.email && d.email.toLowerCase().includes(term)),
-    );
+        email.toLowerCase().includes(term)
+      );
+    });
   }
 }

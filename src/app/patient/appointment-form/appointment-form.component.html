@@ -12,6 +12,16 @@
     <section class="card form-card">
       <h2 class="form-title">Appointment Details</h2>
 
+      <!-- Loading indicator -->
+      <div *ngIf="loading" class="loading-message">
+        <p>Loading...</p>
+      </div>
+
+      <!-- Error message -->
+      <div *ngIf="error" class="error-message span-2">
+        {{ error }}
+      </div>
+
       <form
         class="form-grid"
         [formGroup]="appointmentForm"
@@ -19,50 +29,21 @@
         novalidate
       >
         <div class="form-field">
-          <label for="patientId">Patient ID</label>
-          <input
-            id="patientId"
-            type="text"
-            formControlName="patientId"
-            placeholder="P123"
-          />
-          <div
-            class="error"
-            *ngIf="
-              appointmentForm.get('patientId')?.touched &&
-              appointmentForm.get('patientId')?.invalid
-            "
+          <label for="clinician"
+            >Select Doctor <span class="required">*</span></label
           >
-            Patient ID is required.
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label for="patientName">Patient Name</label>
-          <input
-            id="patientName"
-            type="text"
-            formControlName="patientName"
-            placeholder="Anita Deshmukh"
-          />
-          <div
-            class="error"
-            *ngIf="
-              appointmentForm.get('patientName')?.touched &&
-              appointmentForm.get('patientName')?.invalid
-            "
+          <select
+            id="clinician"
+            formControlName="clinician"
+            (change)="onDoctorChange($event)"
           >
-            Name is required.
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label for="clinician">Clinician</label>
-          <select id="clinician" formControlName="clinician">
-            <option value="" disabled>Select clinician</option>
-            <option>Dr. Jon Miller</option>
-            <option>Dr. Priya Nair</option>
-            <option>Dr. Rahul Kulkarni</option>
+            <option value="">Select a doctor</option>
+            <option *ngFor="let doctor of doctors" [value]="doctor.id">
+              {{ doctor.user?.name || "Unknown Doctor" }}
+              <span *ngIf="doctor.specialization">
+                - {{ doctor.specialization }}</span
+              >
+            </option>
           </select>
           <div
             class="error"
@@ -71,66 +52,84 @@
               appointmentForm.get('clinician')?.invalid
             "
           >
-            Clinician is required.
+            Doctor selection is required.
           </div>
         </div>
 
-        <!-- <div class="form-field">
-          <label for="dept">Department</label>
-          <select id="dept" formControlName="dept">
-            <option value="" disabled>Select department</option>
-            <option>General Medicine</option>
-            <option>Cardiology</option>
-            <option>Orthopedics</option>
-            <option>Pediatrics</option>
+        <div class="form-field">
+          <label for="appointmentDate"
+            >Select Date <span class="required">*</span></label
+          >
+          <select
+            id="appointmentDate"
+            formControlName="appointmentDate"
+            (change)="onDateChange($event)"
+            [disabled]="availableDates.length === 0 || !selectedDoctorId"
+          >
+            <option value="">
+              {{
+                selectedDoctorId
+                  ? "Select a date"
+                  : "Please select a doctor first"
+              }}
+            </option>
+            <option *ngFor="let date of availableDates" [value]="date">
+              {{ date | date: "EEEE, MMMM d, y" }}
+            </option>
           </select>
           <div
             class="error"
             *ngIf="
-              appointmentForm.get('dept')?.touched &&
-              appointmentForm.get('dept')?.invalid
+              appointmentForm.get('appointmentDate')?.touched &&
+              appointmentForm.get('appointmentDate')?.invalid
             "
           >
-            Department is required.
-          </div>
-        </div> -->
-
-        <div class="form-field">
-          <label for="date">Date</label>
-          <input id="date" type="date" formControlName="date" />
-          <div
-            class="error"
-            *ngIf="
-              appointmentForm.get('date')?.touched &&
-              appointmentForm.get('date')?.invalid
-            "
-          >
-            Date is required.
+            Date selection is required.
           </div>
         </div>
 
         <div class="form-field">
-          <label for="time">Time</label>
-          <input id="time" type="time" formControlName="time" />
+          <label for="slotId"
+            >Select Time <span class="required">*</span></label
+          >
+          <select
+            id="slotId"
+            formControlName="slotId"
+            [disabled]="availableTimesForDate.length === 0 || !selectedDate"
+          >
+            <option value="">
+              {{
+                selectedDate ? "Select a time" : "Please select a date first"
+              }}
+            </option>
+            <option
+              *ngFor="let slot of availableTimesForDate"
+              [value]="slot.slotId"
+            >
+              {{ slot.timeDisplay }}
+            </option>
+          </select>
           <div
             class="error"
             *ngIf="
-              appointmentForm.get('time')?.touched &&
-              appointmentForm.get('time')?.invalid
+              appointmentForm.get('slotId')?.touched &&
+              appointmentForm.get('slotId')?.invalid
             "
           >
-            Time is required.
+            Time slot is required.
           </div>
         </div>
 
         <div class="form-field span-2">
-          <label for="reason">Reason</label>
-          <input
+          <label for="reason"
+            >Reason for Visit <span class="required">*</span></label
+          >
+          <textarea
             id="reason"
-            type="text"
             formControlName="reason"
-            placeholder="Short description…"
-          />
+            placeholder="Please describe your reason for the appointment..."
+            rows="4"
+          ></textarea>
           <div
             class="error"
             *ngIf="
@@ -143,22 +142,26 @@
         </div>
 
         <div class="form-actions span-2">
-          <label class="checkbox">
-            <input type="checkbox" formControlName="sendConfirmation" />
-            <span>Send confirmation via Email/SMS</span>
-          </label>
-
-          <div class="buttons">
-            <button type="button" class="btn btn-outline" (click)="resetForm()">
-              Reset
-            </button>
-            <button type="submit" class="btn btn-primary">
-              Book Appointment
-            </button>
-          </div>
+          <button
+            type="button"
+            class="btn btn-outline"
+            (click)="resetForm()"
+            [disabled]="loading"
+          >
+            Reset
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="loading || appointmentForm.invalid"
+          >
+            {{ loading ? "Booking..." : "Book Appointment" }}
+          </button>
         </div>
 
-        <div *ngIf="saved" class="success span-2">Appointment saved.</div>
+        <div *ngIf="saved" class="success span-2">
+          ✓ Appointment booked successfully!
+        </div>
       </form>
     </section>
   </main>

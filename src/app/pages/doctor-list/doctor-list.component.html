@@ -41,16 +41,19 @@
                   <!-- Body -->
                   <div class="card-body">
                     <h5 class="card-title mb-1 text-primary-600">
-                      {{ d.name }}
+                      {{ d.user?.name || d.name || "Unknown Doctor" }}
                     </h5>
                     <p class="card-text text-muted-600 mb-3">
                       <strong>Specialization:</strong> {{ d.specialization
                       }}<br />
-                      <strong>Department:</strong> {{ d.department }}
+                      <strong>Department:</strong> {{ d.department || "-" }}
                     </p>
 
                     <!-- Availability -->
-                    <div class="mb-3">
+                    <div
+                      class="mb-3"
+                      *ngIf="d.availability && d.availability.length > 0"
+                    >
                       <div class="fw-semibold mb-1">Availability</div>
                       <ul class="list-unstyled mb-0">
                         <li *ngFor="let slot of d.availability">
@@ -67,14 +70,16 @@
                     <!-- Actions -->
                     <div class="d-flex flex-wrap gap-2">
                       <a
+                        *ngIf="d.contactInfo"
                         class="btn btn-outline-brand focus-ring"
                         [href]="'tel:' + d.contactInfo"
                       >
                         Call
                       </a>
                       <a
+                        *ngIf="d.user?.email || d.email"
                         class="btn btn-brand focus-ring"
-                        [href]="'mailto:' + d.email"
+                        [href]="'mailto:' + (d.user?.email || d.email)"
                       >
                         Email
                       </a>

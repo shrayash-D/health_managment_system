@@ -64,12 +64,12 @@ export class UserService {
   }
 
   getUserByEntityId(
-    entityId: number,
-    role: UserRole
+    entityId: number | string,
+    role: UserRole,
   ): Observable<User | undefined> {
     // In real app, this would link user to patient/doctor by entityId
     const user = this.mockUsers.find(
-      (u) => u.role === role && u.id === entityId
+      (u) => u.role === role && u.id == entityId, // Use == for loose equality
     );
     return of(user);
   }
