@@ -17,10 +17,6 @@ import { Observable, combineLatest, map } from 'rxjs';
 export class DoctorManagementComponent implements OnInit {
   doctors$!: Observable<Doctor[]>;
   searchTerm: string = '';
-  showEditModal: boolean = false;
-  showAccountModal: boolean = false;
-  selectedDoctor: Doctor | null = null;
-  selectedDoctorUser: User | null = null;
 
   constructor(
     private doctorService: DoctorService,
@@ -35,87 +31,27 @@ export class DoctorManagementComponent implements OnInit {
     this.doctors$ = this.doctorService.getAllDoctors();
   }
 
-  openEditModal(doctor: Doctor): void {
-    this.selectedDoctor = { ...doctor };
-    this.showEditModal = true;
-  }
-
-  closeEditModal(): void {
-    this.showEditModal = false;
-    this.selectedDoctor = null;
-  }
-
-  openAccountModal(doctor: Doctor): void {
-    this.selectedDoctor = doctor;
-    // Try to find existing user account
-    this.userService
-      .getUserByEntityId(doctor.id, 'DOCTOR')
-      .subscribe((user) => {
-        if (user) {
-          this.selectedDoctorUser = { ...user };
-        } else {
-          this.selectedDoctorUser = {
-            id: 0,
-            username: '',
-            password: '',
-            role: 'DOCTOR',
-            email: doctor.user?.email || doctor.email || '',
-            name: doctor.user?.name || doctor.name || '',
-          };
-        }
-        this.showAccountModal = true;
-      });
-  }
-
-  closeAccountModal(): void {
-    this.showAccountModal = false;
-    this.selectedDoctor = null;
-    this.selectedDoctorUser = null;
-  }
-
-  updateDoctor(): void {
-    if (this.selectedDoctor) {
-      this.doctorService
-        .updateDoctor(this.selectedDoctor.id, this.selectedDoctor)
-        .subscribe(() => {
-          this.loadDoctors();
-          this.closeEditModal();
+  resetPassword(doctorId: number | string, doctorName: string): void {
+    const newPassword = prompt(`Enter new password for Dr. ${doctorName}:`);
+    if (newPassword && newPassword.trim()) {
+      // Find user by doctor ID and reset password
+      this.userService
+        .getUserByEntityId(Number(doctorId), 'DOCTOR')
+        .subscribe((user) => {
+          if (user && user.id) {
+            this.userService.resetPassword(user.id, newPassword).subscribe(
+              () => {
+                alert('Password reset successfully');
+              },
+              (error) => {
+                alert('Failed to reset password. Please try again.');
+                console.error('Password reset error:', error);
+              },
+            );
+          } else {
+            alert('No user account found for this doctor.');
+          }
         });
-    }
-  }
-
-  saveAccount(): void {
-    if (this.selectedDoctor && this.selectedDoctorUser) {
-      if (this.selectedDoctorUser.id === 0) {
-        // Create new account
-        this.selectedDoctorUser.name =
-          this.selectedDoctor.user?.name || this.selectedDoctor.name || '';
-        this.selectedDoctorUser.email =
-          this.selectedDoctor.user?.email || this.selectedDoctor.email || '';
-        this.userService.createUser(this.selectedDoctorUser).subscribe(() => {
-          this.closeAccountModal();
-        });
-      } else {
-        // Update existing account
-        this.userService
-          .updateUser(this.selectedDoctorUser.id, this.selectedDoctorUser)
-          .subscribe(() => {
-            this.closeAccountModal();
-          });
-      }
-    }
-  }
-
-  resetPassword(): void {
-    if (this.selectedDoctorUser && this.selectedDoctorUser.id) {
-      const newPassword = prompt('Enter new password:');
-      if (newPassword) {
-        this.userService
-          .resetPassword(this.selectedDoctorUser.id, newPassword)
-          .subscribe(() => {
-            alert('Password reset successfully');
-          });
-      }
     }
   }
 
