@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { DoctorSlotManagementComponent } from '../doctor-slot-management/doctor-slot-management.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,6 +7,7 @@ import { DoctorDataService, Appointment, Consultation, Invoice} from '../../serv
 import { AuthService } from '../../services/auth.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 import jsPDF from 'jspdf';
 
 export enum AppointmentStatus {
@@ -17,7 +19,7 @@ export enum AppointmentStatus {
 @Component({
   selector: 'app-appointment',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DoctorSlotManagementComponent],
   templateUrl: './appointment.component.html',
   styleUrl: './appointment.component.css',
 })

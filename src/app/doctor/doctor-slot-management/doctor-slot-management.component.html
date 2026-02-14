@@ -1,0 +1,33 @@
+<h2>Manage Appointment Slots</h2>
+
+<form #slotForm="ngForm" (ngSubmit)="generateSlots(slotForm)">
+  <label>Date: <input name="date" ngModel type="date" required></label>
+  <label>Start Time: <input name="startTime" ngModel type="time" required></label>
+  <label>End Time: <input name="endTime" ngModel type="time" required></label>
+  <label>Duration (minutes): <input name="duration" ngModel type="number" required></label>
+  <button type="submit" [disabled]="loading">Generate Slots</button>
+</form>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<h3>All Slots</h3>
+<table *ngIf="slots.length">
+  <tr>
+    <th>Date</th>
+    <th>Time</th>
+    <th>Status</th>
+    <th>Action</th>
+  </tr>
+  <tr *ngFor="let slot of slots">
+    <td>{{ slot.date }}</td>
+    <td>{{ slot.time }}</td>
+    <td>{{ slot.status }}</td>
+    <td><button (click)="deleteSlot(slot.id)">Delete</button></td>
+  </tr>
+</table>
+<div *ngIf="!slots.length && !loading">No slots found.</div>
+
+<h3>Available Dates</h3>
+<ul>
+  <li *ngFor="let date of availableDates">{{ date }}</li>
+</ul>
