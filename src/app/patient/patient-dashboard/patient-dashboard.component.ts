@@ -12,6 +12,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
+import { PatientDashboardApiResponse } from '../../models/patient-dashboard.interface';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -21,56 +22,138 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './patient-dashboard.component.css',
 })
 export class PatientDashboardComponent implements OnInit {
-  vitals$: Observable<Vital[]>;
-  appointments$: Observable<Appointment[]>;
-  medication$: Observable<Medication[]>;
-  labResults$: Observable<LabResult[]>;
-  billings$: Observable<BillingSummary[]>;
-  invoice$: Observable<Invoice[]>;
-  medicalHistory$!: Observable<any[]>;
+  // Observables for template
+  vitals$!: Observable<Vital[]>;
+  appointments$!: Observable<Appointment[]>;
+  medication$!: Observable<Medication[]>;
+  labResults$!: Observable<LabResult[]>;
+  billings$!: Observable<BillingSummary[]>;
+  invoice$!: Observable<Invoice[]>;
+
+  // Patient data
+  patientData?: PatientDashboardApiResponse;
   profileImageUrl: string | null = null;
-  patientId?: number;
+  patientId?: string;
+  loading = false;
+  error = '';
+
+  // Patient header info
+  patientName = '';
+  patientIdFormatted = '';
+  patientAge = 0;
+  bloodGroup = '';
 
   constructor(
-    private patientDetail: PatientDashboardService,
-    private auth: AuthService
-  ) {
-    this.vitals$ = patientDetail.getVitals();
-    this.appointments$ = patientDetail.getAppointments();
-    this.medication$ = patientDetail.getMedications();
-    this.labResults$ = patientDetail.getLabs();
-    this.billings$ = patientDetail.getBillingSummary();
-    this.invoice$ = patientDetail.getInvoices();
-  }
+    private patientDashboardService: PatientDashboardService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
-    const u = this.auth.currentUserValue as any;
-    if (u && typeof u.id === 'number') this.patientId = u.id;
-    // load medical history from localStorage for display
-    const key = `medicalHistory:${this.patientId ?? 'anon'}`;
-    try {
-      const raw = localStorage.getItem(key);
-      const arr = raw ? (JSON.parse(raw) as any[]) : [];
-      this.medicalHistory$ = of(arr);
-    } catch (e) {
-      this.medicalHistory$ = of([]);
-    }
-    this.getProfileImage();
+    this.loadPatientDashboard();
   }
 
-  getProfileImage(): void {
-    const raw = localStorage.getItem('userProfile');
-    let p: any = {};
-    if (raw) {
-      try {
-        p = JSON.parse(raw) || {};
-      } catch {
-        p = {};
-      }
+  /**
+   * Load all patient dashboard data
+   */
+  loadPatientDashboard(): void {
+    // Get userId from localStorage (same as userprofile component)
+    const currentUserStr = localStorage.getItem('currentUser');
+    const userId = currentUserStr ? JSON.parse(currentUserStr).id : null;
+
+    if (!userId) {
+      this.error = 'User ID not found. Please log in again.';
+      console.error('No user ID found in localStorage');
+      return;
     }
 
-    if (p) {
-      this.profileImageUrl = p.photo || null;
+    this.loading = true;
+    this.error = '';
+
+    // First get patient data by userId
+    this.patientDashboardService.getPatientByUserId(userId).subscribe({
+      next: (patientData) => {
+        this.patientId = patientData.id;
+        // Now fetch full dashboard data using patient ID
+        this.fetchDashboardData(this.patientId);
+      },
+      error: (err) => {
+        console.error('Error loading patient data:', err);
+        this.error = 'Failed to load patient data. Please try again.';
+        this.loading = false;
+      },
+    });
+  }
+
+  /**
+   * Fetch dashboard data using patient ID
+   */
+  private fetchDashboardData(patientId: string): void {
+    this.patientDashboardService.getPatientDashboardData(patientId).subscribe({
+      next: (data) => {
+        this.patientData = data;
+        this.populateDashboard(data);
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading patient dashboard:', err);
+        this.error = 'Failed to load dashboard data. Please try again.';
+        this.loading = false;
+      },
+    });
+  }
+
+  /**
+   * Populate dashboard with API data
+   */
+  private populateDashboard(data: PatientDashboardApiResponse): void {
+    // Header info
+    this.patientName = data.user.name;
+    this.patientIdFormatted = `P${data.id.substring(0, 6).toUpperCase()}`;
+    this.patientAge = this.calculateAge(data.user.dob);
+    this.bloodGroup = data.bloodGroup || 'N/A';
+    this.profileImageUrl =
+      data.profileImage || 'assets/images/default-avatar.png';
+
+    // Transform data using service
+    this.vitals$ = of(this.patientDashboardService.transformVitals(data));
+    this.appointments$ = of(
+      this.patientDashboardService.transformAppointments(data),
+    );
+    this.medication$ = of(
+      this.patientDashboardService.transformMedications(data),
+    );
+    this.labResults$ = of(
+      this.patientDashboardService.transformLabResults(data),
+    );
+    this.billings$ = of(
+      this.patientDashboardService.transformBillingSummary(data),
+    );
+    this.invoice$ = of(this.patientDashboardService.transformInvoices(data));
+  }
+
+  /**
+   * Calculate age from date of birth
+   */
+  private calculateAge(dob: string): number {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
     }
+
+    return age;
+  }
+
+  /**
+   * Refresh dashboard data
+   */
+  refreshDashboard(): void {
+    this.loadPatientDashboard();
   }
 }

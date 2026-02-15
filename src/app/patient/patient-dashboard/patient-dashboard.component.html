@@ -11,7 +11,25 @@
     </div>
   </section>
 
-  <main class="container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="container">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading your dashboard...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="container">
+    <div class="error-state">
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="refreshDashboard()">
+        Retry
+      </button>
+    </div>
+  </div>
+
+  <main class="container" *ngIf="!loading && !error">
     <!-- Patient Header Card -->
     <section class="card header-card">
       <div class="left">
@@ -19,14 +37,14 @@
           class="avatar"
           aria-hidden="true"
           [src]="profileImageUrl"
-          alt="Patient Photo"
+          [alt]="patientName + ' Photo'"
         />
         <div class="info">
-          <h2 class="name">Anita Deshmukh</h2>
+          <h2 class="name">{{ patientName }}</h2>
           <div class="meta">
-            <span class="chip">ID: P123</span>
-            <span class="chip">Age: 33</span>
-            <span class="chip">Blood Group: O+</span>
+            <span class="chip">ID: {{ patientIdFormatted }}</span>
+            <span class="chip">Age: {{ patientAge }}</span>
+            <span class="chip">Blood Group: {{ bloodGroup }}</span>
           </div>
         </div>
       </div>
@@ -50,16 +68,25 @@
             <span class="title-dot"></span>
             <h3>Vitals</h3>
           </div>
-          <button class="icon-btn" aria-label="Refresh">↻</button>
+          <button
+            class="icon-btn"
+            aria-label="Refresh"
+            (click)="refreshDashboard()"
+          >
+            ↻
+          </button>
         </div>
 
-        <div class="metrics" *ngIf="vitals$ | async as vital">
-          <div class="metric" *ngFor="let v of vital">
+        <div class="metrics" *ngIf="vitals$ | async as vitals">
+          <div class="metric" *ngFor="let v of vitals">
             <span class="label">{{ v.label }}</span>
             <div>
               <span class="value">{{ v.value }}</span>
               <span class="unit">{{ v.unit }}</span>
             </div>
+          </div>
+          <div *ngIf="vitals.length === 0" class="empty-state">
+            No vitals recorded yet
           </div>
         </div>
       </article>
@@ -73,23 +100,26 @@
           </div>
         </div>
 
-        <ul class="list">
-          <li class="list-row" *ngFor="let appt of appointments$ | async">
+        <ul class="list" *ngIf="appointments$ | async as appointments">
+          <li class="list-row" *ngFor="let appt of appointments">
             <div class="row-left">
-              <strong>{{ appt.date | date : "MMM d, y • hh:mm a" }}</strong>
+              <strong>{{ appt.date | date: "MMM d, y • hh:mm a" }}</strong>
               <span>{{ appt.reason }}</span>
             </div>
             <span
               class="badge"
               [ngClass]="{
-        'badge-scheduled': appt.status === 'Scheduled',
-        'badge-success': appt.status === 'Completed',
-        'badge-cancelled': appt.status === 'Cancelled',
-        'badge-warning': appt.status === 'Rescheduled',
-      }"
+                'badge-scheduled': appt.status === 'Scheduled',
+                'badge-success': appt.status === 'Completed',
+                'badge-cancelled': appt.status === 'Cancelled',
+                'badge-warning': appt.status === 'Rescheduled',
+              }"
             >
               {{ appt.status }}
             </span>
+          </li>
+          <li *ngIf="appointments.length === 0" class="empty-state">
+            No appointments found
           </li>
         </ul>
       </article>
@@ -104,7 +134,7 @@
         </div>
 
         <div class="table-wrap">
-          <table class="table">
+          <table class="table" *ngIf="medication$ | async as medications">
             <thead>
               <tr>
                 <th>Drug</th>
@@ -115,7 +145,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let m of medication$ | async">
+              <tr *ngFor="let m of medications">
                 <td>{{ m.drug }}</td>
                 <td>{{ m.dose }}</td>
                 <td>{{ m.route }}</td>
@@ -127,11 +157,16 @@
                       'badge-info': m.status === 'Active',
                       'badge-paused': m.status === 'On Hold',
                       'badge-success': m.status === 'Completed',
-                      'badge-warning': m.status === 'Pending'
+                      'badge-warning': m.status === 'Pending',
                     }"
                   >
                     {{ m.status }}
                   </span>
+                </td>
+              </tr>
+              <tr *ngIf="medications.length === 0">
+                <td colspan="5" class="empty-state">
+                  No medications prescribed
                 </td>
               </tr>
             </tbody>
@@ -146,14 +181,23 @@
             <span class="title-dot"></span>
             <h3>Lab Results</h3>
           </div>
-          <button class="icon-btn" aria-label="Refresh">↻</button>
+          <button
+            class="icon-btn"
+            aria-label="Refresh"
+            (click)="refreshDashboard()"
+          >
+            ↻
+          </button>
         </div>
 
-        <div class="labs-grid">
-          <div class="lab-card" *ngFor="let l of labResults$ | async">
+        <div class="labs-grid" *ngIf="labResults$ | async as labResults">
+          <div class="lab-card" *ngFor="let l of labResults">
             <div class="lab-title">{{ l.title }}</div>
             <div class="lab-sub">{{ l.note }}</div>
             <span class="badge badge-success">{{ l.status }}</span>
+          </div>
+          <div *ngIf="labResults.length === 0" class="empty-state">
+            No lab results available
           </div>
         </div>
       </article>
@@ -165,35 +209,39 @@
             <span class="title-dot"></span>
             <h3>Billing</h3>
           </div>
-          <button class="icon-btn" aria-label="More">⋯</button>
         </div>
 
-        <div class="summary">
-          <div class="summary-tile" *ngFor="let s of billings$ | async">
+        <div class="summary" *ngIf="billings$ | async as billings">
+          <div class="summary-tile" *ngFor="let s of billings">
             <span class="label">{{ s.label }}</span>
             <span class="value">
-              <ng-container *ngIf="typeof s.value === 'number'; else textValue">
-                ₹ {{ s.value | number : "1.0-0" }}
+              <ng-container *ngIf="typeof s.value === 'number'">
+                ₹{{ s.value | number: "1.0-0" }}
               </ng-container>
-              <ng-template #textValue>{{ s.value }}</ng-template>
+              <ng-container *ngIf="typeof s.value !== 'number'">
+                {{ s.value }}
+              </ng-container>
             </span>
           </div>
         </div>
 
-        <div class="invoice-list">
-          <div class="invoice-row" *ngFor="let inv of invoice$ | async">
+        <div class="invoice-list" *ngIf="invoice$ | async as invoices">
+          <div class="invoice-row" *ngFor="let inv of invoices">
             <span>{{ inv.number }}</span>
-            <span>₹ {{ inv.amount | number : "1.0-0" }}</span>
+            <span>₹{{ inv.amount | number: "1.0-0" }}</span>
             <span
               class="badge"
               [ngClass]="{
                 'badge-unpaid': inv.status === 'Unpaid',
                 'badge-paid': inv.status === 'Paid',
-                'badge-overdue': inv.status === 'Overdue'
+                'badge-overdue': inv.status === 'Overdue',
               }"
             >
               {{ inv.status }}
             </span>
+          </div>
+          <div *ngIf="invoices.length === 0" class="empty-state">
+            No invoices found
           </div>
         </div>
       </article>
