@@ -26,9 +26,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   appointmentFilterDate = '';
   appointmentFilterStatus = '';
   slotDate = '';
-  slotStartTime = '';
-  slotEndTime = '';
-  availableSlots: { date: string; times: string[] }[] = [];
+  availableSlots: string[] = [];
 
   // API Statistics
   appointmentApiStats: { doctorId: string; totalAppointments: number } | null = null;
@@ -69,6 +67,9 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     // Load appointments from API first
     this.loadAppointmentsFromAPI();
     
+    // Load slots from API
+    this.loadSlotsFromAPI();
+    
     this.doctorService.appointments$
       .pipe(takeUntil(this.destroy$))
       .subscribe((appointments) => {
@@ -86,6 +87,15 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((slots) => {
         this.availableSlots = slots;
+      });
+
+    // Subscribe to available time-based slots from API
+    this.doctorService.availableSlots$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((availableSlots) => {
+        console.log('Available slots updated:', availableSlots);
+        // availableSlots now contains time-based slots from the API
+        // You can use this data to display time slots in the UI
       });
   }
 
@@ -123,24 +133,137 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     return appointment.patientName || 'Unknown Patient';
   }
 
+  private loadSlotsFromAPI(): void {
+    // Try to fetch doctor slots from API
+    const currentUser = this.authService.currentUserValue;
+    
+    if (currentUser && currentUser.id) {
+      console.log('Loading slots for doctor ID:', currentUser.id);
+      
+      this.doctorService.fetchDoctorSlotsFromAPI()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (slots) => {
+            console.log('Slots loaded from API:', slots);
+            // Slots are automatically updated via the service's convertAndUpdateSlots method
+          },
+          error: (error) => {
+            console.warn('Could not load slots from API, using mock data:', error);
+            // Silently fail and keep using mock data
+          }
+        });
+      
+      // Also fetch available time-based slots for today
+      this.fetchAvailableSlotsForToday();
+    } else {
+      console.log('No user ID available, using mock data for slots');
+    }
+  }
+
+  /**
+   * Fetch available time-based slots for today
+   * This populates the availableSlots$ observable with time slot information
+   */
+  private fetchAvailableSlotsForToday(): void {
+    // Get today's date in ISO format (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    
+    this.doctorService.fetchAvailableSlots(today)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Available slots for today:', response);
+        },
+        error: (error) => {
+          console.warn('Could not load available slots:', error);
+          // Silently fail - component still works with mock data
+        }
+      });
+  }
+
+  /**
+   * Public method to fetch available slots for a specific date
+   * @param date ISO format date string (YYYY-MM-DD)
+   */
+  fetchAvailableSlotsForDate(date: string): void {
+    this.doctorService.fetchAvailableSlots(date)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Available slots for', date, ':', response);
+        },
+        error: (error) => {
+          console.error('Error fetching available slots for', date, ':', error);
+        }
+      });
+  }
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
   addSlot() {
-    if (this.slotDate && this.slotStartTime && this.slotEndTime) {
-      const timeRange = `${this.slotStartTime}-${this.slotEndTime}`;
-      this.doctorService.addSlot(this.slotDate, timeRange);
-      this.slotDate = '';
-      this.slotStartTime = '';
-      this.slotEndTime = '';
+    if (this.slotDate) {
+      console.log('Generating slots for date:', this.slotDate);
+      
+      // Convert date to ISO format (YYYY-MM-DD)
+      const slotDateISO = this.slotDate;
+      
+      // Call API to generate slots for this date
+      this.doctorService.generateDoctorSlot(slotDateISO, slotDateISO).subscribe({
+        next: (response) => {
+          console.log('Slots created via API:', response);
+          
+          // Reset form
+          this.slotDate = '';
+          
+          // Reload slots from API
+          this.loadSlotsFromAPI();
+          
+          // Show success message
+          alert(`Appointment slots created successfully for ! ✅`);
+        },
+        error: (error) => {
+          console.error('Error creating slots:', error);
+          console.error('Error details:', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            response: error.error
+          });
+          
+          let errorMessage = 'Failed to create appointment slots.';
+          
+          if (error.message === 'Doctor profile not loaded') {
+            errorMessage = 'Doctor profile is not loaded yet. Please wait and try again.';
+          } else if (error.status === 400) {
+            errorMessage = 'Invalid date format. Please check your input.';
+          } else if (error.status === 401) {
+            errorMessage = 'Your session has expired. Please log in again.';
+          } else if (error.status === 404) {
+            errorMessage = 'Doctor not found. Please check your profile.';
+          } else if (error.status === 409) {
+            errorMessage = 'Slots already exist for this date.';
+          } else if (error.status === 500) {
+            errorMessage = 'Server error. Please try again later.';
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+          
+          alert(`Error: ${errorMessage}`);
+        }
+      });
     }
   }
 
-  removeSlot(date: string, time: string) {
-    this.doctorService.removeSlot(date, time);
-  }
+  
+
+  
+
+
 
   get filteredAppointments() {
     return this.appointments.filter((appointment) => {

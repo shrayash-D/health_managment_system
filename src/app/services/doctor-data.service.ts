@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { USER_API_ENDPOINTS, DOCTOR_API_ENDPOINTS } from '../constants/api/api-endpoints';
 import { AuthService } from './auth.service';
@@ -153,6 +154,97 @@ export interface DiagnosisResponse {
   appointmentId: string;
   patientId: string;
   diagnosisDetails: string;
+}
+
+// 🔹 Doctor Slot API Interfaces
+export interface DoctorSlotRequest {
+  doctorId: string;
+  startDate: string; // ISO format: "2026-02-15T12:15:04.269Z"
+  endDate: string;   // ISO format: "2026-02-15T12:15:04.269Z"
+}
+
+export interface DoctorSlotResponse {
+  id: string;
+  doctorId: string;
+  startDate: string;
+  endDate: string;
+  isAvailable: boolean;
+  createdAt: string;
+}
+
+export interface DoctorSlotFromAPI {
+  id: string;
+  doctorId: string;
+  startDate: string;
+  endDate: string;
+  isAvailable: boolean;
+  createdAt: string;
+}
+
+// 🔹 Available Slots Response Interface
+export interface AvailableSlot {
+  slotId: string;
+  date: string;         // ISO date: "2026-02-15"
+  startTime: string;    // Time format: "09:00"
+  endTime: string;      // Time format: "10:00"
+  timeDisplay: string;  // Display format: "09:00 - 10:00"
+}
+
+export interface AvailableSlotsResponse {
+  doctorId: string;
+  doctorName: string;
+  totalAvailableSlots: number;
+  slots: AvailableSlot[];
+}
+
+// 🔹 Doctor Patients Response Interfaces
+export interface DoctorPatientUser {
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  dob: string;
+}
+
+export interface DoctorPatient {
+  id: string;
+  userId: string;
+  doctorId: string;
+  bloodGroup: string;
+  address: string | null;
+  profileImage: string;
+  user: DoctorPatientUser;
+  doctor: any | null;
+  appointments: any[]; // Array of appointments
+}
+
+export interface DoctorPatientsResponse {
+  doctorId: string;
+  totalPatients: number;
+  patients: DoctorPatient[];
+}
+
+// 🔹 Today's Appointments API Interfaces
+export interface TodayAppointment {
+  id: string;
+  doctorId: string;
+  patientId: string;
+  slotId: string;
+  appointmentDate: string;
+  startTime: string;
+  endTime: string;
+  status: number; // 0 = scheduled, 1 = completed
+  reason: string;
+  patientName: string;
+  vitals: any | null;
+  medications: any[];
+  invoice: any | null;
+  diagnosis: any | null;
+}
+
+export interface TodayAppointmentsResponse {
+  totalAppointments: number;
+  appointments: TodayAppointment[];
 }
 
 // 🔹 Vitals API Interfaces
@@ -474,13 +566,13 @@ export class DoctorDataService {
     return this.addInvoiceToAppointment(invoiceRequest.appointmentId, invoiceRequest);
   }
 
-  // 🔹 Update appointment status
+  // 🔹 Update appointment status - Mark appointment as completed
   updateAppointmentStatus(appointmentId: string, status: string): Observable<any> {
-    // Backend expects a plain string ("Completed" or "Cancelled") as the request body
-    console.log('Updating appointment status:', status);
-    console.log('API URL:', `${DOCTOR_API_ENDPOINTS.updateAppointmentStatus}/${appointmentId}`);
+    // Backend PUT endpoint: /api/Doctor/appointments/complete/{appointmentId}
+    console.log('Updating appointment status to:', status);
+    console.log('API URL:', `${DOCTOR_API_ENDPOINTS.completeAppointment}/${appointmentId}`);
     return this.http.put(
-      `${DOCTOR_API_ENDPOINTS.updateAppointmentStatus}/${appointmentId}`,
+      `${DOCTOR_API_ENDPOINTS.completeAppointment}/${appointmentId}`,
       JSON.stringify(status),
       { headers: { 'Content-Type': 'application/json' } }
     );
@@ -888,33 +980,262 @@ export class DoctorDataService {
   }
 
 // 🔹 Doctor available slots management
-private slotsSubject = new BehaviorSubject<{ date: string; times: string[] }[]>([
-  { date: '2025-01-05', times: ['10:00-12:00', '14:00-15:00'] },
-  { date: '2025-01-06', times: ['09:00-11:00', '16:00-17:00'] },
-]);
+private generateMockSlots(): string[] {
+  // Generate slots for the next 30 days
+  const slots: string[] = [];
+  const today = new Date(2026, 1, 14); // Feb 14, 2026
+  
+  for (let i = 1; i <= 10; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() + i);
+    const dateString = date.toISOString().split('T')[0];
+    slots.push(dateString);
+  }
+  
+  return slots;
+}
+
+private slotsSubject = new BehaviorSubject<string[]>([]);
 
 slots$ = this.slotsSubject.asObservable();
+
+// 🔹 Available Slots Subject (for time-based slots from API)
+private availableSlotsSubject = new BehaviorSubject<AvailableSlot[]>([]);
+
+availableSlots$ = this.availableSlotsSubject.asObservable();
 
 getSlots() {
   return this.slotsSubject.value;
 }
 
-addSlot(date: string, time: string) {
+getAvailableSlots() {
+  return this.availableSlotsSubject.value;
+}
+
+addSlot(date: string) {
   const slots = [...this.slotsSubject.value];
-  const slotIndex = slots.findIndex(s => s.date === date);
-  if (slotIndex > -1) {
-    slots[slotIndex].times.push(time);
-  } else {
-    slots.push({ date, times: [time] });
+  if (!slots.includes(date)) {
+    slots.push(date);
   }
   this.slotsSubject.next(slots);
 }
 
-removeSlot(date: string, time: string) {
-  const slots = this.slotsSubject.value.map(s =>
-    s.date === date ? { ...s, times: s.times.filter(t => t !== time) } : s
-  ).filter(s => s.times.length > 0);
+removeSlot(date: string) {
+  const slots = this.slotsSubject.value.filter(s => s !== date);
   this.slotsSubject.next(slots);
+}
+
+// 🔹 Doctor Slot API Methods
+/**
+ * Generate doctor slots via API
+ * @param startDate ISO format: "2026-02-15T12:15:04.269Z"
+ * @param endDate ISO format: "2026-02-15T12:15:04.269Z"
+ * @returns Observable of DoctorSlotResponse
+ */
+generateDoctorSlot(startDate: string, endDate: string): Observable<DoctorSlotResponse> {
+  // Get doctorId from the doctor profile (not the user ID)
+  const currentDoctor = this.getDoctor();
+  if (!currentDoctor || !currentDoctor.id) {
+    throw new Error('Doctor profile not loaded');
+  }
+
+  const request: DoctorSlotRequest = {
+    doctorId: currentDoctor.id,
+    startDate: startDate,
+    endDate: endDate
+  };
+
+  const endpoint = `${this.apiUrl}/DoctorSlot/generate`;
+  
+  console.log('Generating slot with request:', request);
+  
+  return this.http.post<DoctorSlotResponse>(endpoint, request).pipe(
+    tap((response) => {
+      console.log('Slot generated successfully:', response);
+      // Also add to local slots subject for UI update
+      this.addSlotFromAPI(response);
+    }),
+    catchError((error) => {
+      console.error('Error generating slot:', error);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Fetch available slots for current doctor from API
+ * @returns Observable of DoctorSlotFromAPI[]
+ */
+fetchDoctorSlotsFromAPI(): Observable<DoctorSlotFromAPI[]> {
+  // Get doctorId from the doctor profile (not the user ID)
+  const currentDoctor = this.getDoctor();
+  if (!currentDoctor || !currentDoctor.id) {
+    throw new Error('Doctor profile not loaded');
+  }
+
+  const endpoint = `${this.apiUrl}/DoctorSlot/doctor/${currentDoctor.id}`;
+  
+  return this.http.get<DoctorSlotFromAPI[]>(endpoint).pipe(
+    tap((slots) => {
+      console.log('Slots fetched from API:', slots);
+      // Convert API slots to local format
+      this.convertAndUpdateSlots(slots);
+    }),
+    catchError((error) => {
+      console.error('Error fetching slots:', error);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Convert API slot response to local format and update subject (just dates)
+ */
+private addSlotFromAPI(apiSlot: DoctorSlotResponse): void {
+  const slots = [...this.slotsSubject.value];
+  
+  // Extract date from ISO format - check if startDate exists first
+  if (!apiSlot || !apiSlot.startDate) {
+    console.warn('Invalid API slot response:', apiSlot);
+    return;
+  }
+  
+  const startDate = apiSlot.startDate.split('T')[0];
+  
+  if (!slots.includes(startDate)) {
+    slots.push(startDate);
+  }
+  
+  this.slotsSubject.next(slots);
+}
+
+/**
+ * Convert API slots to local format (just dates, no times)
+ */
+private convertAndUpdateSlots(apiSlots: DoctorSlotFromAPI[]): void {
+  const localSlots: string[] = [];
+  
+  apiSlots.forEach(apiSlot => {
+    // Check if slot and startDate exist before processing
+    if (!apiSlot || !apiSlot.startDate) {
+      console.warn('Invalid API slot in response:', apiSlot);
+      return;
+    }
+    
+    if (!apiSlot.isAvailable) return; // Skip unavailable slots
+    
+    const startDate = apiSlot.startDate.split('T')[0];
+    
+    if (!localSlots.includes(startDate)) {
+      localSlots.push(startDate);
+    }
+  });
+  
+  this.slotsSubject.next(localSlots);
+}
+
+/**
+ * Fetch available appointment slots for the doctor from the API
+ * API: GET /api/DoctorSlot/doctor/{doctorId}/available?date=...
+ * @param date Optional date parameter (ISO format: YYYY-MM-DD)
+ * @returns Observable<AvailableSlotsResponse> with array of available time slots
+ */
+fetchAvailableSlots(date?: string): Observable<AvailableSlotsResponse> {
+  // Get doctorId from the doctor profile (not the user ID)
+  const currentDoctor = this.getDoctor();
+  if (!currentDoctor || !currentDoctor.id) {
+    throw new Error('Doctor profile not loaded');
+  }
+
+  let endpoint = `${this.apiUrl}/DoctorSlot/doctor/${currentDoctor.id}/available`;
+  
+  // Add date parameter if provided
+  if (date) {
+    endpoint += `?date=${encodeURIComponent(date)}`;
+  }
+  
+  return this.http.get<AvailableSlotsResponse>(endpoint).pipe(
+    tap((response) => {
+      console.log('Available slots fetched from API:', response);
+      // Update available slots subject with the response
+      if (response && response.slots) {
+        this.availableSlotsSubject.next(response.slots);
+      }
+    }),
+    catchError((error) => {
+      console.error('Error fetching available slots:', error);
+      // Log full error details for debugging
+      if (error.error) {
+        console.error('Error response:', error.error);
+      }
+      throw error;
+    })
+  );
+}
+
+/**
+ * Get all patients assigned to the current doctor
+ * API: GET /api/Doctor/patients/{doctorId}
+ * Returns all patients who have appointments with this doctor (completed or ongoing)
+ * @returns Observable<DoctorPatientsResponse> with list of patients and their appointment data
+ */
+getPatientsByDoctor(): Observable<DoctorPatientsResponse> {
+  // Get doctorId from the doctor profile (not the user ID)
+  const currentDoctor = this.getDoctor();
+  if (!currentDoctor || !currentDoctor.id) {
+    throw new Error('Doctor profile not loaded');
+  }
+
+  const endpoint = `${this.apiUrl}/Doctor/patients/${currentDoctor.id}`;
+  
+  return this.http.get<DoctorPatientsResponse>(endpoint).pipe(
+    tap((response) => {
+      console.log('Patients fetched from API:', response);
+      console.log(`Total patients: ${response.totalPatients}`);
+      if (response.patients && response.patients.length > 0) {
+        response.patients.forEach(patient => {
+          console.log(`Patient: ${patient.user?.name}, Appointments: ${patient.appointments?.length || 0}`);
+        });
+      }
+    }),
+    catchError((error) => {
+      console.error('Error fetching patients:', error);
+      // Log full error details for debugging
+      if (error.error) {
+        console.error('Error response:', error.error);
+      }
+      throw error;
+    })
+  );
+}
+
+/**
+ * Get today's appointments for the current doctor
+ * API: GET /api/Doctor/appointments/today
+ * Returns all appointments scheduled for today
+ * @returns Observable<TodayAppointmentsResponse> with list of today's appointments
+ */
+getTodayAppointments(): Observable<TodayAppointmentsResponse> {
+  const endpoint = `${this.apiUrl}/Doctor/appointments/today`;
+  
+  return this.http.get<TodayAppointmentsResponse>(endpoint).pipe(
+    tap((response) => {
+      console.log('Today appointments fetched from API:', response);
+      console.log(`Total appointments today: ${response.totalAppointments}`);
+      if (response.appointments && response.appointments.length > 0) {
+        response.appointments.forEach(appointment => {
+          console.log(`Appointment: ${appointment.patientName} at ${appointment.startTime} - ${appointment.endTime}`);
+        });
+      }
+    }),
+    catchError((error) => {
+      console.error('Error fetching today appointments:', error);
+      if (error.error) {
+        console.error('Error response:', error.error);
+      }
+      throw error;
+    })
+  );
 }
 
 

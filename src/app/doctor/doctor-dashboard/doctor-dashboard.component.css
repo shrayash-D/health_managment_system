@@ -133,16 +133,37 @@
 
 /* Patient Details */
 .card.patient-details p {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-size: 0.9rem;
   color: #374151;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e6eff6;
+  transition: all 0.3s ease;
+}
+
+.card.patient-details p:last-of-type {
+  border-bottom: none;
+}
+
+.card.patient-details p:hover {
+  color: #0a5b8f;
+  padding-left: 6px;
+}
+
+.card.patient-details p strong {
+  color: #0a5b8f;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 100px;
 }
 
 .card.patient-details h5 {
   font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
   color: #15181c;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%);
 }
 
 /* Calendar */
@@ -176,6 +197,94 @@
   background: #0a5b8f !important;
   color: #fff !important;
   border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(10, 91, 143, 0.3);
+}
+
+/* Today Appointments Enhanced Styling */
+.patient-group {
+  padding: 12px;
+  border-left: 4px solid #0a5b8f;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.patient-group:hover {
+  background: #f0f3f6;
+  box-shadow: 0 2px 8px rgba(10, 91, 143, 0.1);
+  transform: translateX(4px);
+}
+
+.patient-header {
+  background: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%) !important;
+  color: white !important;
+  padding: 10px 12px !important;
+  border-radius: 6px !important;
+  margin-bottom: 10px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.patient-header strong {
+  color: white;
+  font-weight: 700;
+  flex: 1;
+}
+
+.patient-header .badge {
+  background: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+}
+
+.patient-group ul li {
+  padding: 6px 0;
+  border-bottom: 1px dotted #e6eff6;
+  font-size: 0.9rem;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.patient-group ul li:last-child {
+  border-bottom: none;
+}
+
+.patient-group ul li:hover {
+  color: #0a5b8f;
+  padding-left: 6px;
+}
+
+.patient-group ul li .badge {
+  background: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%) !important;
+  color: white !important;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  margin-right: 8px;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+/* Next Appointment Badge Enhancement */
+.card.patient-details .badge {
+  background: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%) !important;
+  color: white !important;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 20px;
+  display: inline-block;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 8px rgba(10, 91, 143, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card.patient-details .badge:hover {
+  transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(10, 91, 143, 0.3);
 }
 

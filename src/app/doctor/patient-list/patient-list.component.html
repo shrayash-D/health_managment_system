@@ -15,35 +15,39 @@
   </div>
 
   <!-- Patients Grid -->
-  <div class="patients-grid" *ngIf="patients$ | async as patients; else loading">
-    <div class="card shadow-sm" *ngFor="let patient of getFilteredPatients(patients)" (click)="openHistoryModal(patient)">
+  <div class="patients-grid" *ngIf="!isLoading; else loading">
+    <div class="card shadow-sm" *ngFor="let patient of getFilteredPatients(patientsWithAppointments)" (click)="openHistoryModal(patient)">
       <div class="card-header">
         <div class="patient-avatar">
           <i class="fas fa-user-circle"></i>
         </div>
         <div class="patient-info">
-          <h3>{{ patient.name }}</h3>
+          <h3>{{ patient.user?.name || 'Unknown' }}</h3>
           <p class="patient-id">ID: {{ patient.id }}</p>
         </div>
       </div>
       <div class="card-body">
         <div class="info-row">
           <i class="fas fa-phone"></i>
-          <span>Contact: {{ formatContact(patient.contactInfo) }}</span>
+          <span>Contact: {{ formatContact(patient.user?.phoneNumber || '') }}</span>
         </div>
         <div class="info-row">
           <i class="fas fa-birthday-cake"></i>
-          <span>DOB: {{ patient.dob }}</span>
+          <span>DOB: {{ patient.user?.dob || 'N/A' }}</span>
         </div>
         <div class="info-row" *ngIf="patient.bloodGroup">
           <i class="fas fa-tint"></i>
           <span>Blood Group: {{ patient.bloodGroup }}</span>
         </div>
+        <div class="info-row">
+          <i class="fas fa-calendar-check"></i>
+          <span>Appointments: {{ patient.appointments?.length || 0 }}</span>
+        </div>
       </div>
     </div>
 
     <!-- Empty State -->
-    <div class="empty-state" *ngIf="getFilteredPatients(patients).length === 0">
+    <div class="empty-state" *ngIf="getFilteredPatients(patientsWithAppointments).length === 0">
       <i class="fas fa-search"></i>
       <h3>No patients found</h3>
       <p>Try adjusting your search criteria.</p>
@@ -66,26 +70,27 @@
         <button class="btn-close" (click)="closeHistoryModal()">×</button>
       </div>
       <div class="modal-body" *ngIf="selectedPatient">
+        <!-- Patient Profile Section -->
         <div class="profile-details">
           <div class="detail-item">
             <i class="fas fa-user"></i>
             <div>
               <label>Patient</label>
-              <p>{{ selectedPatient.name }}</p>
+              <p>{{ selectedPatient.user?.name || 'Unknown' }}</p>
             </div>
           </div>
           <div class="detail-item">
             <i class="fas fa-birthday-cake"></i>
             <div>
               <label>Date of Birth</label>
-              <p>{{ selectedPatient.dob }}</p>
+              <p>{{ formatDate(selectedPatient.user?.dob || '') }}</p>
             </div>
           </div>
           <div class="detail-item">
             <i class="fas fa-phone"></i>
             <div>
               <label>Contact</label>
-              <p>{{ formatContact(selectedPatient.contactInfo) }}</p>
+              <p>{{ formatContact(selectedPatient.user?.phoneNumber || '') }}</p>
             </div>
           </div>
           <div class="detail-item">
@@ -95,30 +100,86 @@
               <p>{{ selectedPatient.bloodGroup || 'Not specified' }}</p>
             </div>
           </div>
-          <div class="detail-item">
-            <i class="fas fa-notes-medical"></i>
-            <div>
-              <label>Medical History</label>
-              <p>{{ selectedPatient.medicalHistory || 'No medical history available' }}</p>
+        </div>
+
+        <!-- Appointments Section -->
+        <div class="appointments-section" *ngIf="selectedPatient.appointments && selectedPatient.appointments.length > 0">
+          <h4><i class="fas fa-calendar-check"></i> Appointments History</h4>
+          
+          <div class="appointment-card" *ngFor="let appointment of selectedPatient.appointments; let i = index">
+            <div class="appointment-header">
+              <span class="appointment-date">{{ formatDate(appointment.appointmentDate) }}</span>
+            </div>
+
+            <div class="appointment-info">
+              <div class="info-row">
+                <label>Time:</label>
+                <span>{{ appointment.startTime }} - {{ appointment.endTime }}</span>
+              </div>
+              <div class="info-row">
+                <label>Reason:</label>
+                <span>{{ appointment.reason }}</span>
+              </div>
+            </div>
+
+            <!-- Diagnosis -->
+            <div class="detail-section" *ngIf="appointment.diagnosis">
+              <h6><i class="fas fa-stethoscope"></i> Diagnosis</h6>
+              <p>{{ appointment.diagnosis.diagnosisDetails }}</p>
+            </div>
+
+            <!-- Vitals -->
+            <div class="detail-section" *ngIf="appointment.vitals">
+              <h6><i class="fas fa-heartbeat"></i> Vitals</h6>
+              <div class="vitals-grid">
+                <div class="vital-item">
+                  <label>Blood Pressure</label>
+                  <span>{{ appointment.vitals.bloodPressure }}</span>
+                </div>
+                <div class="vital-item">
+                  <label>Heart Rate</label>
+                  <span>{{ appointment.vitals.heartRate }} bpm</span>
+                </div>
+                <div class="vital-item">
+                  <label>Temperature</label>
+                  <span>{{ appointment.vitals.temperature }}°F</span>
+                </div>
+                <div class="vital-item">
+                  <label>SpO2</label>
+                  <span>{{ appointment.vitals.spO2 }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Medications -->
+            <div class="detail-section" *ngIf="appointment.medications && appointment.medications.length > 0">
+              <h6><i class="fas fa-pills"></i> Medications</h6>
+              <div class="medication-list">
+                <div class="medication-item" *ngFor="let med of appointment.medications">
+                  <p>
+                    <strong>{{ med.drug }}</strong> - {{ med.dose }} {{ med.route }} {{ med.frequency }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Invoice -->
+            <div class="detail-section" *ngIf="appointment.invoice">
+              <h6><i class="fas fa-receipt"></i> Invoice</h6>
+              <div class="invoice-details">
+                <p><strong>Consultation Type:</strong> {{ appointment.invoice.consultationType }}</p>
+                <p><strong>Consultation Fee:</strong> {{ appointment.invoice.consultationFee }}</p>
+                <p><strong>Lab Fee:</strong> {{ appointment.invoice.labFee }}</p>
+                <p><strong>Medicine Fee:</strong> {{ appointment.invoice.medicineFee }}</p>
+                <p><strong>Total:</strong> {{ appointment.invoice.total }}</p>
+              </div>
             </div>
           </div>
-          <div class="detail-item">
-            <i class="fas fa-allergies"></i>
-            <div>
-              <label>Allergies</label>
-              <ul *ngIf="selectedPatient.allergies && selectedPatient.allergies.length > 0">
-                <li *ngFor="let allergy of selectedPatient.allergies">{{ allergy }}</li>
-              </ul>
-              <p *ngIf="!selectedPatient.allergies || selectedPatient.allergies.length === 0">No known allergies</p>
-            </div>
-          </div>
-          <div class="detail-item">
-            <i class="fas fa-user-md"></i>
-            <div>
-              <label>Primary Physician</label>
-              <p>{{ selectedPatient.primaryPhysician || 'Not assigned' }}</p>
-            </div>
-          </div>
+        </div>
+
+        <!-- No Appointments -->
+        <div class="no-appointments" *ngIf="!selectedPatient.appointments || selectedPatient.appointments.length === 0">
+          <p><i class="fas fa-info-circle"></i> No appointments found for this patient.</p>
         </div>
       </div>
       <div class="modal-footer">

@@ -70,6 +70,40 @@
         </table>
       </div>
     </section>
+    <!-- Appointment Slots Management Section -->
+    <section class="table-scroll card">
+      <h2 class="form-title">Appointment Slots</h2>
+      
+      <div class="slots-container">
+        <!-- Generate Slots Form -->
+        <div class="slots-form">
+          <h3 class="slots-subtitle">Generate New Slots</h3>
+          <div class="slots-form-grid">
+            <div class="form-field">
+              <label for="slotDate">Select Date</label>
+              <input
+                id="slotDate"
+                type="date"
+                [(ngModel)]="slotDate"
+                placeholder="Select date"
+              />
+            </div>
+            <div class="form-actions">
+              <button 
+                class="btn btn-primary" 
+                (click)="addSlot()"
+                [disabled]="!slotDate"
+              >
+                Generate Slots for This Date
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Slots Display -->
+        
+      </div>
+    </section>
 
    
 
@@ -271,8 +305,8 @@
               />
             </div>
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="addingVitals = false">
-                Save
+              <button class="btn btn-primary" (click)="saveVitals()">
+                Save Vitals
               </button>
               <button
                 class="btn btn-secondary"
@@ -337,9 +371,9 @@
             <div class="modal-actions">
               <button
                 class="btn btn-primary"
-                (click)="addingMedications = false"
+                (click)="saveMedications()"
               >
-                Save
+                Save Medications
               </button>
               <button
                 class="btn btn-secondary"
@@ -401,8 +435,8 @@
             </div>
 
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="addingBilling = false">
-                Save
+              <button class="btn btn-primary" (click)="saveBilling()">
+                Save Billing
               </button>
               <button
                 class="btn btn-secondary"

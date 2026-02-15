@@ -17,11 +17,13 @@ export const DOCTOR_API_ENDPOINTS = {
   getDoctorById: `${API_BASE_URL}/Doctor`,
   updateProfile: `${API_BASE_URL}/Doctor/update-profile`,
   getAppointments: `${API_BASE_URL}/Doctor/appointments`,
+  getPatients: (doctorId: string) =>
+    `${API_BASE_URL}/Doctor/patients/${doctorId}`,
   addDiagnosis: `${API_BASE_URL}/Doctor/appointments/diagnosis`,
   addVitals: `${API_BASE_URL}/Doctor/appointments/vitals`,
   addMedications: `${API_BASE_URL}/Doctor/appointments/medications`,
   addInvoice: `${API_BASE_URL}/Doctor/appointments/invoice`,
-  updateAppointmentStatus: `${API_BASE_URL}/Doctor/appointments/status`,
+  completeAppointment: `${API_BASE_URL}/Doctor/appointments/complete`,
 };
 
 export const USER_API_ENDPOINTS = {
@@ -57,6 +59,9 @@ export const ADMIN_API_ENDPOINTS = {
 export const DOCTOR_SLOT_API_ENDPOINTS = {
   getAvailableSlots: (doctorId: string) =>
   `${API_BASE_URL}/DoctorSlot/doctor/${doctorId}/available`,
+  generateSlots: `${API_BASE_URL}/DoctorSlot/generate`,
+  getSlots: (doctorId: string) =>
+  `${API_BASE_URL}/DoctorSlot/doctor/${doctorId}`,
 };
 
 export const APPOINTMENT_API_ENDPOINTS = {
