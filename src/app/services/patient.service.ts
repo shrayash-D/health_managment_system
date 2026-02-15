@@ -6,6 +6,7 @@ import {
   PatientApiResponse,
   PatientListApiResponse,
 } from '../models/patient.interface';
+import { AppointmentHistoryResponse } from '../models/appointment-history.interface';
 import { environment } from '../../environments/environment';
 import {
   PATIENT_API_ENDPOINTS,
@@ -59,6 +60,17 @@ export class PatientService {
 
   deleteProfileImage(): Observable<any> {
     return this.http.delete(`${USER_API_ENDPOINTS.deleteProfileImage}`);
+  }
+
+  /**
+   * Get all appointments for a patient by userId
+   */
+  getPatientAppointments(
+    userId: string,
+  ): Observable<AppointmentHistoryResponse[]> {
+    return this.http.get<AppointmentHistoryResponse[]>(
+      `${environment.apiUrl}/Patient/${userId}/appointments`,
+    );
   }
 
   // ==========================================

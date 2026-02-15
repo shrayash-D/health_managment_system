@@ -1,23 +1,265 @@
-<section class="patient-history">
-  <h2>Patient Medical History</h2>
+<div class="page">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <h1>Appointment History</h1>
+        <p>
+          View your past and upcoming appointments with complete medical records
+        </p>
+      </div>
+    </div>
+  </section>
 
-  <ng-container *ngIf="history$ | async as history; else loading">
-    <div *ngIf="history.length === 0" class="empty">No history found.</div>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="container">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading your appointment history...</p>
+    </div>
+  </div>
 
-    <ul *ngIf="history.length > 0" class="history-list">
-      <li *ngFor="let h of history" class="history-item">
-        <div class="left">
-          <div class="title">{{ h.title || "-" }}</div>
-          <div class="notes" *ngIf="h.notes">{{ h.notes }}</div>
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="container">
+    <div class="error-state">
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="refresh()">Retry</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container" *ngIf="!loading && !error">
+    <!-- Filter Section -->
+    <div class="filter-bar">
+      <div class="filter-buttons">
+        <button
+          class="filter-btn"
+          [class.active]="selectedFilter === 'all'"
+          (click)="setFilter('all')"
+        >
+          All <span class="count">({{ appointments.length }})</span>
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="selectedFilter === 'completed'"
+          (click)="setFilter('completed')"
+        >
+          Completed <span class="count">({{ getCompletedCount() }})</span>
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="selectedFilter === 'pending'"
+          (click)="setFilter('pending')"
+        >
+          Pending <span class="count">({{ getPendingCount() }})</span>
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="selectedFilter === 'cancelled'"
+          (click)="setFilter('cancelled')"
+        >
+          Cancelled <span class="count">({{ getCancelledCount() }})</span>
+        </button>
+      </div>
+      <button class="btn btn-outline" (click)="refresh()">
+        <span class="refresh-icon">↻</span> Refresh
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredAppointments.length === 0" class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h3>No appointments found</h3>
+      <p>
+        You don't have any
+        {{ selectedFilter !== "all" ? selectedFilter : "" }} appointments yet.
+      </p>
+    </div>
+
+    <!-- Appointments List -->
+    <div class="appointments-list" *ngIf="filteredAppointments.length > 0">
+      <div
+        *ngFor="let appointment of filteredAppointments"
+        class="appointment-card"
+        [class.expanded]="expandedAppointmentId === appointment.id"
+      >
+        <!-- Appointment Header -->
+        <div
+          class="appointment-header"
+          (click)="toggleAppointment(appointment.id)"
+        >
+          <div class="header-left">
+            <div class="date-badge">
+              <div class="day">
+                {{ appointment.appointmentDate | date: "d" }}
+              </div>
+              <div class="month">
+                {{ appointment.appointmentDate | date: "MMM" }}
+              </div>
+            </div>
+            <div class="appointment-info">
+              <h3 class="reason">{{ appointment.reason }}</h3>
+              <div class="meta">
+                <span class="time">
+                  <span class="icon">🕐</span>
+                  {{ appointment.startTime }} - {{ appointment.endTime }}
+                </span>
+                <span class="year">{{
+                  appointment.appointmentDate | date: "yyyy"
+                }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="header-right">
+            <span class="badge" [ngClass]="getStatusClass(appointment.status)">
+              {{ getStatusText(appointment.status) }}
+            </span>
+            <span class="expand-icon">
+              {{ expandedAppointmentId === appointment.id ? "−" : "+" }}
+            </span>
+          </div>
         </div>
-        <div class="right">
-          <div class="date">{{ h.date | date : "MMM d, y" }}</div>
-        </div>
-      </li>
-    </ul>
-  </ng-container>
 
-  <ng-template #loading>
-    <div class="empty">Loading history…</div>
-  </ng-template>
-</section>
+        <!-- Appointment Details (Expandable) -->
+        <div
+          class="appointment-details"
+          *ngIf="expandedAppointmentId === appointment.id"
+        >
+          <!-- Vitals Section -->
+          <div class="details-section" *ngIf="appointment.vitals">
+            <h4 class="section-title"><span class="icon">❤️</span> Vitals</h4>
+            <div class="vitals-grid">
+              <div class="vital-item">
+                <span class="label">Blood Pressure</span>
+                <span class="value"
+                  >{{ appointment.vitals.bloodPressure }} mmHg</span
+                >
+              </div>
+              <div class="vital-item">
+                <span class="label">Heart Rate</span>
+                <span class="value"
+                  >{{ appointment.vitals.heartRate }} bpm</span
+                >
+              </div>
+              <div class="vital-item">
+                <span class="label">Temperature</span>
+                <span class="value"
+                  >{{ appointment.vitals.temperature }}°F</span
+                >
+              </div>
+              <div class="vital-item">
+                <span class="label">SpO2</span>
+                <span class="value">{{ appointment.vitals.spO2 }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Diagnosis Section -->
+          <div class="details-section" *ngIf="appointment.diagnosis">
+            <h4 class="section-title">
+              <span class="icon">📋</span> Diagnosis
+            </h4>
+            <p class="diagnosis-text">
+              {{ appointment.diagnosis.diagnosisDetails }}
+            </p>
+          </div>
+
+          <!-- Medications Section -->
+          <div
+            class="details-section"
+            *ngIf="
+              appointment.medications && appointment.medications.length > 0
+            "
+          >
+            <h4 class="section-title">
+              <span class="icon">💊</span> Medications
+            </h4>
+            <div class="medications-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Drug</th>
+                    <th>Dose</th>
+                    <th>Route</th>
+                    <th>Frequency</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let med of appointment.medications">
+                    <td>{{ med.drug }}</td>
+                    <td>{{ med.dose }}</td>
+                    <td>{{ med.route }}</td>
+                    <td>{{ med.frequency }}</td>
+                    <td>
+                      <span class="badge badge-small badge-info">
+                        {{ getMedicationActivityText(med.activity) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Invoice Section -->
+          <div class="details-section" *ngIf="appointment.invoice">
+            <h4 class="section-title"><span class="icon">💰</span> Invoice</h4>
+            <div class="invoice-details">
+              <div class="invoice-row">
+                <span class="label">Consultation Type</span>
+                <span class="value">{{
+                  appointment.invoice.consultationType
+                }}</span>
+              </div>
+              <div class="invoice-row">
+                <span class="label">Consultation Fee</span>
+                <span class="value"
+                  >₹{{
+                    appointment.invoice.consulationFee | number: "1.0-0"
+                  }}</span
+                >
+              </div>
+              <div class="invoice-row">
+                <span class="label">Lab Fee</span>
+                <span class="value"
+                  >₹{{ appointment.invoice.labFee | number: "1.0-0" }}</span
+                >
+              </div>
+              <div class="invoice-row">
+                <span class="label">Medicine Fee</span>
+                <span class="value"
+                  >₹{{
+                    appointment.invoice.medicineFee | number: "1.0-0"
+                  }}</span
+                >
+              </div>
+              <div class="invoice-row total">
+                <span class="label">Total</span>
+                <span class="value"
+                  >₹{{ appointment.invoice.total | number: "1.0-0" }}</span
+                >
+              </div>
+              <div class="invoice-status">
+                <span class="label">Payment Status:</span>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'badge-paid':
+                      appointment.invoice.status === InvoiceStatus.Paid,
+                    'badge-unpaid':
+                      appointment.invoice.status === InvoiceStatus.Unpaid,
+                    'badge-overdue':
+                      appointment.invoice.status === InvoiceStatus.Overdue,
+                  }"
+                >
+                  {{ getInvoiceStatusText(appointment.invoice.status) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
