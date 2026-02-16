@@ -42,7 +42,7 @@ export class AppointmentManagementComponent implements OnInit {
   loadData(): void {
     this.appointments$ = combineLatest([
       this.appointmentService.getAllAppointments(),
-      this.patientService.getAllPatients(),
+      this.patientService.getAllPatientsAdmin(),
       this.doctorService.getAllDoctors(),
     ]).pipe(
       map(([appointments, patients, doctors]) => {

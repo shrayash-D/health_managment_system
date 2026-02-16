@@ -35,7 +35,7 @@ export class BillingManagementComponent implements OnInit {
   }
 
   loadData(): void {
-    this.patients$ = this.patientService.getAllPatients();
+    this.patients$ = this.patientService.getAllPatientsAdmin();
 
     this.invoices$ = combineLatest([
       this.billingService.getAllInvoices(),

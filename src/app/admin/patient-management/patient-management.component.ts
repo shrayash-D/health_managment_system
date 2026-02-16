@@ -29,7 +29,7 @@ export class PatientManagementComponent implements OnInit {
   }
 
   loadPatients(): void {
-    this.patients$ = this.patientService.getAllPatients();
+    this.patients$ = this.patientService.getAllPatientsAdmin();
   }
 
   resetPassword(patient: Patient): void {
