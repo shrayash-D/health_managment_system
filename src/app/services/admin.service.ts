@@ -152,7 +152,7 @@ export class AdminService {
               id: parseInt(apiApt.id) || 0,
               appointmentId: apiApt.id, // Keep the original GUID for cancel operations
               patientId: parseInt(apiApt.patientId) || 0,
-              doctorId: parseInt(apiApt.doctorId) || 0,
+              doctorId: apiApt.doctorId, // Keep as string GUID for matching
               date: apiApt.appointmentDate
                 ? new Date(apiApt.appointmentDate).toISOString().split('T')[0]
                 : 'N/A',

@@ -5,7 +5,7 @@ export interface Appointment {
   appointmentId?: string; // Keep the original GUID for API operations
   patientId: number;
   patientName?: string;
-  doctorId: number;
+  doctorId: number | string; // Support both number (mock) and string (GUID from API)
   doctorName?: string;
   date: string; // ISO date string
   time: string;
