@@ -338,3 +338,185 @@ textarea.form-control {
 .password-reset .form-control {
   flex: 1;
 }
+
+/* Appointments Section Styles */
+.appointments-section {
+  margin-top: 2rem;
+  border-top: 2px solid #e6eff6;
+  padding-top: 1.5rem;
+}
+
+.appointments-section h4 {
+  color: #0a5b8f;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.appointment-card {
+  border: 1px solid #e6eff6;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.appointment-card:hover {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(10, 91, 143, 0.1);
+}
+
+.appointment-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e6eff6;
+  padding-bottom: 0.75rem;
+}
+
+.appointment-header h5 {
+  color: #0a5b8f;
+  margin: 0;
+  font-weight: 600;
+}
+
+.appointment-date {
+  background: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%);
+  color: white;
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.appointment-info {
+  margin-bottom: 1rem;
+}
+
+.appointment-info .info-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.appointment-info label {
+  font-weight: 600;
+  color: #0a5b8f;
+  min-width: 80px;
+}
+
+.appointment-info span {
+  color: #333;
+}
+
+/* Detail Sections */
+.detail-section {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 3px solid #3ddc97;
+}
+
+.detail-section h6 {
+  color: #0a5b8f;
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-section p {
+  margin: 0;
+  color: #333;
+  line-height: 1.5;
+}
+
+.vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.vital-item {
+  background: linear-gradient(135deg, #f0f7fc 0%, #e8f4fa 100%);
+  padding: 0.75rem;
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid #d0e8f7;
+}
+
+.vital-item label {
+  display: block;
+  font-size: 0.85rem;
+  color: #0a5b8f;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.vital-item span {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.medication-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.medication-item {
+  background: white;
+  padding: 0.75rem;
+  border-left: 2px solid #3ddc97;
+  border-radius: 4px;
+}
+
+.medication-item p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.invoice-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.invoice-details p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+}
+
+.invoice-details strong {
+  color: #0a5b8f;
+  font-weight: 600;
+}
+
+.no-appointments {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #e6eff6;
+}
+
+.no-appointments i {
+  color: #0a5b8f;
+  margin-right: 0.5rem;
+}

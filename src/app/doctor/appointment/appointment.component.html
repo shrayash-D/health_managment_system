@@ -28,7 +28,9 @@
         <table>
           <thead>
             <tr>
+              <th>Sr. No.</th>
               <th>Patient Name</th>
+              <th>Reason</th>
               <th [ngClass]="{ active: appointmentFilterDate }">Date</th>
               <th>Time</th>
               <th [ngClass]="{ active: appointmentFilterStatus }">Status</th>
@@ -36,8 +38,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let appointment of filteredAppointments">
-              <td data-label="Patient Name">{{ appointment.patientName }}</td>
+            <tr *ngFor="let appointment of filteredAppointments; let i = index">
+              <td data-label="Sr. No.">{{ i + 1 }}</td>
+              <td data-label="Patient Name">{{ getPatientName(appointment) }}</td>
+              <td data-label="Reason">{{ appointment.apiData?.reason || 'General Consultation' }}</td>
               <td data-label="Date">{{ appointment.date }}</td>
               <td data-label="Time">{{ appointment.time }}</td>
               <td data-label="Status">
@@ -51,7 +55,7 @@
                   (click)="openCompletionModal(appointment.id)"
                   [disabled]="appointment.status !== 'BOOKED'"
                 >
-                  Completed
+                  Complete
                 </button>
                 <button
                   class="btn btn-danger"
@@ -64,6 +68,40 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+    <!-- Appointment Slots Management Section -->
+    <section class="table-scroll card">
+      <h2 class="form-title">Appointment Slots</h2>
+      
+      <div class="slots-container">
+        <!-- Generate Slots Form -->
+        <div class="slots-form">
+          <h3 class="slots-subtitle">Generate New Slots</h3>
+          <div class="slots-form-grid">
+            <div class="form-field">
+              <label for="slotDate">Select Date</label>
+              <input
+                id="slotDate"
+                type="date"
+                [(ngModel)]="slotDate"
+                placeholder="Select date"
+              />
+            </div>
+            <div class="form-actions">
+              <button 
+                class="btn btn-primary" 
+                (click)="addSlot()"
+                [disabled]="!slotDate"
+              >
+                Generate Slots for This Date
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Slots Display -->
+        
       </div>
     </section>
 
@@ -203,9 +241,7 @@
               <p *ngIf="completionData.billing.total">
                 Total: {{ completionData.billing.total }}
               </p>
-              <p *ngIf="completionData.billing.outstanding">
-                Outstanding: {{ completionData.billing.outstanding }}
-              </p>
+
             </div>
           </div>
 
@@ -269,8 +305,8 @@
               />
             </div>
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="addingVitals = false">
-                Save
+              <button class="btn btn-primary" (click)="saveVitals()">
+                Save Vitals
               </button>
               <button
                 class="btn btn-secondary"
@@ -335,9 +371,9 @@
             <div class="modal-actions">
               <button
                 class="btn btn-primary"
-                (click)="addingMedications = false"
+                (click)="saveMedications()"
               >
-                Save
+                Save Medications
               </button>
               <button
                 class="btn btn-secondary"
@@ -397,17 +433,10 @@
                 readonly
               />
             </div>
-            <div class="form-field">
-              <label for="outstanding">Outstanding</label>
-              <input
-                id="outstanding"
-                type="text"
-                [(ngModel)]="completionData.billing.outstanding"
-              />
-            </div>
+
             <div class="modal-actions">
-              <button class="btn btn-primary" (click)="addingBilling = false">
-                Save
+              <button class="btn btn-primary" (click)="saveBilling()">
+                Save Billing
               </button>
               <button
                 class="btn btn-secondary"
@@ -419,7 +448,6 @@
                     labFee: '',
                     medicineFee: '',
                     total: '',
-                    outstanding: '',
                   }
                 "
               >

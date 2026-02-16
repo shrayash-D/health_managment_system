@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DoctorDataService, Appointment, Consultation, Invoice} from '../../services/doctor-data.service';
+import { AuthService } from '../../services/auth.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import jsPDF from 'jspdf';
@@ -25,9 +26,10 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   appointmentFilterDate = '';
   appointmentFilterStatus = '';
   slotDate = '';
-  slotStartTime = '';
-  slotEndTime = '';
-  availableSlots: { date: string; times: string[] }[] = [];
+  availableSlots: string[] = [];
+
+  // API Statistics
+  appointmentApiStats: { doctorId: string; totalAppointments: number } | null = null;
 
   showCompletionModal: boolean = false;
   selectedAppointment: Appointment | null = null;
@@ -37,7 +39,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     vitals: { bloodPressure: '', heartRate: '', temperature: '', spO2: '' },
     medications: [] as { drug: string; dose: string; route: string; frequency: string; activity: string }[],
     labTests: { cbc: '', lft: '', creatinine: '', hba1c: '' },
-    billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' }
+    billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' }
   };
 
   addingVitals = false;
@@ -55,19 +57,144 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(private doctorService: DoctorDataService, private router: Router) {}
+  constructor(
+    private doctorService: DoctorDataService, 
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
+    // Load appointments from API first
+    this.loadAppointmentsFromAPI();
+    
+    // Load slots from API
+    this.loadSlotsFromAPI();
+    
     this.doctorService.appointments$
       .pipe(takeUntil(this.destroy$))
       .subscribe((appointments) => {
         this.appointments = appointments;
       });
 
+    // Subscribe to appointment API stats
+    this.doctorService.appointmentStats$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((stats) => {
+        this.appointmentApiStats = stats;
+      });
+
     this.doctorService.slots$
       .pipe(takeUntil(this.destroy$))
       .subscribe((slots) => {
         this.availableSlots = slots;
+      });
+
+    // Subscribe to available time-based slots from API
+    this.doctorService.availableSlots$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((availableSlots) => {
+        console.log('Available slots updated:', availableSlots);
+        // availableSlots now contains time-based slots from the API
+        // You can use this data to display time slots in the UI
+      });
+  }
+
+  private loadAppointmentsFromAPI(): void {
+    // Try to get doctor ID from multiple sources
+    const currentDoctor = this.doctorService.getDoctor();
+    const currentUser = this.authService.currentUserValue;
+    
+    console.log('Current doctor data:', currentDoctor);
+    console.log('Current user data:', currentUser);
+    
+    let doctorId = null;
+    
+    // Try to get doctor ID from doctor service first
+    if (currentDoctor && currentDoctor.id) {
+      doctorId = currentDoctor.id;
+    }
+    // Fallback to user ID from auth service (assuming user ID = doctor ID)
+    else if (currentUser && currentUser.id) {
+      doctorId = currentUser.id;
+    }
+    
+    if (doctorId) {
+      console.log('Loading appointments for doctor ID:', doctorId);
+      this.doctorService.loadAppointmentsFromApi(doctorId);
+    } else {
+      console.log('No doctor ID available, keeping mock data');
+      console.log('Available data - Doctor:', currentDoctor, 'User:', currentUser);
+    }
+  }
+
+  // 🔹 Get patient name from appointment data
+  getPatientName(appointment: Appointment): string {
+    // Return the patient identifier (already set by the service based on patient ID)
+    return appointment.patientName || 'Unknown Patient';
+  }
+
+  private loadSlotsFromAPI(): void {
+    // Try to fetch doctor slots from API
+    const currentUser = this.authService.currentUserValue;
+    
+    if (currentUser && currentUser.id) {
+      console.log('Loading slots for doctor ID:', currentUser.id);
+      
+      this.doctorService.fetchDoctorSlotsFromAPI()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (slots) => {
+            console.log('Slots loaded from API:', slots);
+            // Slots are automatically updated via the service's convertAndUpdateSlots method
+          },
+          error: (error) => {
+            console.warn('Could not load slots from API, using mock data:', error);
+            // Silently fail and keep using mock data
+          }
+        });
+      
+      // Also fetch available time-based slots for today
+      this.fetchAvailableSlotsForToday();
+    } else {
+      console.log('No user ID available, using mock data for slots');
+    }
+  }
+
+  /**
+   * Fetch available time-based slots for today
+   * This populates the availableSlots$ observable with time slot information
+   */
+  private fetchAvailableSlotsForToday(): void {
+    // Get today's date in ISO format (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    
+    this.doctorService.fetchAvailableSlots(today)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Available slots for today:', response);
+        },
+        error: (error) => {
+          console.warn('Could not load available slots:', error);
+          // Silently fail - component still works with mock data
+        }
+      });
+  }
+
+  /**
+   * Public method to fetch available slots for a specific date
+   * @param date ISO format date string (YYYY-MM-DD)
+   */
+  fetchAvailableSlotsForDate(date: string): void {
+    this.doctorService.fetchAvailableSlots(date)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Available slots for', date, ':', response);
+        },
+        error: (error) => {
+          console.error('Error fetching available slots for', date, ':', error);
+        }
       });
   }
 
@@ -77,18 +204,66 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   }
 
   addSlot() {
-    if (this.slotDate && this.slotStartTime && this.slotEndTime) {
-      const timeRange = `${this.slotStartTime}-${this.slotEndTime}`;
-      this.doctorService.addSlot(this.slotDate, timeRange);
-      this.slotDate = '';
-      this.slotStartTime = '';
-      this.slotEndTime = '';
+    if (this.slotDate) {
+      console.log('Generating slots for date:', this.slotDate);
+      
+      // Convert date to ISO format (YYYY-MM-DD)
+      const slotDateISO = this.slotDate;
+      
+      // Call API to generate slots for this date
+      this.doctorService.generateDoctorSlot(slotDateISO, slotDateISO).subscribe({
+        next: (response) => {
+          console.log('Slots created via API:', response);
+          
+          // Reset form
+          this.slotDate = '';
+          
+          // Reload slots from API
+          this.loadSlotsFromAPI();
+          
+          // Show success message
+          alert(`Appointment slots created successfully for ! ✅`);
+        },
+        error: (error) => {
+          console.error('Error creating slots:', error);
+          console.error('Error details:', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            response: error.error
+          });
+          
+          let errorMessage = 'Failed to create appointment slots.';
+          
+          if (error.message === 'Doctor profile not loaded') {
+            errorMessage = 'Doctor profile is not loaded yet. Please wait and try again.';
+          } else if (error.status === 400) {
+            errorMessage = 'Invalid date format. Please check your input.';
+          } else if (error.status === 401) {
+            errorMessage = 'Your session has expired. Please log in again.';
+          } else if (error.status === 404) {
+            errorMessage = 'Doctor not found. Please check your profile.';
+          } else if (error.status === 409) {
+            errorMessage = 'Slots already exist for this date.';
+          } else if (error.status === 500) {
+            errorMessage = 'Server error. Please try again later.';
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+          
+          alert(`Error: ${errorMessage}`);
+        }
+      });
     }
   }
 
-  removeSlot(date: string, time: string) {
-    this.doctorService.removeSlot(date, time);
-  }
+  
+
+  
+
+
 
   get filteredAppointments() {
     return this.appointments.filter((appointment) => {
@@ -117,12 +292,11 @@ export class AppointmentComponent implements OnInit, OnDestroy {
         vitals: { bloodPressure: '', heartRate: '', temperature: '', spO2: '' },
         medications: [{ drug: '', dose: '', route: '', frequency: '', activity: 'active' }],
         labTests: { cbc: '', lft: '', creatinine: '', hba1c: '' },
-        billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' }
+        billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' }
       };
       // Set current date
       this.completionData.date = new Date().toISOString().split('T')[0];
-      // Calculate outstanding from pending bills
-      this.calculateOutstanding();
+
       this.addingDiagnosis = false;
       this.addingVitals = false;
       this.addingMedications = false;
@@ -144,6 +318,61 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     // Calculate total
     this.calculateTotal();
 
+    // First, submit diagnosis to backend API if diagnosis is provided
+    if (this.completionData.diagnosis && this.completionData.diagnosis.trim()) {
+      console.log('Submitting diagnosis for appointment:', this.selectedAppointment);
+      
+      this.doctorService.completeAppointmentWithDiagnosis(
+        this.selectedAppointment, 
+        this.completionData.diagnosis
+      ).subscribe({
+        next: (diagnosisResponse) => {
+          console.log('Diagnosis submitted successfully:', diagnosisResponse);
+          
+          // After successful diagnosis submission, update appointment status to COMPLETED
+          this.updateAppointmentStatusToCompleted();
+        },
+        error: (error) => {
+          console.error('Error submitting diagnosis:', error);
+          alert('Error completing appointment with diagnosis. Please try again.');
+        }
+      });
+    } else {
+      // If no diagnosis provided, just update status to completed
+      this.updateAppointmentStatusToCompleted();
+    }
+  }
+
+  private updateAppointmentStatusToCompleted() {
+    if (!this.selectedAppointment) return;
+
+    console.log('Updating appointment status to COMPLETED for:', this.selectedAppointment);
+    
+    this.doctorService.markAppointmentCompleted(this.selectedAppointment).subscribe({
+      next: (statusResponse) => {
+        console.log('Appointment status updated to COMPLETED:', statusResponse);
+        // Only update local appointment status in the UI if API call succeeded
+        if (this.selectedAppointment) {
+          this.selectedAppointment.status = 'COMPLETED';
+          const appointmentIndex = this.appointments.findIndex(app => app.id === this.selectedAppointment!.id);
+          if (appointmentIndex !== -1) {
+            this.appointments[appointmentIndex].status = 'COMPLETED';
+          }
+          this.processLocalCompletionData();
+          alert('Appointment completed successfully! Status updated to COMPLETED ✅');
+        }
+      },
+      error: (error) => {
+        console.error('Error updating appointment status:', error);
+        // Do NOT update status if API call failed
+        alert('Failed to update appointment status in database. Please try again.');
+      }
+    });
+  }
+
+  private processLocalCompletionData() {
+    if (!this.selectedAppointment) return;
+
     const consultation: Consultation = {
       id: Date.now(),
       patientId: this.selectedAppointment.id,
@@ -162,13 +391,12 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
     // Create invoice
     const totalAmount = parseFloat(this.completionData.billing.total) || 0;
-    const outstandingAmount = parseFloat(this.completionData.billing.outstanding) || 0;
     const invoice: Invoice = {
       id: 'INV' + Date.now(),
       patientId: this.selectedAppointment.id,
       patientName: this.selectedAppointment.patientName,
       amount: totalAmount,
-      paymentStatus: outstandingAmount > 0 ? 'PENDING' : 'PAID',
+      paymentStatus: 'PAID',
       issueDate: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
       paymentMethod: '',
@@ -243,7 +471,38 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
 
   saveVitals() {
-    this.addingVitals = false;
+    // Check if vitals data exists and appointment is selected
+    if (!this.selectedAppointment) {
+      console.error('No appointment selected for vitals submission');
+      return;
+    }
+
+    const vitalsData = this.completionData.vitals;
+    
+    // Validate at least one vital is provided
+    if (!vitalsData.bloodPressure && !vitalsData.heartRate && !vitalsData.temperature && !vitalsData.spO2) {
+      console.warn('No vitals data provided');
+      this.addingVitals = false;
+      return;
+    }
+
+    // Call API to save vitals
+    console.log('Saving vitals for appointment:', this.selectedAppointment);
+    
+    this.doctorService.completeAppointmentWithVitals(this.selectedAppointment, vitalsData).subscribe({
+      next: (response) => {
+        console.log('Vitals saved successfully:', response);
+        this.addingVitals = false;
+        // Show success message (you can add a toast notification here)
+        alert('Vitals saved successfully!');
+      },
+      error: (error) => {
+        console.error('Error saving vitals:', error);
+        // Show error message (you can add a toast notification here)
+        alert('Failed to save vitals. Please try again.');
+        // Don't close the vitals section on error to allow retry
+      }
+    });
   }
 
   cancelVitals() {
@@ -253,7 +512,39 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   }
 
   saveMedications() {
-    this.addingMedications = false;
+    // Check if appointment is selected
+    if (!this.selectedAppointment) {
+      console.error('No appointment selected for medications submission');
+      return;
+    }
+
+    const medicationsData = this.completionData.medications;
+    
+    // Validate at least one medication with a drug name is provided
+    const validMedications = medicationsData.filter(med => med.drug && med.drug.trim());
+    if (validMedications.length === 0) {
+      console.warn('No valid medications data provided');
+      this.addingMedications = false;
+      return;
+    }
+
+    // Call API to save medications
+    console.log('Saving medications for appointment:', this.selectedAppointment);
+    
+    this.doctorService.completeAppointmentWithMedications(this.selectedAppointment, medicationsData).subscribe({
+      next: (responses) => {
+        console.log('Medications saved successfully:', responses);
+        this.addingMedications = false;
+        // Show success message
+        alert(`${responses.length} medication(s) saved successfully!`);
+      },
+      error: (error) => {
+        console.error('Error saving medications:', error);
+        // Show error message
+        alert('Failed to save medications. Please try again.');
+        // Don't close the medications section on error to allow retry
+      }
+    });
   }
 
   cancelMedications() {
@@ -265,13 +556,49 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
 
   saveBilling() {
-    this.addingBilling = false;
+    // Check if appointment is selected
+    if (!this.selectedAppointment) {
+      console.error('No appointment selected for billing submission');
+      return;
+    }
+
+    const billingData = this.completionData.billing;
+    
+    // Validate billing data - at least consultation type should be provided
+    if (!billingData.consultationType && !billingData.consultationFee && !billingData.total) {
+      console.warn('No billing data provided');
+      this.addingBilling = false;
+      return;
+    }
+
+    // Ensure total is calculated
+    if (!billingData.total) {
+      this.calculateTotal();
+    }
+
+    // Call API to save invoice
+    console.log('Saving billing for appointment:', this.selectedAppointment);
+    
+    this.doctorService.completeAppointmentWithInvoice(this.selectedAppointment, billingData).subscribe({
+      next: (response) => {
+        console.log('Invoice saved successfully:', response);
+        this.addingBilling = false;
+        // Show success message
+        alert('Invoice saved successfully!');
+      },
+      error: (error) => {
+        console.error('Error saving invoice:', error);
+        // Show error message
+        alert('Failed to save invoice. Please try again.');
+        // Don't close the billing section on error to allow retry
+      }
+    });
   }
 
   cancelBilling() {
     this.addingBilling = false;
     // Optionally reset billing data
-    this.completionData.billing = { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '', outstanding: '' };
+    this.completionData.billing = { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' };
   }
 
   // EMR Navigation method
@@ -343,7 +670,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       doc.text(`Lab Fee: $${this.completionData.billing.labFee}`, 30, yPos + 30);
       doc.text(`Medicine Fee: $${this.completionData.billing.medicineFee}`, 30, yPos + 40);
       doc.text(`Total: $${this.completionData.billing.total}`, 30, yPos + 50);
-      doc.text(`Outstanding: $${this.completionData.billing.outstanding}`, 30, yPos + 60);
+      
     }
 
     doc.save(`${this.selectedAppointment.patientName}_Appointment_Report.pdf`);
@@ -369,15 +696,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     this.newLabResult = { testName: '', value: '', unit: '', notes: '' };
   }
 
-  calculateOutstanding() {
-    if (!this.selectedAppointment) return;
-    // Get pending invoices for this patient
-    const pendingInvoices = this.doctorService.getInvoices().filter(inv =>
-      inv.patientId === this.selectedAppointment!.id && inv.paymentStatus === 'PENDING'
-    );
-    const outstandingAmount = pendingInvoices.reduce((sum, inv) => sum + inv.amount, 0);
-    this.completionData.billing.outstanding = outstandingAmount > 0 ? outstandingAmount.toString() : '';
-  }
+
 
   calculateTotal() {
     const consultation = parseFloat(this.completionData.billing.consultationFee) || 0;

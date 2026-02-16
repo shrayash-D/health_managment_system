@@ -14,12 +14,16 @@ import {
   ADMIN_API_ENDPOINTS,
 } from '../constants/api/api-endpoints';
 import { map } from 'rxjs/operators';
+import { DoctorDataService } from './doctor-data.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PatientService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private doctorDataService: DoctorDataService,
+  ) {}
 
   getPatientByUserId(userId: string): Observable<PatientApiResponse> {
     var data = this.http.get<PatientApiResponse>(
@@ -74,10 +78,45 @@ export class PatientService {
   }
 
   // ==========================================
+  // DOCTOR API METHODS (Doctor-specific patients)
+  // ==========================================
+
+  /**
+   * Get all patients assigned to the current logged-in doctor
+   * Shows all patients who have appointments with this doctor (completed or ongoing)
+   * Uses the Doctor API to avoid 403 Forbidden from Admin endpoints
+   * API: GET /api/Doctor/patients/{doctorId}
+   */
+  getAllPatients(): Observable<Patient[]> {
+    return this.doctorDataService.getPatientsByDoctor().pipe(
+      map((response: any) =>
+        (response.patients || []).map((apiPatient: any) => ({
+          id: parseInt(apiPatient.id) || 0,
+          userId: apiPatient.userId,
+          name: apiPatient.user?.name || 'Unknown',
+          contactInfo: apiPatient.user?.phoneNumber || 'N/A',
+          dob: apiPatient.user?.dob
+            ? new Date(apiPatient.user.dob).toISOString().split('T')[0]
+            : 'N/A',
+          bloodGroup: apiPatient.bloodGroup || 'Unknown',
+          allergies: [],
+          primaryPhysician: apiPatient.doctor?.user?.name || 'Not Assigned',
+          medicalHistory: apiPatient.address || undefined,
+        })),
+      ),
+    );
+  }
+
+  // ==========================================
   // ADMIN API METHODS
   // ==========================================
 
-  getAllPatients(): Observable<Patient[]> {
+  /**
+   * Get all patients (Admin only)
+   * Note: This endpoint requires Admin role and will fail for Doctor users
+   * Use getAllPatients() for Doctor-specific patient list
+   */
+  getAllPatientsAdmin(): Observable<Patient[]> {
     return this.http
       .get<PatientListApiResponse[]>(ADMIN_API_ENDPOINTS.getAllPatients)
       .pipe(
