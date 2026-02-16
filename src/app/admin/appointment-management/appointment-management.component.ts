@@ -1,10 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AppointmentService } from '../../services/appointment.service';
-import { DoctorService } from '../../services/doctor.service';
-import { PatientService } from '../../services/patient.service';
-import { IdFormatterService } from '../../services/id-formatter.service';
+import { AdminService } from '../../services/admin.service';
 import {
   Appointment,
   AppointmentStatus,
@@ -12,11 +9,13 @@ import {
 import { Doctor } from '../../models/doctor.interface';
 import { Patient } from '../../models/patient.interface';
 import { Observable, combineLatest, map } from 'rxjs';
+import { LoadingComponent } from '../shared/loading/loading.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-appointment-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingComponent],
   templateUrl: './appointment-management.component.html',
   styleUrl: './appointment-management.component.css',
 })
@@ -27,23 +26,20 @@ export class AppointmentManagementComponent implements OnInit {
 
   searchTerm: string = '';
   statusFilter: AppointmentStatus | 'ALL' = 'ALL';
+  isLoading: boolean = false;
 
-  constructor(
-    private appointmentService: AppointmentService,
-    private doctorService: DoctorService,
-    private patientService: PatientService,
-    public idFormatter: IdFormatterService,
-  ) {}
+  constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
     this.loadData();
   }
 
   loadData(): void {
+    this.isLoading = true;
     this.appointments$ = combineLatest([
-      this.appointmentService.getAllAppointments(),
-      this.patientService.getAllPatients(),
-      this.doctorService.getAllDoctors(),
+      this.adminService.getAllAppointments(),
+      this.adminService.getAllPatients(),
+      this.adminService.getAllDoctors(),
     ]).pipe(
       map(([appointments, patients, doctors]) => {
         return appointments.map((apt) => ({
@@ -57,16 +53,17 @@ export class AppointmentManagementComponent implements OnInit {
             apt.doctorName,
         }));
       }),
+      finalize(() => (this.isLoading = false)),
     );
-    this.doctors$ = this.doctorService.getAllDoctors();
-    this.patients$ = this.patientService.getAllPatients();
+    this.doctors$ = this.adminService.getAllDoctors();
+    this.patients$ = this.adminService.getAllPatients();
   }
 
   cancelAppointment(appointment: Appointment): void {
     if (confirm('Are you sure you want to cancel this appointment?')) {
       const appointmentId = appointment.appointmentId;
       if (appointmentId) {
-        this.appointmentService.cancelAppointment(appointmentId).subscribe({
+        this.adminService.cancelAppointment(appointmentId).subscribe({
           next: () => {
             alert('Appointment cancelled successfully');
             this.loadData();

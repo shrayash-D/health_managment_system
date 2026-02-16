@@ -1,3 +1,5 @@
+<app-loading *ngIf="isLoading"></app-loading>
+
 <div class="doctor-management">
   <!-- Header -->
   <div class="page-header">
@@ -19,7 +21,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>S.No</th>
           <th>Name</th>
           <th>Specialization</th>
           <th>Contact</th>
@@ -28,8 +30,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let doctor of getFilteredDoctors(doctors)">
-          <td>{{ idFormatter.formatDoctorId(doctor.id) }}</td>
+        <tr *ngFor="let doctor of getFilteredDoctors(doctors); let i = index">
+          <td>{{ i + 1 }}</td>
           <td>
             <strong>{{ doctor.user?.name || doctor.name || "N/A" }}</strong>
           </td>

@@ -1,12 +1,21 @@
 import { Injectable } from '@angular/core';
-import { Observable, combineLatest, map, forkJoin } from 'rxjs';
+import { Observable, combineLatest, map, forkJoin, of } from 'rxjs';
 import { DashboardMetrics } from '../models/dashboard-metrics.interface';
-import { PatientService } from './patient.service';
-import { AppointmentService } from './appointment.service';
-import { BillingService } from './billing.service';
-import { DoctorService } from './doctor.service';
 import { HttpClient } from '@angular/common/http';
-import { ADMIN_API_ENDPOINTS } from '../constants/api/api-endpoints';
+import {
+  ADMIN_API_ENDPOINTS,
+  APPOINTMENT_API_ENDPOINTS,
+} from '../constants/api/api-endpoints';
+import { catchError } from 'rxjs/operators';
+
+// Import models
+import { Patient, PatientListApiResponse } from '../models/patient.interface';
+import { Doctor } from '../models/doctor.interface';
+import {
+  Appointment,
+  AppointmentApiResponse,
+} from '../models/appointment.interface';
+import { Invoice, AllInvoicesResponse } from '../models/invoice.interface';
 
 // Interface for pending invoices API response
 interface PendingInvoiceResponse {
@@ -30,13 +39,186 @@ interface PendingInvoiceResponse {
   providedIn: 'root',
 })
 export class AdminService {
-  constructor(
-    private patientService: PatientService,
-    private appointmentService: AppointmentService,
-    private billingService: BillingService,
-    private doctorService: DoctorService,
-    private http: HttpClient,
-  ) {}
+  constructor(private http: HttpClient) {}
+
+  // ==========================================
+  // ADMIN CRUD METHODS - PATIENTS
+  // ==========================================
+
+  /**
+   * Get all patients (Admin only)
+   */
+  getAllPatients(): Observable<Patient[]> {
+    return this.http
+      .get<PatientListApiResponse[]>(ADMIN_API_ENDPOINTS.getAllPatients)
+      .pipe(
+        map((apiPatients) =>
+          apiPatients.map((apiPatient) => ({
+            id: parseInt(apiPatient.id) || 0,
+            userId: apiPatient.userId, // Keep the original userId for delete operations
+            name: apiPatient.user?.name || 'Unknown',
+            contactInfo: apiPatient.user?.phoneNumber || 'N/A',
+            dob: apiPatient.user?.dob
+              ? new Date(apiPatient.user.dob).toISOString().split('T')[0]
+              : 'N/A',
+            bloodGroup: apiPatient.bloodGroup || 'Unknown',
+            allergies: [], // Not provided by API
+            primaryPhysician: apiPatient.doctor?.user?.name || 'Not Assigned',
+            medicalHistory: apiPatient.address || undefined,
+          })),
+        ),
+      );
+  }
+
+  /**
+   * Delete patient by user ID
+   */
+  deletePatient(userId: string): Observable<boolean> {
+    return this.http
+      .delete<void>(ADMIN_API_ENDPOINTS.deletePatient(userId))
+      .pipe(map(() => true));
+  }
+
+  // ==========================================
+  // ADMIN CRUD METHODS - DOCTORS
+  // ==========================================
+
+  /**
+   * Get all doctors
+   */
+  getAllDoctors(): Observable<Doctor[]> {
+    return this.http.get<any[]>(ADMIN_API_ENDPOINTS.getAllDoctors).pipe(
+      map((response) => {
+        // API returns an array directly
+        return response.map((apiDoctor: any) => ({
+          id: apiDoctor.id,
+          userId: apiDoctor.userId,
+          specialization: apiDoctor.specialization || 'Not specified',
+          yearsOfExperience: apiDoctor.yearsOfExperience || 0,
+          memberSince: apiDoctor.memberSince || undefined,
+          bio: apiDoctor.bio || '',
+          user: {
+            id: apiDoctor.user.id,
+            name: apiDoctor.user.name,
+            email: apiDoctor.user.email,
+            phoneNumber: apiDoctor.user.phoneNumber,
+          },
+        }));
+      }),
+      catchError((error) => {
+        console.error('Error fetching doctors:', error);
+        return of([]); // Return empty array on error
+      }),
+    );
+  }
+
+  /**
+   * Delete doctor by user ID
+   */
+  deleteDoctor(userId: string): Observable<any> {
+    return this.http.delete(ADMIN_API_ENDPOINTS.deleteDoctor(userId));
+  }
+
+  // ==========================================
+  // ADMIN CRUD METHODS - APPOINTMENTS
+  // ==========================================
+
+  /**
+   * Get all appointments
+   */
+  getAllAppointments(): Observable<Appointment[]> {
+    return this.http
+      .get<AppointmentApiResponse[]>(ADMIN_API_ENDPOINTS.getAllAppointments)
+      .pipe(
+        map((apiAppointments) =>
+          apiAppointments.map((apiApt) => {
+            // Map status number to string
+            const statusMap: {
+              [key: number]: 'BOOKED' | 'COMPLETED' | 'CANCELLED';
+            } = {
+              0: 'BOOKED',
+              1: 'COMPLETED',
+              2: 'CANCELLED',
+            };
+
+            // Format time from TimeSpan (HH:MM:SS) to HH:MM
+            const formatTime = (timeSpan: string): string => {
+              if (!timeSpan) return 'N/A';
+              const parts = timeSpan.split(':');
+              return `${parts[0]}:${parts[1]}`;
+            };
+
+            return {
+              id: parseInt(apiApt.id) || 0,
+              appointmentId: apiApt.id, // Keep the original GUID for cancel operations
+              patientId: parseInt(apiApt.patientId) || 0,
+              doctorId: apiApt.doctorId, // Keep as string GUID for matching
+              date: apiApt.appointmentDate
+                ? new Date(apiApt.appointmentDate).toISOString().split('T')[0]
+                : 'N/A',
+              time: formatTime(apiApt.startTime),
+              status: statusMap[apiApt.status] || 'BOOKED',
+              reason: apiApt.reason || 'No reason provided',
+              notes: '',
+              // patientName and doctorName will be populated by the component
+            };
+          }),
+        ),
+      );
+  }
+
+  /**
+   * Cancel appointment
+   */
+  cancelAppointment(appointmentId: string): Observable<boolean> {
+    return this.http
+      .put<void>(APPOINTMENT_API_ENDPOINTS.cancelAppointment(appointmentId), {})
+      .pipe(map(() => true));
+  }
+
+  // ==========================================
+  // ADMIN CRUD METHODS - INVOICES
+  // ==========================================
+
+  /**
+   * Get all invoices
+   */
+  getAllInvoices(): Observable<Invoice[]> {
+    return this.http
+      .get<AllInvoicesResponse>(ADMIN_API_ENDPOINTS.getAllInvoices)
+      .pipe(
+        map((response) =>
+          response.invoices.map((apiInvoice) => {
+            // Map status number to string: 0=UNPAID, 1=PAID
+            const statusMap: { [key: number]: 'PAID' | 'UNPAID' } = {
+              0: 'UNPAID',
+              1: 'PAID',
+            };
+
+            return {
+              id: parseInt(apiInvoice.id) || 0,
+              apiId: apiInvoice.id, // Store the actual GUID for API calls
+              invoiceNumber: apiInvoice.id, // Show the actual ID
+              patientId: parseInt(apiInvoice.patientId) || 0,
+              amount: apiInvoice.total,
+              paymentStatus: statusMap[apiInvoice.status] || 'UNPAID',
+              date: apiInvoice.issuedDate
+                ? new Date(apiInvoice.issuedDate).toISOString().split('T')[0]
+                : new Date().toISOString().split('T')[0],
+              description: apiInvoice.consultationType || 'Consultation',
+              // patientName will be populated by the component
+            };
+          }),
+        ),
+      );
+  }
+
+  /**
+   * Mark invoice as paid
+   */
+  markInvoiceAsPaid(invoiceId: string): Observable<any> {
+    return this.http.put(ADMIN_API_ENDPOINTS.markInvoiceAsPaid(invoiceId), {});
+  }
 
   // ==========================================
   // API METHODS FOR DASHBOARD METRICS
@@ -140,7 +322,7 @@ export class AdminService {
   // ==========================================
 
   getRevenueData(): Observable<{ labels: string[]; data: number[] }> {
-    return this.billingService.getAllInvoices().pipe(
+    return this.getAllInvoices().pipe(
       map((invoices) => {
         const last7Days = Array.from({ length: 7 }, (_, i) => {
           const date = new Date();
@@ -168,7 +350,7 @@ export class AdminService {
   }
 
   getAppointmentStatusData(): Observable<{ labels: string[]; data: number[] }> {
-    return this.appointmentService.getAllAppointments().pipe(
+    return this.getAllAppointments().pipe(
       map((appointments) => {
         const booked = appointments.filter((a) => a.status === 'BOOKED').length;
         const completed = appointments.filter(
@@ -187,7 +369,7 @@ export class AdminService {
   }
 
   getPaymentStatusData(): Observable<{ labels: string[]; data: number[] }> {
-    return this.billingService.getAllInvoices().pipe(
+    return this.getAllInvoices().pipe(
       map((invoices) => {
         const paid = invoices.filter((i) => i.paymentStatus === 'PAID').length;
         const unpaid = invoices.filter(
@@ -232,7 +414,7 @@ export class AdminService {
   }
 
   getMonthlyRevenueData(): Observable<{ labels: string[]; data: number[] }> {
-    return this.billingService.getAllInvoices().pipe(
+    return this.getAllInvoices().pipe(
       map((invoices) => {
         const last6Months = Array.from({ length: 6 }, (_, i) => {
           const date = new Date();
@@ -275,13 +457,5 @@ export class AdminService {
     return this.http.put(ADMIN_API_ENDPOINTS.updateUserPassword(userId), {
       newPassword: newPassword,
     });
-  }
-
-  /**
-   * Mark an invoice as paid
-   * @param invoiceId The invoice ID (GUID)
-   */
-  markInvoiceAsPaid(invoiceId: string): Observable<any> {
-    return this.http.put(ADMIN_API_ENDPOINTS.markInvoiceAsPaid(invoiceId), {});
   }
 }

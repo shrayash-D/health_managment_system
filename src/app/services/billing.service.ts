@@ -3,17 +3,13 @@ import { Observable, of } from 'rxjs';
 import { Invoice, AllInvoicesResponse } from '../models/invoice.interface';
 import { HttpClient } from '@angular/common/http';
 import { ADMIN_API_ENDPOINTS } from '../constants/api/api-endpoints';
-import { IdFormatterService } from './id-formatter.service';
 import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BillingService {
-  constructor(
-    private http: HttpClient,
-    private idFormatter: IdFormatterService,
-  ) {}
+  constructor(private http: HttpClient) {}
 
   // ==========================================
   // ADMIN API METHODS
@@ -34,7 +30,7 @@ export class BillingService {
             return {
               id: parseInt(apiInvoice.id) || 0,
               apiId: apiInvoice.id, // Store the actual GUID for API calls
-              invoiceNumber: this.idFormatter.formatInvoiceId(apiInvoice.id),
+              invoiceNumber: apiInvoice.id, // Use the actual GUID
               patientId: parseInt(apiInvoice.patientId) || 0,
               amount: apiInvoice.total,
               paymentStatus: statusMap[apiInvoice.status] || 'UNPAID',

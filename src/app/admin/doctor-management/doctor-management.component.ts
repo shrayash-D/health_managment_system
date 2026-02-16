@@ -1,35 +1,35 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DoctorService } from '../../services/doctor.service';
 import { AdminService } from '../../services/admin.service';
-import { IdFormatterService } from '../../services/id-formatter.service';
 import { Doctor } from '../../models/doctor.interface';
 import { Observable, take } from 'rxjs';
+import { LoadingComponent } from '../shared/loading/loading.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-doctor-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingComponent],
   templateUrl: './doctor-management.component.html',
   styleUrl: './doctor-management.component.css',
 })
 export class DoctorManagementComponent implements OnInit {
   doctors$!: Observable<Doctor[]>;
   searchTerm: string = '';
+  isLoading: boolean = false;
 
-  constructor(
-    private doctorService: DoctorService,
-    private adminService: AdminService,
-    public idFormatter: IdFormatterService,
-  ) {}
+  constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
     this.loadDoctors();
   }
 
   loadDoctors(): void {
-    this.doctors$ = this.doctorService.getAllDoctors();
+    this.isLoading = true;
+    this.doctors$ = this.adminService
+      .getAllDoctors()
+      .pipe(finalize(() => (this.isLoading = false)));
   }
 
   resetPassword(doctor: Doctor): void {
@@ -68,7 +68,7 @@ export class DoctorManagementComponent implements OnInit {
       const userId = doctor.user?.id || doctor.userId;
 
       if (userId) {
-        this.doctorService.deleteDoctor(userId).subscribe({
+        this.adminService.deleteDoctor(userId).subscribe({
           next: () => {
             alert('Doctor deleted successfully!');
             this.loadDoctors();

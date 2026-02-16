@@ -1,4 +1,7 @@
 <div class="patient-management">
+  <!-- Loading Indicator -->
+  <app-loading *ngIf="isLoading"></app-loading>
+
   <!-- Header -->
   <div class="page-header">
     <h2>Patient Management</h2>
@@ -19,7 +22,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>S.No</th>
           <th>Name</th>
           <th>Contact</th>
           <th>Date of Birth</th>
@@ -29,8 +32,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let patient of getFilteredPatients(patients)">
-          <td>{{ idFormatter.formatPatientId(patient.id) }}</td>
+        <tr
+          *ngFor="let patient of getFilteredPatients(patients); let i = index"
+        >
+          <td>{{ i + 1 }}</td>
           <td>
             <strong>{{ patient.name }}</strong>
           </td>

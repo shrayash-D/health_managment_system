@@ -1,3 +1,5 @@
+<app-loading *ngIf="isLoading"></app-loading>
+
 <div class="appointment-management">
   <!-- Header -->
   <div class="page-header">
@@ -25,7 +27,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>S.No</th>
           <th>Patient</th>
           <th>Doctor</th>
           <th>Date</th>
@@ -36,8 +38,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let appointment of getFilteredAppointments(appointments)">
-          <td>{{ idFormatter.formatAppointmentId(appointment.id) }}</td>
+        <tr
+          *ngFor="
+            let appointment of getFilteredAppointments(appointments);
+            let i = index
+          "
+        >
+          <td>{{ i + 1 }}</td>
           <td>
             <strong>{{ appointment.patientName }}</strong>
           </td>
