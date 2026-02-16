@@ -40,8 +40,12 @@
           <tbody>
             <tr *ngFor="let appointment of filteredAppointments; let i = index">
               <td data-label="Sr. No.">{{ i + 1 }}</td>
-              <td data-label="Patient Name">{{ getPatientName(appointment) }}</td>
-              <td data-label="Reason">{{ appointment.apiData?.reason || 'General Consultation' }}</td>
+              <td data-label="Patient Name">
+                {{ getPatientName(appointment) }}
+              </td>
+              <td data-label="Reason">
+                {{ appointment.apiData?.reason || "General Consultation" }}
+              </td>
               <td data-label="Date">{{ appointment.date }}</td>
               <td data-label="Time">{{ appointment.time }}</td>
               <td data-label="Status">
@@ -73,39 +77,47 @@
     <!-- Appointment Slots Management Section -->
     <section class="table-scroll card">
       <h2 class="form-title">Appointment Slots</h2>
-      
+
       <div class="slots-container">
         <!-- Generate Slots Form -->
         <div class="slots-form">
           <h3 class="slots-subtitle">Generate New Slots</h3>
           <div class="slots-form-grid">
             <div class="form-field">
-              <label for="slotDate">Select Date</label>
+              <label for="slotStartDate">Start Date</label>
               <input
-                id="slotDate"
+                id="slotStartDate"
                 type="date"
-                [(ngModel)]="slotDate"
-                placeholder="Select date"
+                [(ngModel)]="slotStartDate"
+                [min]="minDate"
+                placeholder="Select start date"
+              />
+            </div>
+            <div class="form-field">
+              <label for="slotEndDate">End Date</label>
+              <input
+                id="slotEndDate"
+                type="date"
+                [(ngModel)]="slotEndDate"
+                [min]="slotStartDate || minDate"
+                placeholder="Select end date"
               />
             </div>
             <div class="form-actions">
-              <button 
-                class="btn btn-primary" 
+              <button
+                class="btn btn-primary"
                 (click)="addSlot()"
-                [disabled]="!slotDate"
+                [disabled]="!slotStartDate || !slotEndDate"
               >
-                Generate Slots for This Date
+                Generate Slots for Date Range
               </button>
             </div>
           </div>
         </div>
 
         <!-- Available Slots Display -->
-        
       </div>
     </section>
-
-   
 
     <!-- Completion Popup Card -->
     <div
@@ -241,7 +253,6 @@
               <p *ngIf="completionData.billing.total">
                 Total: {{ completionData.billing.total }}
               </p>
-
             </div>
           </div>
 
@@ -369,10 +380,7 @@
               Add Medication
             </button>
             <div class="modal-actions">
-              <button
-                class="btn btn-primary"
-                (click)="saveMedications()"
-              >
+              <button class="btn btn-primary" (click)="saveMedications()">
                 Save Medications
               </button>
               <button
