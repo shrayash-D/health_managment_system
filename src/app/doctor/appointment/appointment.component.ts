@@ -82,10 +82,9 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
   ) {
-    // Set minimum date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    this.minDate = tomorrow.toISOString().split('T')[0];
+    // Set minimum date to today (allow selecting today's date)
+    const today = new Date();
+    this.minDate = today.toISOString().split('T')[0];
   }
 
   ngOnInit() {
