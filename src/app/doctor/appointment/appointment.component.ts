@@ -2,7 +2,12 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { DoctorDataService, Appointment, Consultation, Invoice} from '../../services/doctor-data.service';
+import {
+  DoctorDataService,
+  Appointment,
+  Consultation,
+  Invoice,
+} from '../../services/doctor-data.service';
 import { AuthService } from '../../services/auth.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -11,7 +16,7 @@ import jsPDF from 'jspdf';
 export enum AppointmentStatus {
   BOOKED = 'BOOKED',
   COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 @Component({
@@ -25,11 +30,14 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   appointments: Appointment[] = [];
   appointmentFilterDate = '';
   appointmentFilterStatus = '';
-  slotDate = '';
+  slotStartDate = '';
+  slotEndDate = '';
   availableSlots: string[] = [];
+  minDate = '';
 
   // API Statistics
-  appointmentApiStats: { doctorId: string; totalAppointments: number } | null = null;
+  appointmentApiStats: { doctorId: string; totalAppointments: number } | null =
+    null;
 
   showCompletionModal: boolean = false;
   selectedAppointment: Appointment | null = null;
@@ -37,9 +45,21 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     diagnosis: '',
     date: '',
     vitals: { bloodPressure: '', heartRate: '', temperature: '', spO2: '' },
-    medications: [] as { drug: string; dose: string; route: string; frequency: string; activity: string }[],
+    medications: [] as {
+      drug: string;
+      dose: string;
+      route: string;
+      frequency: string;
+      activity: string;
+    }[],
     labTests: { cbc: '', lft: '', creatinine: '', hba1c: '' },
-    billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' }
+    billing: {
+      consultationType: '',
+      consultationFee: '',
+      labFee: '',
+      medicineFee: '',
+      total: '',
+    },
   };
 
   addingVitals = false;
@@ -58,18 +78,22 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private doctorService: DoctorDataService, 
+    private doctorService: DoctorDataService,
     private router: Router,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+  ) {
+    // Set minimum date to today (allow selecting today's date)
+    const today = new Date();
+    this.minDate = today.toISOString().split('T')[0];
+  }
 
   ngOnInit() {
     // Load appointments from API first
     this.loadAppointmentsFromAPI();
-    
+
     // Load slots from API
     this.loadSlotsFromAPI();
-    
+
     this.doctorService.appointments$
       .pipe(takeUntil(this.destroy$))
       .subscribe((appointments) => {
@@ -103,12 +127,12 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     // Try to get doctor ID from multiple sources
     const currentDoctor = this.doctorService.getDoctor();
     const currentUser = this.authService.currentUserValue;
-    
+
     console.log('Current doctor data:', currentDoctor);
     console.log('Current user data:', currentUser);
-    
+
     let doctorId = null;
-    
+
     // Try to get doctor ID from doctor service first
     if (currentDoctor && currentDoctor.id) {
       doctorId = currentDoctor.id;
@@ -117,13 +141,18 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     else if (currentUser && currentUser.id) {
       doctorId = currentUser.id;
     }
-    
+
     if (doctorId) {
       console.log('Loading appointments for doctor ID:', doctorId);
       this.doctorService.loadAppointmentsFromApi(doctorId);
     } else {
       console.log('No doctor ID available, keeping mock data');
-      console.log('Available data - Doctor:', currentDoctor, 'User:', currentUser);
+      console.log(
+        'Available data - Doctor:',
+        currentDoctor,
+        'User:',
+        currentUser,
+      );
     }
   }
 
@@ -136,11 +165,12 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   private loadSlotsFromAPI(): void {
     // Try to fetch doctor slots from API
     const currentUser = this.authService.currentUserValue;
-    
+
     if (currentUser && currentUser.id) {
       console.log('Loading slots for doctor ID:', currentUser.id);
-      
-      this.doctorService.fetchDoctorSlotsFromAPI()
+
+      this.doctorService
+        .fetchDoctorSlotsFromAPI()
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (slots) => {
@@ -148,11 +178,14 @@ export class AppointmentComponent implements OnInit, OnDestroy {
             // Slots are automatically updated via the service's convertAndUpdateSlots method
           },
           error: (error) => {
-            console.warn('Could not load slots from API, using mock data:', error);
+            console.warn(
+              'Could not load slots from API, using mock data:',
+              error,
+            );
             // Silently fail and keep using mock data
-          }
+          },
         });
-      
+
       // Also fetch available time-based slots for today
       this.fetchAvailableSlotsForToday();
     } else {
@@ -167,8 +200,9 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   private fetchAvailableSlotsForToday(): void {
     // Get today's date in ISO format (YYYY-MM-DD)
     const today = new Date().toISOString().split('T')[0];
-    
-    this.doctorService.fetchAvailableSlots(today)
+
+    this.doctorService
+      .fetchAvailableSlots(today)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -177,7 +211,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.warn('Could not load available slots:', error);
           // Silently fail - component still works with mock data
-        }
+        },
       });
   }
 
@@ -186,7 +220,8 @@ export class AppointmentComponent implements OnInit, OnDestroy {
    * @param date ISO format date string (YYYY-MM-DD)
    */
   fetchAvailableSlotsForDate(date: string): void {
-    this.doctorService.fetchAvailableSlots(date)
+    this.doctorService
+      .fetchAvailableSlots(date)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -194,7 +229,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error fetching available slots for', date, ':', error);
-        }
+        },
       });
   }
 
@@ -204,25 +239,57 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   }
 
   addSlot() {
-    if (this.slotDate) {
-      console.log('Generating slots for date:', this.slotDate);
-      
-      // Convert date to ISO format (YYYY-MM-DD)
-      const slotDateISO = this.slotDate;
-      
-      // Call API to generate slots for this date
-      this.doctorService.generateDoctorSlot(slotDateISO, slotDateISO).subscribe({
+    // Validation: Check if both dates are provided
+    if (!this.slotStartDate || !this.slotEndDate) {
+      alert('Please select both start and end dates.');
+      return;
+    }
+
+    // Validation: Check if dates are in the future
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = new Date(this.slotStartDate);
+    const endDate = new Date(this.slotEndDate);
+
+    if (startDate < today) {
+      alert("Start date must be ahead of today's date.");
+      return;
+    }
+
+    if (endDate < today) {
+      alert("End date must be ahead of today's date.");
+      return;
+    }
+
+    // Validation: Check if end date is not before start date
+    if (endDate < startDate) {
+      alert('End date cannot be before start date.');
+      return;
+    }
+
+    console.log(
+      'Generating slots from:',
+      this.slotStartDate,
+      'to:',
+      this.slotEndDate,
+    );
+
+    // Call API to generate slots for the date range
+    this.doctorService
+      .generateDoctorSlot(this.slotStartDate, this.slotEndDate)
+      .subscribe({
         next: (response) => {
           console.log('Slots created via API:', response);
-          
+
           // Reset form
-          this.slotDate = '';
-          
+          this.slotStartDate = '';
+          this.slotEndDate = '';
+
           // Reload slots from API
           this.loadSlotsFromAPI();
-          
+
           // Show success message
-          alert(`Appointment slots created successfully for ! ✅`);
+          alert(`Appointment slots created successfully! ✅`);
         },
         error: (error) => {
           console.error('Error creating slots:', error);
@@ -230,13 +297,14 @@ export class AppointmentComponent implements OnInit, OnDestroy {
             status: error.status,
             statusText: error.statusText,
             message: error.message,
-            response: error.error
+            response: error.error,
           });
-          
+
           let errorMessage = 'Failed to create appointment slots.';
-          
+
           if (error.message === 'Doctor profile not loaded') {
-            errorMessage = 'Doctor profile is not loaded yet. Please wait and try again.';
+            errorMessage =
+              'Doctor profile is not loaded yet. Please wait and try again.';
           } else if (error.status === 400) {
             errorMessage = 'Invalid date format. Please check your input.';
           } else if (error.status === 401) {
@@ -252,18 +320,11 @@ export class AppointmentComponent implements OnInit, OnDestroy {
           } else if (error.message) {
             errorMessage = error.message;
           }
-          
+
           alert(`Error: ${errorMessage}`);
-        }
+        },
       });
-    }
   }
-
-  
-
-  
-
-
 
   get filteredAppointments() {
     return this.appointments.filter((appointment) => {
@@ -278,11 +339,15 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   }
 
   get hasMedications() {
-    return this.completionData.medications.length > 0 && this.completionData.medications.some(med => med.drug);
+    return (
+      this.completionData.medications.length > 0 &&
+      this.completionData.medications.some((med) => med.drug)
+    );
   }
 
   openCompletionModal(id: number) {
-    this.selectedAppointment = this.appointments.find(a => a.id === id) || null;
+    this.selectedAppointment =
+      this.appointments.find((a) => a.id === id) || null;
     if (this.selectedAppointment) {
       this.showCompletionModal = true;
       // Reset completion data
@@ -290,9 +355,17 @@ export class AppointmentComponent implements OnInit, OnDestroy {
         diagnosis: '',
         date: '',
         vitals: { bloodPressure: '', heartRate: '', temperature: '', spO2: '' },
-        medications: [{ drug: '', dose: '', route: '', frequency: '', activity: 'active' }],
+        medications: [
+          { drug: '', dose: '', route: '', frequency: '', activity: 'active' },
+        ],
         labTests: { cbc: '', lft: '', creatinine: '', hba1c: '' },
-        billing: { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' }
+        billing: {
+          consultationType: '',
+          consultationFee: '',
+          labFee: '',
+          medicineFee: '',
+          total: '',
+        },
       };
       // Set current date
       this.completionData.date = new Date().toISOString().split('T')[0];
@@ -305,7 +378,13 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   }
 
   addMedication() {
-    this.completionData.medications.push({ drug: '', dose: '', route: '', frequency: '', activity: 'active' });
+    this.completionData.medications.push({
+      drug: '',
+      dose: '',
+      route: '',
+      frequency: '',
+      activity: 'active',
+    });
   }
 
   removeMedication(index: number) {
@@ -320,23 +399,30 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
     // First, submit diagnosis to backend API if diagnosis is provided
     if (this.completionData.diagnosis && this.completionData.diagnosis.trim()) {
-      console.log('Submitting diagnosis for appointment:', this.selectedAppointment);
-      
-      this.doctorService.completeAppointmentWithDiagnosis(
-        this.selectedAppointment, 
-        this.completionData.diagnosis
-      ).subscribe({
-        next: (diagnosisResponse) => {
-          console.log('Diagnosis submitted successfully:', diagnosisResponse);
-          
-          // After successful diagnosis submission, update appointment status to COMPLETED
-          this.updateAppointmentStatusToCompleted();
-        },
-        error: (error) => {
-          console.error('Error submitting diagnosis:', error);
-          alert('Error completing appointment with diagnosis. Please try again.');
-        }
-      });
+      console.log(
+        'Submitting diagnosis for appointment:',
+        this.selectedAppointment,
+      );
+
+      this.doctorService
+        .completeAppointmentWithDiagnosis(
+          this.selectedAppointment,
+          this.completionData.diagnosis,
+        )
+        .subscribe({
+          next: (diagnosisResponse) => {
+            console.log('Diagnosis submitted successfully:', diagnosisResponse);
+
+            // After successful diagnosis submission, update appointment status to COMPLETED
+            this.updateAppointmentStatusToCompleted();
+          },
+          error: (error) => {
+            console.error('Error submitting diagnosis:', error);
+            alert(
+              'Error completing appointment with diagnosis. Please try again.',
+            );
+          },
+        });
     } else {
       // If no diagnosis provided, just update status to completed
       this.updateAppointmentStatusToCompleted();
@@ -346,28 +432,42 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   private updateAppointmentStatusToCompleted() {
     if (!this.selectedAppointment) return;
 
-    console.log('Updating appointment status to COMPLETED for:', this.selectedAppointment);
-    
-    this.doctorService.markAppointmentCompleted(this.selectedAppointment).subscribe({
-      next: (statusResponse) => {
-        console.log('Appointment status updated to COMPLETED:', statusResponse);
-        // Only update local appointment status in the UI if API call succeeded
-        if (this.selectedAppointment) {
-          this.selectedAppointment.status = 'COMPLETED';
-          const appointmentIndex = this.appointments.findIndex(app => app.id === this.selectedAppointment!.id);
-          if (appointmentIndex !== -1) {
-            this.appointments[appointmentIndex].status = 'COMPLETED';
+    console.log(
+      'Updating appointment status to COMPLETED for:',
+      this.selectedAppointment,
+    );
+
+    this.doctorService
+      .markAppointmentCompleted(this.selectedAppointment)
+      .subscribe({
+        next: (statusResponse) => {
+          console.log(
+            'Appointment status updated to COMPLETED:',
+            statusResponse,
+          );
+          // Only update local appointment status in the UI if API call succeeded
+          if (this.selectedAppointment) {
+            this.selectedAppointment.status = 'COMPLETED';
+            const appointmentIndex = this.appointments.findIndex(
+              (app) => app.id === this.selectedAppointment!.id,
+            );
+            if (appointmentIndex !== -1) {
+              this.appointments[appointmentIndex].status = 'COMPLETED';
+            }
+            this.processLocalCompletionData();
+            alert(
+              'Appointment completed successfully! Status updated to COMPLETED ✅',
+            );
           }
-          this.processLocalCompletionData();
-          alert('Appointment completed successfully! Status updated to COMPLETED ✅');
-        }
-      },
-      error: (error) => {
-        console.error('Error updating appointment status:', error);
-        // Do NOT update status if API call failed
-        alert('Failed to update appointment status in database. Please try again.');
-      }
-    });
+        },
+        error: (error) => {
+          console.error('Error updating appointment status:', error);
+          // Do NOT update status if API call failed
+          alert(
+            'Failed to update appointment status in database. Please try again.',
+          );
+        },
+      });
   }
 
   private processLocalCompletionData() {
@@ -383,7 +483,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       vitals: this.completionData.vitals,
       medications: this.completionData.medications,
       labTests: this.completionData.labTests,
-      billing: this.completionData.billing
+      billing: this.completionData.billing,
     };
 
     this.doctorService.addConsultation(consultation);
@@ -398,20 +498,26 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       amount: totalAmount,
       paymentStatus: 'PAID',
       issueDate: new Date().toISOString().split('T')[0],
-      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0], // 30 days from now
       paymentMethod: '',
       transactionId: '',
-      consultationType: this.completionData.billing.consultationType || 'General Consultation',
-      consultationFee: parseFloat(this.completionData.billing.consultationFee) || 0,
+      consultationType:
+        this.completionData.billing.consultationType || 'General Consultation',
+      consultationFee:
+        parseFloat(this.completionData.billing.consultationFee) || 0,
       labFee: parseFloat(this.completionData.billing.labFee) || 0,
       medicineFee: parseFloat(this.completionData.billing.medicineFee) || 0,
       otherCharges: 0,
-      subtotal: totalAmount
+      subtotal: totalAmount,
     };
     this.doctorService.addInvoice(invoice);
 
     // Update patient history
-    const patient = this.doctorService.getPatientById(this.selectedAppointment.id);
+    const patient = this.doctorService.getPatientById(
+      this.selectedAppointment.id,
+    );
     if (patient) {
       const updatedPatient = { ...patient };
       if (this.completionData.diagnosis) {
@@ -419,8 +525,8 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       }
       if (this.completionData.medications.length > 0) {
         const medicationList = this.completionData.medications
-          .filter(med => med.drug)
-          .map(med => `${med.drug} ${med.dose} ${med.route} ${med.frequency}`)
+          .filter((med) => med.drug)
+          .map((med) => `${med.drug} ${med.dose} ${med.route} ${med.frequency}`)
           .join(', ');
         updatedPatient.ongoingTreatment = medicationList;
       }
@@ -468,8 +574,6 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     this.activeSection = 'billing';
   }
 
-
-
   saveVitals() {
     // Check if vitals data exists and appointment is selected
     if (!this.selectedAppointment) {
@@ -478,9 +582,14 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     }
 
     const vitalsData = this.completionData.vitals;
-    
+
     // Validate at least one vital is provided
-    if (!vitalsData.bloodPressure && !vitalsData.heartRate && !vitalsData.temperature && !vitalsData.spO2) {
+    if (
+      !vitalsData.bloodPressure &&
+      !vitalsData.heartRate &&
+      !vitalsData.temperature &&
+      !vitalsData.spO2
+    ) {
       console.warn('No vitals data provided');
       this.addingVitals = false;
       return;
@@ -488,27 +597,34 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
     // Call API to save vitals
     console.log('Saving vitals for appointment:', this.selectedAppointment);
-    
-    this.doctorService.completeAppointmentWithVitals(this.selectedAppointment, vitalsData).subscribe({
-      next: (response) => {
-        console.log('Vitals saved successfully:', response);
-        this.addingVitals = false;
-        // Show success message (you can add a toast notification here)
-        alert('Vitals saved successfully!');
-      },
-      error: (error) => {
-        console.error('Error saving vitals:', error);
-        // Show error message (you can add a toast notification here)
-        alert('Failed to save vitals. Please try again.');
-        // Don't close the vitals section on error to allow retry
-      }
-    });
+
+    this.doctorService
+      .completeAppointmentWithVitals(this.selectedAppointment, vitalsData)
+      .subscribe({
+        next: (response) => {
+          console.log('Vitals saved successfully:', response);
+          this.addingVitals = false;
+          // Show success message (you can add a toast notification here)
+          alert('Vitals saved successfully!');
+        },
+        error: (error) => {
+          console.error('Error saving vitals:', error);
+          // Show error message (you can add a toast notification here)
+          alert('Failed to save vitals. Please try again.');
+          // Don't close the vitals section on error to allow retry
+        },
+      });
   }
 
   cancelVitals() {
     this.addingVitals = false;
     // Optionally reset vitals data
-    this.completionData.vitals = { bloodPressure: '', heartRate: '', temperature: '', spO2: '' };
+    this.completionData.vitals = {
+      bloodPressure: '',
+      heartRate: '',
+      temperature: '',
+      spO2: '',
+    };
   }
 
   saveMedications() {
@@ -519,9 +635,11 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     }
 
     const medicationsData = this.completionData.medications;
-    
+
     // Validate at least one medication with a drug name is provided
-    const validMedications = medicationsData.filter(med => med.drug && med.drug.trim());
+    const validMedications = medicationsData.filter(
+      (med) => med.drug && med.drug.trim(),
+    );
     if (validMedications.length === 0) {
       console.warn('No valid medications data provided');
       this.addingMedications = false;
@@ -529,22 +647,30 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     }
 
     // Call API to save medications
-    console.log('Saving medications for appointment:', this.selectedAppointment);
-    
-    this.doctorService.completeAppointmentWithMedications(this.selectedAppointment, medicationsData).subscribe({
-      next: (responses) => {
-        console.log('Medications saved successfully:', responses);
-        this.addingMedications = false;
-        // Show success message
-        alert(`${responses.length} medication(s) saved successfully!`);
-      },
-      error: (error) => {
-        console.error('Error saving medications:', error);
-        // Show error message
-        alert('Failed to save medications. Please try again.');
-        // Don't close the medications section on error to allow retry
-      }
-    });
+    console.log(
+      'Saving medications for appointment:',
+      this.selectedAppointment,
+    );
+
+    this.doctorService
+      .completeAppointmentWithMedications(
+        this.selectedAppointment,
+        medicationsData,
+      )
+      .subscribe({
+        next: (responses) => {
+          console.log('Medications saved successfully:', responses);
+          this.addingMedications = false;
+          // Show success message
+          alert(`${responses.length} medication(s) saved successfully!`);
+        },
+        error: (error) => {
+          console.error('Error saving medications:', error);
+          // Show error message
+          alert('Failed to save medications. Please try again.');
+          // Don't close the medications section on error to allow retry
+        },
+      });
   }
 
   cancelMedications() {
@@ -552,8 +678,6 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     // Optionally reset medications data
     this.completionData.medications = [];
   }
-
-
 
   saveBilling() {
     // Check if appointment is selected
@@ -563,9 +687,13 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     }
 
     const billingData = this.completionData.billing;
-    
+
     // Validate billing data - at least consultation type should be provided
-    if (!billingData.consultationType && !billingData.consultationFee && !billingData.total) {
+    if (
+      !billingData.consultationType &&
+      !billingData.consultationFee &&
+      !billingData.total
+    ) {
       console.warn('No billing data provided');
       this.addingBilling = false;
       return;
@@ -578,32 +706,42 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
     // Call API to save invoice
     console.log('Saving billing for appointment:', this.selectedAppointment);
-    
-    this.doctorService.completeAppointmentWithInvoice(this.selectedAppointment, billingData).subscribe({
-      next: (response) => {
-        console.log('Invoice saved successfully:', response);
-        this.addingBilling = false;
-        // Show success message
-        alert('Invoice saved successfully!');
-      },
-      error: (error) => {
-        console.error('Error saving invoice:', error);
-        // Show error message
-        alert('Failed to save invoice. Please try again.');
-        // Don't close the billing section on error to allow retry
-      }
-    });
+
+    this.doctorService
+      .completeAppointmentWithInvoice(this.selectedAppointment, billingData)
+      .subscribe({
+        next: (response) => {
+          console.log('Invoice saved successfully:', response);
+          this.addingBilling = false;
+          // Show success message
+          alert('Invoice saved successfully!');
+        },
+        error: (error) => {
+          console.error('Error saving invoice:', error);
+          // Show error message
+          alert('Failed to save invoice. Please try again.');
+          // Don't close the billing section on error to allow retry
+        },
+      });
   }
 
   cancelBilling() {
     this.addingBilling = false;
     // Optionally reset billing data
-    this.completionData.billing = { consultationType: '', consultationFee: '', labFee: '', medicineFee: '', total: '' };
+    this.completionData.billing = {
+      consultationType: '',
+      consultationFee: '',
+      labFee: '',
+      medicineFee: '',
+      total: '',
+    };
   }
 
   // EMR Navigation method
   openEMRModal(consultation: Consultation) {
-    this.router.navigate(['/doctor/emr'], { queryParams: { consultationId: consultation.id } });
+    this.router.navigate(['/doctor/emr'], {
+      queryParams: { consultationId: consultation.id },
+    });
   }
 
   closeEMRModal() {
@@ -640,37 +778,87 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
     let yPos = 80;
 
-    if (this.completionData.vitals.bloodPressure || this.completionData.vitals.heartRate || this.completionData.vitals.temperature || this.completionData.vitals.spO2) {
+    if (
+      this.completionData.vitals.bloodPressure ||
+      this.completionData.vitals.heartRate ||
+      this.completionData.vitals.temperature ||
+      this.completionData.vitals.spO2
+    ) {
       doc.setFont('helvetica', 'normal');
       doc.text(`Vitals:`, 20, yPos);
       doc.setFont('helvetica', 'bold');
-      if (this.completionData.vitals.bloodPressure) doc.text(`Blood Pressure: ${this.completionData.vitals.bloodPressure}`, 30, yPos + 10);
-      if (this.completionData.vitals.heartRate) doc.text(`Heart Rate: ${this.completionData.vitals.heartRate}`, 30, yPos + 20);
-      if (this.completionData.vitals.temperature) doc.text(`Temperature: ${this.completionData.vitals.temperature}`, 30, yPos + 30);
-      if (this.completionData.vitals.spO2) doc.text(`SpO2: ${this.completionData.vitals.spO2}`, 30, yPos + 40);
+      if (this.completionData.vitals.bloodPressure)
+        doc.text(
+          `Blood Pressure: ${this.completionData.vitals.bloodPressure}`,
+          30,
+          yPos + 10,
+        );
+      if (this.completionData.vitals.heartRate)
+        doc.text(
+          `Heart Rate: ${this.completionData.vitals.heartRate}`,
+          30,
+          yPos + 20,
+        );
+      if (this.completionData.vitals.temperature)
+        doc.text(
+          `Temperature: ${this.completionData.vitals.temperature}`,
+          30,
+          yPos + 30,
+        );
+      if (this.completionData.vitals.spO2)
+        doc.text(`SpO2: ${this.completionData.vitals.spO2}`, 30, yPos + 40);
       yPos += 60;
     }
 
-    if (this.completionData.medications.length > 0 && this.completionData.medications.some(m => m.drug)) {
+    if (
+      this.completionData.medications.length > 0 &&
+      this.completionData.medications.some((m) => m.drug)
+    ) {
       doc.setFont('helvetica', 'normal');
       doc.text(`Medications:`, 20, yPos);
       doc.setFont('helvetica', 'bold');
-      this.completionData.medications.filter(m => m.drug).forEach((med, i) => {
-        doc.text(`- ${med.drug} (${med.dose}, ${med.route}, ${med.frequency}, ${med.activity})`, 30, yPos + 10 + i * 10);
-      });
-      yPos += 20 + this.completionData.medications.filter(m => m.drug).length * 10;
+      this.completionData.medications
+        .filter((m) => m.drug)
+        .forEach((med, i) => {
+          doc.text(
+            `- ${med.drug} (${med.dose}, ${med.route}, ${med.frequency}, ${med.activity})`,
+            30,
+            yPos + 10 + i * 10,
+          );
+        });
+      yPos +=
+        20 + this.completionData.medications.filter((m) => m.drug).length * 10;
     }
 
-    if (this.completionData.billing.consultationFee || this.completionData.billing.labFee || this.completionData.billing.medicineFee) {
+    if (
+      this.completionData.billing.consultationFee ||
+      this.completionData.billing.labFee ||
+      this.completionData.billing.medicineFee
+    ) {
       doc.setFont('helvetica', 'normal');
       doc.text(`Billing:`, 20, yPos);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Type: ${this.completionData.billing.consultationType || 'N/A'}`, 30, yPos + 10);
-      doc.text(`Consultation Fee: $${this.completionData.billing.consultationFee}`, 30, yPos + 20);
-      doc.text(`Lab Fee: $${this.completionData.billing.labFee}`, 30, yPos + 30);
-      doc.text(`Medicine Fee: $${this.completionData.billing.medicineFee}`, 30, yPos + 40);
+      doc.text(
+        `Type: ${this.completionData.billing.consultationType || 'N/A'}`,
+        30,
+        yPos + 10,
+      );
+      doc.text(
+        `Consultation Fee: $${this.completionData.billing.consultationFee}`,
+        30,
+        yPos + 20,
+      );
+      doc.text(
+        `Lab Fee: $${this.completionData.billing.labFee}`,
+        30,
+        yPos + 30,
+      );
+      doc.text(
+        `Medicine Fee: $${this.completionData.billing.medicineFee}`,
+        30,
+        yPos + 40,
+      );
       doc.text(`Total: $${this.completionData.billing.total}`, 30, yPos + 50);
-      
     }
 
     doc.save(`${this.selectedAppointment.patientName}_Appointment_Report.pdf`);
@@ -678,10 +866,11 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
   downloadEMRReport() {
     // Implement download logic here
-    console.log('Downloading EMR Report for', this.selectedConsultation?.patientName);
+    console.log(
+      'Downloading EMR Report for',
+      this.selectedConsultation?.patientName,
+    );
   }
-
-  
 
   addLabResult(patientId: number, labResult: any) {
     // Implement add lab result logic
@@ -696,12 +885,15 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     this.newLabResult = { testName: '', value: '', unit: '', notes: '' };
   }
 
-
-
   calculateTotal() {
-    const consultation = parseFloat(this.completionData.billing.consultationFee) || 0;
+    const consultation =
+      parseFloat(this.completionData.billing.consultationFee) || 0;
     const lab = parseFloat(this.completionData.billing.labFee) || 0;
     const medicine = parseFloat(this.completionData.billing.medicineFee) || 0;
-    this.completionData.billing.total = (consultation + lab + medicine).toString();
+    this.completionData.billing.total = (
+      consultation +
+      lab +
+      medicine
+    ).toString();
   }
 }
