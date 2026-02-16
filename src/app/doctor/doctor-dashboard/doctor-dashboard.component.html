@@ -13,7 +13,7 @@
 
       <!-- Summary Cards -->
       <div class="row text-center mb-3">
-        <div class="col-md-4 mb-2">
+        <div class="col-md-3 mb-2">
           <div class="card shadow-sm">
             <div class="card-body">
               <h5>Total Patients</h5>
@@ -21,7 +21,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-4 mb-2">
+        <div class="col-md-3 mb-2">
           <div class="card shadow-sm">
             <div class="card-body">
               <h5>Today Patients</h5>
@@ -29,11 +29,12 @@
             </div>
           </div>
         </div>
-        <div class="col-md-4 mb-2">
+        
+        <div class="col-md-3 mb-2">
           <div class="card shadow-sm">
             <div class="card-body">
-              <h5>Appointments</h5>
-              <h3 class="text-warning">{{ isLoadingAppointments ? '...' : totalTodayAppointments }}</h3>
+              <h5>Total Appointments</h5>
+              <h3 class="text-info">{{ isLoadingTotalAppointments ? '...' : totalAppointments }}</h3>
             </div>
           </div>
         </div>

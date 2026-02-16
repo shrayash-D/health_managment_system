@@ -1238,6 +1238,66 @@ getTodayAppointments(): Observable<TodayAppointmentsResponse> {
   );
 }
 
+/**
+ * Get patients for a specific doctor ID
+ * API: GET /api/Doctor/patients/{doctorId}
+ * Used when doctor profile needs to be fetched first (e.g., on page refresh)
+ * @param doctorId - The doctor ID to fetch patients for
+ * @returns Observable<DoctorPatientsResponse> with list of patients and their appointment data
+ */
+getPatientsByDoctorId(doctorId: string): Observable<DoctorPatientsResponse> {
+  const endpoint = `${this.apiUrl}/Doctor/patients/${doctorId}`;
+  
+  return this.http.get<DoctorPatientsResponse>(endpoint).pipe(
+    tap((response) => {
+      console.log('Patients fetched from API:', response);
+      console.log(`Total patients: ${response.totalPatients}`);
+      if (response.patients && response.patients.length > 0) {
+        response.patients.forEach(patient => {
+          console.log(`Patient: ${patient.user?.name}, Appointments: ${patient.appointments?.length || 0}`);
+        });
+      }
+    }),
+    catchError((error) => {
+      console.error('Error fetching patients:', error);
+      if (error.error) {
+        console.error('Error response:', error.error);
+      }
+      throw error;
+    })
+  );
+}
+
+/**
+ * Get all appointments for a specific doctor
+ * API: GET /api/Doctor/appointments/{doctorId}
+ * Returns ALL appointments (not just today) for filtering by date in the component
+ * @param doctorId - The doctor ID to fetch appointments for
+ * @returns Observable<AppointmentApiResponse> with list of all appointments
+ */
+getAllAppointmentsByDoctorId(doctorId: string): Observable<AppointmentApiResponse> {
+  const endpoint = `${this.apiUrl}/Doctor/appointments/${doctorId}`;
+  
+  return this.http.get<AppointmentApiResponse>(endpoint).pipe(
+    tap((response) => {
+      console.log(`Appointments fetched from API for doctor ${doctorId}:`, response);
+      console.log(`Total appointments: ${response.totalAppointments}`);
+      if (response.appointments && response.appointments.length > 0) {
+        response.appointments.forEach(appointment => {
+          console.log(`Appointment: ${appointment.patientName} on ${appointment.appointmentDate} at ${appointment.startTime}`);
+        });
+      }
+    }),
+    catchError((error) => {
+      console.error('Error fetching appointments:', error);
+      if (error.error) {
+        console.error('Error response:', error.error);
+      }
+      throw error;
+    })
+  );
+}
+
 
 
 

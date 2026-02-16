@@ -91,9 +91,6 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     // Load appointments from API first
     this.loadAppointmentsFromAPI();
 
-    // Load slots from API
-    this.loadSlotsFromAPI();
-
     this.doctorService.appointments$
       .pipe(takeUntil(this.destroy$))
       .subscribe((appointments) => {
@@ -124,35 +121,40 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   }
 
   private loadAppointmentsFromAPI(): void {
-    // Try to get doctor ID from multiple sources
-    const currentDoctor = this.doctorService.getDoctor();
-    const currentUser = this.authService.currentUserValue;
-
-    console.log('Current doctor data:', currentDoctor);
-    console.log('Current user data:', currentUser);
-
-    let doctorId = null;
-
-    // Try to get doctor ID from doctor service first
-    if (currentDoctor && currentDoctor.id) {
-      doctorId = currentDoctor.id;
-    }
-    // Fallback to user ID from auth service (assuming user ID = doctor ID)
-    else if (currentUser && currentUser.id) {
-      doctorId = currentUser.id;
-    }
-
-    if (doctorId) {
-      console.log('Loading appointments for doctor ID:', doctorId);
-      this.doctorService.loadAppointmentsFromApi(doctorId);
+    // Get the real doctor ID from localStorage first
+    const storedUser = localStorage.getItem('currentUser');
+    
+    if (storedUser) {
+      try {
+        const currentUser = JSON.parse(storedUser);
+        console.log('Current user from localStorage:', currentUser);
+        
+        if (currentUser && currentUser.id) {
+          // First fetch doctor profile to get the real doctorId
+          this.doctorService.getDoctorById(currentUser.id).subscribe({
+            next: (doctorResponse) => {
+              console.log('Doctor response for appointments:', doctorResponse);
+              
+              if (doctorResponse && doctorResponse.id) {
+                // Now load appointments using the real doctor ID
+                console.log('Loading appointments for real doctor ID:', doctorResponse.id);
+                this.doctorService.loadAppointmentsFromApi(doctorResponse.id);
+              } else {
+                console.warn('No doctor ID in response');
+              }
+            },
+            error: (error) => {
+              console.error('Error fetching doctor profile:', error);
+            }
+          });
+        } else {
+          console.warn('No user ID in localStorage');
+        }
+      } catch (error) {
+        console.error('Error parsing currentUser from localStorage:', error);
+      }
     } else {
-      console.log('No doctor ID available, keeping mock data');
-      console.log(
-        'Available data - Doctor:',
-        currentDoctor,
-        'User:',
-        currentUser,
-      );
+      console.warn('No currentUser in localStorage');
     }
   }
 
@@ -160,37 +162,6 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   getPatientName(appointment: Appointment): string {
     // Return the patient identifier (already set by the service based on patient ID)
     return appointment.patientName || 'Unknown Patient';
-  }
-
-  private loadSlotsFromAPI(): void {
-    // Try to fetch doctor slots from API
-    const currentUser = this.authService.currentUserValue;
-
-    if (currentUser && currentUser.id) {
-      console.log('Loading slots for doctor ID:', currentUser.id);
-
-      this.doctorService
-        .fetchDoctorSlotsFromAPI()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (slots) => {
-            console.log('Slots loaded from API:', slots);
-            // Slots are automatically updated via the service's convertAndUpdateSlots method
-          },
-          error: (error) => {
-            console.warn(
-              'Could not load slots from API, using mock data:',
-              error,
-            );
-            // Silently fail and keep using mock data
-          },
-        });
-
-      // Also fetch available time-based slots for today
-      this.fetchAvailableSlotsForToday();
-    } else {
-      console.log('No user ID available, using mock data for slots');
-    }
   }
 
   /**
@@ -284,9 +255,6 @@ export class AppointmentComponent implements OnInit, OnDestroy {
           // Reset form
           this.slotStartDate = '';
           this.slotEndDate = '';
-
-          // Reload slots from API
-          this.loadSlotsFromAPI();
 
           // Show success message
           alert(`Appointment slots created successfully! ✅`);
