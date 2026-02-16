@@ -1,35 +1,35 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PatientService } from '../../services/patient.service';
 import { AdminService } from '../../services/admin.service';
-import { IdFormatterService } from '../../services/id-formatter.service';
 import { Patient } from '../../models/patient.interface';
 import { Observable } from 'rxjs';
+import { LoadingComponent } from '../shared/loading/loading.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-patient-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingComponent],
   templateUrl: './patient-management.component.html',
   styleUrl: './patient-management.component.css',
 })
 export class PatientManagementComponent implements OnInit {
   patients$!: Observable<Patient[]>;
   searchTerm: string = '';
+  isLoading: boolean = false;
 
-  constructor(
-    private patientService: PatientService,
-    private adminService: AdminService,
-    public idFormatter: IdFormatterService,
-  ) {}
+  constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
     this.loadPatients();
   }
 
   loadPatients(): void {
-    this.patients$ = this.patientService.getAllPatientsAdmin();
+    this.isLoading = true;
+    this.patients$ = this.adminService
+      .getAllPatients()
+      .pipe(finalize(() => (this.isLoading = false)));
   }
 
   resetPassword(patient: Patient): void {
@@ -56,7 +56,7 @@ export class PatientManagementComponent implements OnInit {
     if (confirm('Are you sure you want to delete this patient?')) {
       const userId = patient.userId;
       if (userId) {
-        this.patientService.deletePatient(userId).subscribe({
+        this.adminService.deletePatient(userId).subscribe({
           next: () => {
             alert('Patient deleted successfully');
             this.loadPatients();

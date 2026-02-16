@@ -11,13 +11,15 @@ import { AdminService } from '../../services/admin.service';
 import { DashboardMetrics } from '../../models/dashboard-metrics.interface';
 import { Observable } from 'rxjs';
 import { Chart, registerables } from 'chart.js';
+import { LoadingComponent } from '../shared/loading/loading.component';
+import { finalize } from 'rxjs/operators';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LoadingComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css',
 })
@@ -25,6 +27,7 @@ export class AdminDashboardComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   metrics$!: Observable<DashboardMetrics>;
+  isLoading: boolean = false;
 
   @ViewChild('revenueChart') revenueChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('appointmentStatusChart')
@@ -41,7 +44,10 @@ export class AdminDashboardComponent
   constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
-    this.metrics$ = this.adminService.getDashboardMetrics();
+    this.isLoading = true;
+    this.metrics$ = this.adminService
+      .getDashboardMetrics()
+      .pipe(finalize(() => (this.isLoading = false)));
   }
 
   ngAfterViewInit(): void {

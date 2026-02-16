@@ -1,17 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BillingService } from '../../services/billing.service';
-import { PatientService } from '../../services/patient.service';
-import { IdFormatterService } from '../../services/id-formatter.service';
+import { AdminService } from '../../services/admin.service';
 import { Invoice, PaymentStatus } from '../../models/invoice.interface';
 import { Patient } from '../../models/patient.interface';
 import { Observable, combineLatest, map, take } from 'rxjs';
+import { LoadingComponent } from '../shared/loading/loading.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-billing-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingComponent],
   templateUrl: './billing-management.component.html',
   styleUrl: './billing-management.component.css',
 })
@@ -23,22 +23,20 @@ export class BillingManagementComponent implements OnInit {
   statusFilter: PaymentStatus | 'ALL' = 'ALL';
   showViewModal: boolean = false;
   selectedInvoice: Invoice | null = null;
+  isLoading: boolean = false;
 
-  constructor(
-    private billingService: BillingService,
-    private patientService: PatientService,
-    public idFormatter: IdFormatterService,
-  ) {}
+  constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
     this.loadData();
   }
 
   loadData(): void {
-    this.patients$ = this.patientService.getAllPatientsAdmin();
+    this.isLoading = true;
+    this.patients$ = this.adminService.getAllPatients();
 
     this.invoices$ = combineLatest([
-      this.billingService.getAllInvoices(),
+      this.adminService.getAllInvoices(),
       this.patients$,
     ]).pipe(
       map(([invoices, patients]) => {
@@ -53,6 +51,7 @@ export class BillingManagementComponent implements OnInit {
           } as typeof inv;
         });
       }),
+      finalize(() => (this.isLoading = false)),
     );
   }
 
@@ -72,7 +71,7 @@ export class BillingManagementComponent implements OnInit {
       this.invoices$.pipe(take(1)).subscribe((invoices) => {
         const invoice = invoices.find((inv) => inv.id === id);
         if (invoice?.apiId) {
-          this.billingService.markAsPaid(invoice.apiId).subscribe({
+          this.adminService.markInvoiceAsPaid(invoice.apiId).subscribe({
             next: () => {
               alert('Invoice marked as paid successfully!');
               this.loadData();

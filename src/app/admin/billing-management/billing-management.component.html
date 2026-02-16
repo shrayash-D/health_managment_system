@@ -1,3 +1,5 @@
+<app-loading *ngIf="isLoading"></app-loading>
+
 <div class="billing-management">
   <!-- Header -->
   <div class="page-header">
@@ -24,7 +26,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Invoice #</th>
+          <th>S.No</th>
           <th>Patient</th>
           <th>Date</th>
           <th>Amount</th>
@@ -33,9 +35,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let invoice of getFilteredInvoices(invoices)">
+        <tr
+          *ngFor="let invoice of getFilteredInvoices(invoices); let i = index"
+        >
           <td>
-            <strong>{{ invoice.invoiceNumber }}</strong>
+            <strong>{{ i + 1 }}</strong>
           </td>
           <td>{{ invoice.patientName }}</td>
           <td>{{ invoice.date }}</td>

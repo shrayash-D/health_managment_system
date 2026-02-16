@@ -1,3 +1,5 @@
+<app-loading *ngIf="isLoading"></app-loading>
+
 <div class="admin-dashboard">
   <!-- Metrics Cards -->
   <div class="metrics-grid" *ngIf="metrics$ | async as metrics">
