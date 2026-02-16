@@ -45,6 +45,8 @@ export class DoctorDashboardComponent implements OnInit {
   currentMonth: string = '';
   currentYear: number = 0;
   days: number[] = [];
+  dayHeaders: string[] = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  firstDayOfMonth: number = 0;
 
   // Current month index for navigation
   currentMonthIndex: number = new Date().getMonth();
@@ -338,7 +340,8 @@ export class DoctorDashboardComponent implements OnInit {
             endTime: nextApt.endTime,
             appointmentDate: nextApt.appointmentDate,
             appointmentStatus: nextApt.status === 1 ? 'Completed' : 'Scheduled',
-            time: `${nextApt.startTime.substring(0, 5)} - ${nextApt.endTime.substring(0, 5)}`
+            time: `${nextApt.startTime.substring(0, 5)} - ${nextApt.endTime.substring(0, 5)}`,
+            slotId: nextApt.slotId
           };
           console.log('Next patient set:', this.nextPatient);
         } else {
@@ -408,6 +411,9 @@ export class DoctorDashboardComponent implements OnInit {
       .toLocaleString('default', { month: 'long' });
 
     const daysInMonth = new Date(this.currentYear, this.currentMonthIndex + 1, 0).getDate();
+    this.firstDayOfMonth = new Date(this.currentYear, this.currentMonthIndex, 1).getDay();
+    // Convert to Monday-first (0 = Monday)
+    this.firstDayOfMonth = this.firstDayOfMonth === 0 ? 6 : this.firstDayOfMonth - 1;
     this.days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   }
 
@@ -434,6 +440,9 @@ export class DoctorDashboardComponent implements OnInit {
       .toLocaleString('default', { month: 'long' });
 
     const daysInMonth = new Date(this.currentYear, this.currentMonthIndex + 1, 0).getDate();
+    this.firstDayOfMonth = new Date(this.currentYear, this.currentMonthIndex, 1).getDay();
+    // Convert to Monday-first (0 = Monday)
+    this.firstDayOfMonth = this.firstDayOfMonth === 0 ? 6 : this.firstDayOfMonth - 1;
     this.days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   }
 

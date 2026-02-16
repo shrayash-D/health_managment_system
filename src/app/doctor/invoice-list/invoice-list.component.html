@@ -21,14 +21,23 @@
         <!-- Invoice Table -->
         <section class="card">
           <div class="table-scroll">
-           
+            <!-- Loading State -->
+            <div *ngIf="isLoadingInvoices" class="text-center p-4">
+              <p class="text-muted">Loading invoices...</p>
+            </div>
 
-            <table>
+            <!-- No Invoices State -->
+            <div *ngIf="!isLoadingInvoices && invoices.length === 0" class="text-center p-4">
+              <p class="text-muted">No invoices found</p>
+            </div>
+
+            <!-- Invoices Table -->
+            <table *ngIf="!isLoadingInvoices && invoices.length > 0">
               <thead>
                 <tr>
                   <th>Invoice ID</th>
                   <th>Patient Name</th>
-                  <th>Amount</th>
+                  <th>Total Amount</th>
                   <th>Status</th>
                   <th>Date</th>
                   <th>Actions</th>
@@ -36,27 +45,22 @@
               </thead>
               <tbody>
                 <tr *ngFor="let invoice of filteredInvoices">
-                  <td>{{ invoice.id }}</td>
-                  <td>{{ invoice.patientName }}</td>
-                  <td>{{ invoice.amount.toFixed(2) |currency:'INR'}}</td>
+                  <td>{{ invoice.invoiceHandle }}</td>
+                  <td>{{ invoice.patientName || 'N/A' }}</td>
+                  <td>{{ invoice.total | currency:'INR'}}</td>
                   <td>
                     <span
                       class="chip"
                       [ngClass]="{
-                        paid: invoice.paymentStatus === PaymentStatus.Paid,
-                        unpaid: invoice.paymentStatus !== PaymentStatus.Paid
+                        paid: invoice.status === 1,
+                        unpaid: invoice.status === 0
                       }"
                     >
-                      {{ invoice.paymentStatus }}
+                      {{ invoice.status === 0 ? 'UNPAID' : 'PAID' }}
                     </span>
                   </td>
                   <td>
-                    <ng-container *ngIf="invoice.paymentStatus === PaymentStatus.Paid; else dueBlock">
-                      {{ invoice.paidDate }}
-                    </ng-container>
-                    <ng-template #dueBlock>
-                      {{ invoice.dueDate }}
-                    </ng-template>
+                    {{ invoice.issuedDate | date: 'MMM dd, yyyy' }}
                   </td>
                   <td>
                     <button class="btn btn-primary" (click)="viewDetails(invoice)">View Details</button>
@@ -79,48 +83,26 @@
       <div class="profile-details">
         <!-- Basic Info -->
         <div class="form-group">
-          <label>Invoice ID:</label>
-          <p>{{ selectedInvoice.id }}</p>
-        </div>
-        <div class="form-group">
-          <label>Patient ID:</label>
-          <p>{{ selectedInvoice.patientId }}</p>
+          <label>Invoice Number:</label>
+          <p>{{ selectedInvoice.invoiceHandle }}</p>
         </div>
         <div class="form-group">
           <label>Patient Name:</label>
-          <p>{{ selectedInvoice.patientName }}</p>
+          <p>{{ selectedInvoice.patientName || 'N/A' }}</p>
         </div>
         <div class="form-group">
-          <label>Amount:</label>
-          <p>{{ selectedInvoice.amount.toFixed(2) |currency:'INR'}}</p>
+          <label>Total Amount:</label>
+          <p>{{ selectedInvoice.total | currency:'INR'}}</p>
         </div>
         <div class="form-group">
           <label>Status:</label>
-          <p>{{ selectedInvoice.paymentStatus }}</p>
+          <p>{{ selectedInvoice.status === 0 ? 'UNPAID' : 'PAID' }}</p>
         </div>
 
         <!-- Dates -->
-        <div class="form-group" *ngIf="selectedInvoice.paymentStatus === PaymentStatus.Paid">
-          <label>Paid Date:</label>
-          <p>{{ selectedInvoice.paidDate }}</p>
-        </div>
-        <div class="form-group" *ngIf="selectedInvoice.paymentStatus !== PaymentStatus.Paid">
+        <div class="form-group">
           <label>Issue Date:</label>
-          <p>{{ selectedInvoice.issueDate }}</p>
-        </div>
-        <div class="form-group" *ngIf="selectedInvoice.paymentStatus !== PaymentStatus.Paid">
-          <label>Due Date:</label>
-          <p>{{ selectedInvoice.dueDate }}</p>
-        </div>
-
-        <!-- Payment Info -->
-        <div class="form-group">
-          <label>Payment Method:</label>
-          <p>{{ selectedInvoice.paymentMethod }}</p>
-        </div>
-        <div class="form-group">
-          <label>Transaction ID:</label>
-          <p>{{ selectedInvoice.transactionId }}</p>
+          <p>{{ selectedInvoice.issuedDate | date: 'MMM dd, yyyy HH:mm' }}</p>
         </div>
 
         <!-- Consultation -->
@@ -131,19 +113,23 @@
 
         <!-- Breakdown of Charges -->
         <div class="form-group">
-          <label>Charges:</label>
+          <label>Charges Breakdown:</label>
           <ul>
-            <li>Consultation Fee: {{ selectedInvoice.consultationFee|currency:'INR'}}</li>
-            <li>Lab Tests: {{ selectedInvoice.labFee|currency:'INR'}}</li>
-            <li>Prescriptions / Medicines: ₹{{ selectedInvoice.medicineFee }}</li>
-            <li>Other Charges: {{ selectedInvoice.otherCharges |currency:'INR'}}</li>
+            <li>Consultation Fee: {{ selectedInvoice.consulationFee | currency:'INR'}}</li>
+            <li>Lab Tests: {{ selectedInvoice.labFee | currency:'INR'}}</li>
+            <li>Medicines: {{ selectedInvoice.medicineFee | currency:'INR'}}</li>
           </ul>
         </div>
 
-        <!-- Subtotal -->
+        <!-- Total -->
         <div class="form-group">
-          <label>Subtotal:</label>
-          <p>{{ selectedInvoice.subtotal |currency:'INR'}}</p>
+          <label><strong>Total:</strong></label>
+          <p><strong>{{ selectedInvoice.total | currency:'INR'}}</strong></p>
+        </div>
+
+        <div class="form-group" *ngIf="selectedInvoice.outstanding !== null">
+          <label>Outstanding Amount:</label>
+          <p>{{ selectedInvoice.outstanding | currency:'INR'}}</p>
         </div>
       </div>
 

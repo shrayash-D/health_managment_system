@@ -311,6 +311,35 @@ export interface InvoiceResponse {
   total: number;
 }
 
+/**
+ * API Response for GET /api/Doctor/invoices/{doctorId}
+ * Returns all invoices for a specific doctor
+ */
+export interface DoctorInvoicesResponse {
+  doctorId: string;
+  totalInvoices: number;
+  invoices: DoctorInvoiceItem[];
+}
+
+/**
+ * Individual invoice item in the doctor invoices response
+ */
+export interface DoctorInvoiceItem {
+  id: string;
+  appointmentId: string;
+  patientId: string;
+  issuedDate: string;
+  status: number; // 0 = Unpaid, 1 = Paid
+  consultationType: string;
+  consulationFee: number;
+  labFee: number;
+  medicineFee: number;
+  total: number;
+  outstanding: number | null;
+  patientName?: string; // Optional - populated from appointments data
+  invoiceHandle?: string; // Frontend-friendly invoice number/handle (e.g., INV-001, INV-002)
+}
+
 // 🔹 Appointment Status API Interfaces
 export interface AppointmentStatusRequest {
   appointmentId: string;
@@ -1290,6 +1319,36 @@ getAllAppointmentsByDoctorId(doctorId: string): Observable<AppointmentApiRespons
     }),
     catchError((error) => {
       console.error('Error fetching appointments:', error);
+      if (error.error) {
+        console.error('Error response:', error.error);
+      }
+      throw error;
+    })
+  );
+}
+
+/**
+ * Get all invoices for a specific doctor
+ * API: GET /api/Doctor/invoices/{doctorId}
+ * Returns all invoices created for appointments of the doctor
+ * @param doctorId - The doctor ID to fetch invoices for
+ * @returns Observable<DoctorInvoicesResponse> with list of invoices and total count
+ */
+getInvoicesByDoctorId(doctorId: string): Observable<DoctorInvoicesResponse> {
+  const endpoint = `${this.apiUrl}/Doctor/invoices/${doctorId}`;
+  
+  return this.http.get<DoctorInvoicesResponse>(endpoint).pipe(
+    tap((response) => {
+      console.log(`Invoices fetched from API for doctor ${doctorId}:`, response);
+      console.log(`Total invoices: ${response.totalInvoices}`);
+      if (response.invoices && response.invoices.length > 0) {
+        response.invoices.forEach(invoice => {
+          console.log(`Invoice: ID ${invoice.id}, Amount: ${invoice.total}, Status: ${invoice.status === 0 ? 'Unpaid' : 'Paid'}`);
+        });
+      }
+    }),
+    catchError((error) => {
+      console.error('Error fetching invoices:', error);
       if (error.error) {
         console.error('Error response:', error.error);
       }

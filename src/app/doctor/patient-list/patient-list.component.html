@@ -23,7 +23,6 @@
         </div>
         <div class="patient-info">
           <h3>{{ patient.user?.name || 'Unknown' }}</h3>
-          <p class="patient-id">ID: {{ patient.id }}</p>
         </div>
       </div>
       <div class="card-body">
@@ -33,7 +32,7 @@
         </div>
         <div class="info-row">
           <i class="fas fa-birthday-cake"></i>
-          <span>DOB: {{ patient.user?.dob || 'N/A' }}</span>
+          <span>DOB: {{ formatDate(patient.user?.dob || '') }}</span>
         </div>
         <div class="info-row" *ngIf="patient.bloodGroup">
           <i class="fas fa-tint"></i>
@@ -41,7 +40,23 @@
         </div>
         <div class="info-row">
           <i class="fas fa-calendar-check"></i>
-          <span>Appointments: {{ patient.appointments?.length || 0 }}</span>
+          <span class="appointments-section">
+            <span class="appointments-status">Appointment:
+              <span class="status-item scheduled" *ngIf="getAppointmentCounts(patient.appointments).scheduled > 0">
+                Scheduled: {{ getAppointmentCounts(patient.appointments).scheduled }}
+              </span>
+              <span class="status-item completed" *ngIf="getAppointmentCounts(patient.appointments).completed > 0">
+                Completed: {{ getAppointmentCounts(patient.appointments).completed }}
+              </span>
+              <span class="status-item cancelled" *ngIf="getAppointmentCounts(patient.appointments).cancelled > 0">
+                Cancelled: {{ getAppointmentCounts(patient.appointments).cancelled }}
+              </span>
+              
+            </span>
+            <span class="total-appointments" *ngIf="patient.appointments && patient.appointments.length > 0">
+              (Total: {{ patient.appointments.length }})
+            </span>
+          </span>
         </div>
       </div>
     </div>
@@ -109,6 +124,9 @@
           <div class="appointment-card" *ngFor="let appointment of selectedPatient.appointments; let i = index">
             <div class="appointment-header">
               <span class="appointment-date">{{ formatDate(appointment.appointmentDate) }}</span>
+              <span class="appointment-status" [ngClass]="getStatusClass(appointment.status)">
+                {{ getAppointmentStatus(appointment.status) }}
+              </span>
             </div>
 
             <div class="appointment-info">

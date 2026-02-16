@@ -159,6 +159,67 @@ export class PatientListComponent implements OnInit {
     }
   }
 
+  /**
+   * Format appointment status
+   * 0 = Scheduled, 1 = Completed, 2 = Cancelled
+   */
+  getAppointmentStatus(status: number): string {
+    switch (status) {
+      case 0:
+        return 'Scheduled';
+      case 1:
+        return 'Completed';
+      case 2:
+        return 'Cancelled';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  /**
+   * Get status badge class for appointment
+   */
+  getStatusClass(status: number): string {
+    switch (status) {
+      case 0:
+        return 'status-scheduled';
+      case 1:
+        return 'status-completed';
+      case 2:
+        return 'status-cancelled';
+      default:
+        return 'status-unknown';
+    }
+  }
+
+  /**
+   * Get appointment status counts for a patient
+   * Returns { scheduled: number, completed: number, cancelled: number }
+   */
+  getAppointmentCounts(appointments: AppointmentDetail[] | undefined) {
+    const counts = {
+      scheduled: 0,
+      completed: 0,
+      cancelled: 0
+    };
+
+    if (!appointments || appointments.length === 0) {
+      return counts;
+    }
+
+    appointments.forEach(apt => {
+      if (apt.status === 0) {
+        counts.scheduled++;
+      } else if (apt.status === 1) {
+        counts.completed++;
+      } else if (apt.status === 2) {
+        counts.cancelled++;
+      }
+    });
+
+    return counts;
+  }
+
   downloadHistory(): void {
     if (!this.selectedPatient) return;
     const patient = this.selectedPatient;

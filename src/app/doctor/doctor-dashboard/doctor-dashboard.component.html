@@ -45,7 +45,7 @@
        
 
         <!-- Today Appointments -->
-        <div class="col-md-4">
+        <div class="col-md-4 mb-2">
           <div class="card h-100">
             <div class="card-header bg-light">Today Appointments ({{ totalTodayAppointments }})</div>
             <ul class="list-group list-group-flush">
@@ -57,8 +57,11 @@
               </li>
               <li *ngFor="let appt of todayAppointments"
                   class="list-group-item d-flex justify-content-between align-items-center">
-                {{ appt.name }} – {{ appt.diagnosis }}
-                <span class="badge bg-info">{{ appt.status }}</span>
+                <div>
+                  <div class="fw-bold">{{ appt.name }}</div>
+                  <div class="text-muted small">Reason : {{ appt.diagnosis }}</div>
+                </div>
+                <span class="time-slot-badge">{{ appt.startTime | slice:0:5 }}-{{ appt.endTime | slice:0:5 }}</span>
               </li>
             </ul>
           </div>
@@ -75,12 +78,24 @@
               <div *ngIf="!isLoadingNextAppointment && !nextPatient" class="text-center text-muted">
                 <p>No upcoming appointments</p>
               </div>
-              <div *ngIf="!isLoadingNextAppointment && nextPatient">
-                <h5>{{ nextPatient.name }}</h5>
-                <p><strong>Reason:</strong> {{ nextPatient.diagnosis }}</p>
-                <p><strong>Appointment Date:</strong> {{ nextPatient.appointmentDate | date: 'MMM dd, yyyy' }}</p>
-                <p><strong>Time:</strong> {{ nextPatient.time }}</p>
-                <p><strong>Status:</strong> <span class="badge bg-primary">{{ nextPatient.appointmentStatus }}</span></p>
+              <div *ngIf="!isLoadingNextAppointment && nextPatient" class="next-patient-content">
+                <h5 class="mb-3">{{ nextPatient.name }}</h5>
+                <div class="patient-info-row">
+                  <strong>Reason:</strong>
+                  <span>{{ nextPatient.diagnosis }}</span>
+                </div>
+                <div class="patient-info-row">
+                  <strong>Date:</strong>
+                  <span>{{ nextPatient.appointmentDate | date: 'MMM dd, yyyy' }}</span>
+                </div>
+                <div class="patient-info-row">
+                  <strong>Time:</strong>
+                  <span class="time">{{ nextPatient.time }}</span>
+                </div>
+                <div class="patient-info-row">
+                  <strong>Status:</strong>
+                  <span class="badge bg-primary">{{ nextPatient.appointmentStatus }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -89,24 +104,37 @@
 
       <!-- Calendar -->
    
-        <div class="col-md-4">
+        <div class="col-md-4 ">
           <div class="card h-100">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <button class="btn btn-sm btn-outline-secondary"
                       (click)="goToPreviousMonth()"
                       aria-label="Previous Month">&lt;</button>
-              <span>{{ currentMonth }} {{ currentYear }}</span>
+              <span class="calendar-title">{{ currentMonth }} {{ currentYear }}</span>
               <button class="btn btn-sm btn-outline-secondary"
                       (click)="goToNextMonth()"
                       aria-label="Next Month">&gt;</button>
             </div>
-            <div class="card-body text-center">
-              <div class="calendar-grid">
-                <span class="badge"
-                      *ngFor="let day of days"
-                      [class.bg-primary]="isToday(day)">
-                  {{ day }}
-                </span>
+            <div class="card-body">
+              <div class="calendar-container">
+                <!-- Day Headers -->
+                <div class="calendar-weekdays">
+                  <div class="weekday-header" *ngFor="let dayHeader of dayHeaders">
+                    {{ dayHeader }}
+                  </div>
+                </div>
+                
+                <!-- Empty cells for days before month starts -->
+                <div class="calendar-grid">
+                  <div class="calendar-empty" *ngFor="let _ of [].constructor(firstDayOfMonth)"></div>
+                  
+                  <!-- Calendar Days -->
+                  <div class="calendar-day" 
+                       *ngFor="let day of days"
+                       [class.today]="isToday(day)">
+                    <span class="day-badge" [class.active]="isToday(day)">{{ day }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

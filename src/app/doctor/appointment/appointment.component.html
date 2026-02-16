@@ -2,7 +2,7 @@
   <div class="container-fluid p-2">
     <!-- Upcoming Appointments -->
     <section class="table-scroll card">
-      <h2 class="form-title">Upcoming Appointments</h2>
+      <h2 class="form-title">Appointments</h2>
 
       <!-- Filters -->
       <div class="filters">
@@ -47,7 +47,9 @@
                 {{ appointment.apiData?.reason || "General Consultation" }}
               </td>
               <td data-label="Date">{{ appointment.date }}</td>
-              <td data-label="Time">{{ appointment.time }}</td>
+              <td data-label="Time">
+                <span class="slot-badge">{{ appointment.time }}</span>
+              </td>
               <td data-label="Status">
                 <span [ngClass]="['status', appointment.status]">
                   {{ appointment.status }}

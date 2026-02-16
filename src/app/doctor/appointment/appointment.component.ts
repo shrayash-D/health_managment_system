@@ -426,6 +426,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
             alert(
               'Appointment completed successfully! Status updated to COMPLETED ✅',
             );
+            this.loadAppointmentsFromAPI();
           }
         },
         error: (error) => {
@@ -510,36 +511,62 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     this.doctorService.cancelAppointment(id);
   }
 
-  startAddDiagnosis() {
+  private openSection(section: string) {
+    this.addingDiagnosis = false;
     this.addingVitals = false;
     this.addingMedications = false;
     this.addingBilling = false;
-    this.addingDiagnosis = true;
-    this.activeSection = 'diagnosis';
+    this.activeSection = section;
+
+    if (section === 'diagnosis') {
+      this.addingDiagnosis = true;
+    } else if (section === 'vitals') {
+      this.addingVitals = true;
+    } else if (section === 'medications') {
+      this.addingMedications = true;
+    } else if (section === 'billing') {
+      this.addingBilling = true;
+    }
+  }
+
+  private openNextSection(currentSection: string) {
+    if (currentSection === 'diagnosis') {
+      this.openSection('vitals');
+      return;
+    }
+
+    if (currentSection === 'vitals') {
+      this.openSection('medications');
+      return;
+    }
+
+    if (currentSection === 'medications') {
+      this.openSection('billing');
+      return;
+    }
+
+    this.openSection('');
+  }
+
+  startAddDiagnosis() {
+    this.openSection('diagnosis');
   }
 
   startAddVitals() {
-    this.addingVitals = true;
-    this.addingMedications = false;
-    this.addingBilling = false;
-    this.addingDiagnosis = false;
-    this.activeSection = 'vitals';
+    this.openSection('vitals');
   }
 
   startAddMedications() {
-    this.addingVitals = false;
-    this.addingMedications = true;
-    this.addingBilling = false;
-    this.addingDiagnosis = false;
-    this.activeSection = 'medications';
+    this.openSection('medications');
   }
 
   startAddBilling() {
-    this.addingVitals = false;
-    this.addingMedications = false;
-    this.addingBilling = true;
+    this.openSection('billing');
+  }
+
+  saveDiagnosis() {
     this.addingDiagnosis = false;
-    this.activeSection = 'billing';
+    this.openNextSection('diagnosis');
   }
 
   saveVitals() {
@@ -571,7 +598,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           console.log('Vitals saved successfully:', response);
-          this.addingVitals = false;
+          this.openNextSection('vitals');
           // Show success message (you can add a toast notification here)
           alert('Vitals saved successfully!');
         },
@@ -628,7 +655,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (responses) => {
           console.log('Medications saved successfully:', responses);
-          this.addingMedications = false;
+          this.openNextSection('medications');
           // Show success message
           alert(`${responses.length} medication(s) saved successfully!`);
         },
@@ -680,7 +707,7 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           console.log('Invoice saved successfully:', response);
-          this.addingBilling = false;
+          this.openNextSection('billing');
           // Show success message
           alert('Invoice saved successfully!');
         },
@@ -723,10 +750,15 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
     const doc = new jsPDF();
 
+    const pageWidth = doc.internal.pageSize.getWidth();
+    doc.setFillColor(10, 91, 143);
+    doc.rect(0, 0, pageWidth, 28, 'F');
+    doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('Appointment Completion Report', 20, 20);
+    doc.text('Appointment Completion Report', 20, 18);
 
+    doc.setTextColor(30, 41, 59);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
 
@@ -744,7 +776,18 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     doc.setFont('helvetica', 'bold');
     doc.text(`${this.completionData.diagnosis || 'Not provided'}`, 60, 60);
 
-    let yPos = 80;
+    let yPos = 78;
+
+    const drawSectionTitle = (title: string, y: number) => {
+      doc.setTextColor(10, 91, 143);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text(title, 20, y);
+      doc.setDrawColor(214, 230, 245);
+      doc.line(20, y + 2, pageWidth - 20, y + 2);
+      doc.setTextColor(30, 41, 59);
+      doc.setFont('helvetica', 'normal');
+    };
 
     if (
       this.completionData.vitals.bloodPressure ||
@@ -752,9 +795,8 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       this.completionData.vitals.temperature ||
       this.completionData.vitals.spO2
     ) {
+      drawSectionTitle('Vitals', yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Vitals:`, 20, yPos);
-      doc.setFont('helvetica', 'bold');
       if (this.completionData.vitals.bloodPressure)
         doc.text(
           `Blood Pressure: ${this.completionData.vitals.bloodPressure}`,
@@ -775,16 +817,15 @@ export class AppointmentComponent implements OnInit, OnDestroy {
         );
       if (this.completionData.vitals.spO2)
         doc.text(`SpO2: ${this.completionData.vitals.spO2}`, 30, yPos + 40);
-      yPos += 60;
+      yPos += 62;
     }
 
     if (
       this.completionData.medications.length > 0 &&
       this.completionData.medications.some((m) => m.drug)
     ) {
+      drawSectionTitle('Medications', yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Medications:`, 20, yPos);
-      doc.setFont('helvetica', 'bold');
       this.completionData.medications
         .filter((m) => m.drug)
         .forEach((med, i) => {
@@ -803,9 +844,8 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       this.completionData.billing.labFee ||
       this.completionData.billing.medicineFee
     ) {
+      drawSectionTitle('Billing', yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Billing:`, 20, yPos);
-      doc.setFont('helvetica', 'bold');
       doc.text(
         `Type: ${this.completionData.billing.consultationType || 'N/A'}`,
         30,
