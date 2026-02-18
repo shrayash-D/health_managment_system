@@ -100,28 +100,30 @@
           </div>
         </div>
 
-        <ul class="list" *ngIf="appointments$ | async as appointments">
-          <li class="list-row" *ngFor="let appt of appointments">
-            <div class="row-left">
-              <strong>{{ appt.date | date: "MMM d, y • hh:mm a" }}</strong>
-              <span>{{ appt.reason }}</span>
-            </div>
-            <span
-              class="badge"
-              [ngClass]="{
-                'badge-scheduled': appt.status === 'Scheduled',
-                'badge-success': appt.status === 'Completed',
-                'badge-cancelled': appt.status === 'Cancelled',
-                'badge-warning': appt.status === 'Rescheduled',
-              }"
-            >
-              {{ appt.status }}
-            </span>
-          </li>
-          <li *ngIf="appointments.length === 0" class="empty-state">
-            No appointments found
-          </li>
-        </ul>
+        <div class="appointments-scroll-container">
+          <ul class="list" *ngIf="appointments$ | async as appointments">
+            <li class="list-row" *ngFor="let appt of appointments">
+              <div class="row-left">
+                <strong>{{ appt.date | date: "MMM d, y • hh:mm a" }}</strong>
+                <span>{{ appt.reason }}</span>
+              </div>
+              <span
+                class="badge"
+                [ngClass]="{
+                  'badge-scheduled': appt.status === 'Scheduled',
+                  'badge-success': appt.status === 'Completed',
+                  'badge-cancelled': appt.status === 'Cancelled',
+                  'badge-warning': appt.status === 'Rescheduled',
+                }"
+              >
+                {{ appt.status }}
+              </span>
+            </li>
+            <li *ngIf="appointments.length === 0" class="empty-state">
+              No appointments found
+            </li>
+          </ul>
+        </div>
       </article>
 
       <!-- Medications -->
@@ -137,6 +139,7 @@
           <table class="table" *ngIf="medication$ | async as medications">
             <thead>
               <tr>
+                <th>Appointment</th>
                 <th>Drug</th>
                 <th>Dose</th>
                 <th>Route</th>
@@ -146,6 +149,14 @@
             </thead>
             <tbody>
               <tr *ngFor="let m of medications">
+                <td>
+                  <div class="appointment-info">
+                    <strong>{{ m.appointmentDate | date: "MMM d, y" }}</strong>
+                    <span class="appointment-reason">{{
+                      m.appointmentReason
+                    }}</span>
+                  </div>
+                </td>
                 <td>{{ m.drug }}</td>
                 <td>{{ m.dose }}</td>
                 <td>{{ m.route }}</td>
@@ -165,7 +176,7 @@
                 </td>
               </tr>
               <tr *ngIf="medications.length === 0">
-                <td colspan="5" class="empty-state">
+                <td colspan="6" class="empty-state">
                   No medications prescribed
                 </td>
               </tr>
@@ -227,18 +238,44 @@
 
         <div class="invoice-list" *ngIf="invoice$ | async as invoices">
           <div class="invoice-row" *ngFor="let inv of invoices">
-            <span>{{ inv.number }}</span>
-            <span>₹{{ inv.amount | number: "1.0-0" }}</span>
-            <span
-              class="badge"
-              [ngClass]="{
-                'badge-unpaid': inv.status === 'Unpaid',
-                'badge-paid': inv.status === 'Paid',
-                'badge-overdue': inv.status === 'Overdue',
-              }"
-            >
-              {{ inv.status }}
-            </span>
+            <div class="invoice-details">
+              <span class="invoice-number">{{ inv.number }}</span>
+              <span class="invoice-amount"
+                >₹{{ inv.amount | number: "1.0-0" }}</span
+              >
+            </div>
+            <div class="invoice-actions">
+              <span
+                class="badge"
+                [ngClass]="{
+                  'badge-unpaid': inv.status === 'Unpaid',
+                  'badge-paid': inv.status === 'Paid',
+                  'badge-overdue': inv.status === 'Overdue',
+                }"
+              >
+                {{ inv.status }}
+              </span>
+              <button
+                *ngIf="inv.status === 'Unpaid' || inv.status === 'Overdue'"
+                class="btn-pay"
+                (click)="openPaymentModal(inv)"
+                title="Pay Now"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                  <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+                Pay Now
+              </button>
+            </div>
           </div>
           <div *ngIf="invoices.length === 0" class="empty-state">
             No invoices found
@@ -247,4 +284,15 @@
       </article>
     </section>
   </main>
+
+  <!-- Payment Modal -->
+  <app-payment-modal
+    [show]="showPaymentModal"
+    [invoiceId]="selectedInvoice?.id || ''"
+    [invoiceNumber]="selectedInvoice?.number || ''"
+    [amount]="selectedInvoice?.amount || 0"
+    (closeModal)="closePaymentModal()"
+    (confirmPayment)="processPayment($event)"
+  >
+  </app-payment-modal>
 </div>

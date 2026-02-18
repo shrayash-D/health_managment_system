@@ -36,18 +36,18 @@ export interface Appointment {
   status: AppointmentStatus;
 }
 
-
 export type MedicationStatus = 'Active' | 'On Hold' | 'Completed' | 'Pending';
 
 export interface Medication {
   id: string;
   drug: string;
   dose: string;
-  route: string;      // e.g., 'PO', 'IV'
-  frequency: string;  // e.g., 'BID', 'PRN'
+  route: string; // e.g., 'PO', 'IV'
+  frequency: string; // e.g., 'BID', 'PRN'
   status: MedicationStatus;
+  appointmentDate?: Date; // Added to show which appointment this medication belongs to
+  appointmentReason?: string; // Added to show appointment reason
 }
-
 
 export type LabStatus = 'Completed' | 'Abnormal' | 'Critical' | 'Pending';
 
@@ -58,19 +58,17 @@ export interface LabResult {
   status: LabStatus;
 }
 
-
 export interface Invoice {
-  id: string;       // internal id
-  number: string;   // e.g., '#INV‑10021'
-  amount: number;   // numeric amount
+  id: string; // internal id
+  number: string; // e.g., '#INV‑10021'
+  amount: number; // numeric amount
   status: InvoiceStatus;
 }
 
 export interface BillingSummary {
-  label : string;
-  value : number | string;
+  label: string;
+  value: number | string;
 }
-
 
 export type InvoiceStatus = 'Paid' | 'Unpaid' | 'Overdue';
 

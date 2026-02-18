@@ -267,6 +267,32 @@ body {
 }
 
 /* Appointments */
+.appointments-scroll-container {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+}
+
+/* Scrollbar styling for appointments */
+.appointments-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.appointments-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.appointments-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.appointments-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 .list {
   list-style: none;
   padding: 0;
@@ -284,18 +310,39 @@ body {
   border: 1px solid var(--blue-300);
   border-radius: 10px;
   background: #fff;
+  min-width: 0; /* Allow content to shrink */
 }
 .row-left {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0; /* Allow content to shrink */
+  overflow: hidden; /* Prevent overflow */
 }
 .row-left strong {
   color: var(--blue-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .row-left span {
   color: var(--text-500);
   font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Make list-row stack on very small screens */
+@media (max-width: 480px) {
+  .list-row {
+    grid-template-columns: 1fr;
+    gap: var(--sp-2);
+  }
+
+  .list-row .badge {
+    justify-self: start;
+  }
 }
 
 /* Medications Table */
@@ -306,7 +353,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
-  min-width: 600px;
+  min-width: 700px;
 }
 .table th,
 .table td {
@@ -318,6 +365,25 @@ body {
   color: var(--text-500);
   font-weight: 700;
   background: #fafcfe;
+}
+
+/* Appointment info in medications table */
+.appointment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appointment-info strong {
+  color: var(--blue-900);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.appointment-reason {
+  color: var(--text-500);
+  font-size: 0.75rem;
+  font-style: italic;
 }
 
 /* Labs */
@@ -387,22 +453,107 @@ body {
 .invoice-list {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
+
 .invoice-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border: 1px solid var(--blue-300);
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.invoice-row:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-color: #93c5fd;
+}
+
+.invoice-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.invoice-number {
+  font-weight: 600;
+  color: var(--blue-900);
+  font-size: 0.9375rem;
+}
+
+.invoice-amount {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0a5b8f;
+}
+
+.invoice-actions {
+  display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  border: 1px solid var(--blue-300);
-  border-radius: 10px;
-  background: #fff;
+  flex-wrap: wrap;
 }
-@media (max-width: 480px) {
+
+.btn-pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, #0a5b8f 0%, #0e7bb8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(10, 91, 143, 0.2);
+}
+
+.btn-pay:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(10, 91, 143, 0.3);
+}
+
+.btn-pay:active {
+  transform: translateY(0);
+}
+
+.btn-pay svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 640px) {
   .invoice-row {
-    grid-template-columns: 1fr;
-    gap: var(--sp-2);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .invoice-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-pay {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .invoice-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-pay {
+    width: 100%;
   }
 }
 
@@ -419,6 +570,11 @@ body {
   background: var(--blue-100);
   color: var(--blue-900);
   text-transform: capitalize;
+  white-space: nowrap; /* Prevent badge text from wrapping */
+  flex-shrink: 0; /* Prevent badge from shrinking */
+  max-width: 120px; /* Set maximum width for very long status text */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .badge-info {
   background: #e0f2fe;
@@ -449,6 +605,26 @@ body {
   background: #fef2f2;
   border-color: #fecaca;
   color: #b91c1c;
+}
+.badge-overdue {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+.badge-scheduled {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+.badge-cancelled {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #4b5563;
+}
+.badge-paused {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
 }
 
 /* Loading State */
@@ -524,4 +700,45 @@ body {
 .table tbody .empty-state {
   background: transparent;
   padding: 1.5rem 1rem;
+}
+
+/* Payment Success Toast */
+.payment-success-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+}
+
+.payment-success-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.payment-success-toast svg {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 640px) {
+  .payment-success-toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    justify-content: center;
+  }
 }

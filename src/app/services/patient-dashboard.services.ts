@@ -103,6 +103,8 @@ export class PatientDashboardService {
           route: med.route,
           frequency: med.frequency,
           status: this.getMedicationStatusText(med.activity) as any,
+          appointmentDate: new Date(appt.appointmentDate),
+          appointmentReason: appt.reason || 'General Consultation',
         });
       });
     });
@@ -152,7 +154,6 @@ export class PatientDashboardService {
       { label: 'Total Billed', value: totalBilled },
       { label: 'Paid', value: totalPaid },
       { label: 'Outstanding', value: totalOutstanding },
-      { label: 'Last Payment', value: totalPaid > 0 ? 'Recent' : 'N/A' },
     ];
   }
 
@@ -247,5 +248,15 @@ export class PatientDashboardService {
 
   getInvoices(): Observable<Invoice[]> {
     return of([]);
+  }
+
+  /**
+   * Mark invoice as paid
+   */
+  markInvoiceAsPaid(invoiceId: string): Observable<any> {
+    return this.http.put(
+      `${this.apiUrl}/Admin/invoices/mark-paid/${invoiceId}`,
+      {},
+    );
   }
 }

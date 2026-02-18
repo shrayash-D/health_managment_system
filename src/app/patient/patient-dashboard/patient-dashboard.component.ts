@@ -13,10 +13,11 @@ import { RouterLink } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { PatientDashboardApiResponse } from '../../models/patient-dashboard.interface';
+import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
 
 @Component({
   selector: 'app-patient-dashboard',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PaymentModalComponent],
   standalone: true,
   templateUrl: './patient-dashboard.component.html',
   styleUrl: './patient-dashboard.component.css',
@@ -42,6 +43,10 @@ export class PatientDashboardComponent implements OnInit {
   patientIdFormatted = '';
   patientAge = 0;
   bloodGroup = '';
+
+  // Payment modal
+  showPaymentModal = false;
+  selectedInvoice: Invoice | null = null;
 
   constructor(
     private patientDashboardService: PatientDashboardService,
@@ -155,5 +160,80 @@ export class PatientDashboardComponent implements OnInit {
    */
   refreshDashboard(): void {
     this.loadPatientDashboard();
+  }
+
+  /**
+   * Open payment modal
+   */
+  openPaymentModal(invoice: Invoice): void {
+    this.selectedInvoice = invoice;
+    this.showPaymentModal = true;
+  }
+
+  /**
+   * Close payment modal
+   */
+  closePaymentModal(): void {
+    this.showPaymentModal = false;
+    this.selectedInvoice = null;
+  }
+
+  /**
+   * Process payment
+   */
+  processPayment(invoiceId: string): void {
+    this.patientDashboardService.markInvoiceAsPaid(invoiceId).subscribe({
+      next: () => {
+        console.log('Payment successful');
+        this.closePaymentModal();
+
+        // Show success message
+        this.showSuccessMessage();
+
+        // Refresh dashboard to update invoice status
+        setTimeout(() => {
+          this.refreshDashboard();
+        }, 1000);
+      },
+      error: (err) => {
+        console.error('Payment failed:', err);
+        this.showErrorMessage('Payment failed. Please try again.');
+      },
+    });
+  }
+
+  /**
+   * Show success message
+   */
+  private showSuccessMessage(): void {
+    // Simple success indication - you can replace with a proper toast notification
+    const successDiv = document.createElement('div');
+    successDiv.className = 'payment-success-toast';
+    successDiv.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>Payment successful!</span>
+    `;
+    document.body.appendChild(successDiv);
+
+    setTimeout(() => {
+      successDiv.classList.add('show');
+    }, 100);
+
+    setTimeout(() => {
+      successDiv.classList.remove('show');
+      setTimeout(() => {
+        document.body.removeChild(successDiv);
+      }, 300);
+    }, 3000);
+  }
+
+  /**
+   * Show error message
+   */
+  private showErrorMessage(message: string): void {
+    alert(message);
   }
 }

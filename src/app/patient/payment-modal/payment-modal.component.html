@@ -1,0 +1,259 @@
+<div class="modal-overlay" *ngIf="show" (click)="close()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="payment-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+            <line x1="1" y1="10" x2="23" y2="10"></line>
+          </svg>
+        </div>
+        <div>
+          <h2>Payment</h2>
+          <p class="invoice-info">Invoice: {{ invoiceNumber }}</p>
+        </div>
+      </div>
+      <button class="close-btn" (click)="close()" [disabled]="processing">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Amount Display -->
+    <div class="amount-display">
+      <span class="amount-label">Amount to Pay</span>
+      <span class="amount-value">₹{{ amount | number: "1.2-2" }}</span>
+    </div>
+
+    <!-- Payment Method Tabs -->
+    <div class="payment-methods">
+      <button
+        class="method-tab"
+        [class.active]="paymentMethod === 'card'"
+        (click)="onPaymentMethodChange('card')"
+        [disabled]="processing"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+        Card
+      </button>
+      <button
+        class="method-tab"
+        [class.active]="paymentMethod === 'upi'"
+        (click)="onPaymentMethodChange('upi')"
+        [disabled]="processing"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+          <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+          <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+        </svg>
+        UPI
+      </button>
+      <button
+        class="method-tab"
+        [class.active]="paymentMethod === 'netbanking'"
+        (click)="onPaymentMethodChange('netbanking')"
+        [disabled]="processing"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        Net Banking
+      </button>
+    </div>
+
+    <!-- Payment Forms -->
+    <div class="payment-form">
+      <!-- Card Payment Form -->
+      <div *ngIf="paymentMethod === 'card'" class="form-content">
+        <div class="form-group">
+          <label for="cardNumber">Card Number</label>
+          <input
+            type="text"
+            id="cardNumber"
+            [(ngModel)]="cardNumber"
+            (input)="formatCardNumber($event)"
+            placeholder="1234 5678 9012 3456"
+            maxlength="19"
+            [disabled]="processing"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="cardName">Cardholder Name</label>
+          <input
+            type="text"
+            id="cardName"
+            [(ngModel)]="cardName"
+            placeholder="JOHN DOE"
+            [disabled]="processing"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="expiryDate">Expiry Date</label>
+            <input
+              type="text"
+              id="expiryDate"
+              [(ngModel)]="expiryDate"
+              (input)="formatExpiryDate($event)"
+              placeholder="MM/YY"
+              maxlength="5"
+              [disabled]="processing"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input
+              type="password"
+              id="cvv"
+              [(ngModel)]="cvv"
+              placeholder="123"
+              maxlength="3"
+              [disabled]="processing"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- UPI Payment Form -->
+      <div *ngIf="paymentMethod === 'upi'" class="form-content">
+        <div class="form-group">
+          <label for="upiId">UPI ID</label>
+          <input
+            type="text"
+            id="upiId"
+            [(ngModel)]="upiId"
+            placeholder="username@upi"
+            [disabled]="processing"
+          />
+        </div>
+        <div class="upi-info">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>Enter your UPI ID to complete the payment</span>
+        </div>
+      </div>
+
+      <!-- Net Banking Form -->
+      <div *ngIf="paymentMethod === 'netbanking'" class="form-content">
+        <div class="form-group">
+          <label for="bankName">Select Bank</label>
+          <select id="bankName" [(ngModel)]="bankName" [disabled]="processing">
+            <option value="">Choose your bank</option>
+            <option value="SBI">State Bank of India</option>
+            <option value="HDFC">HDFC Bank</option>
+            <option value="ICICI">ICICI Bank</option>
+            <option value="AXIS">Axis Bank</option>
+            <option value="PNB">Punjab National Bank</option>
+            <option value="BOB">Bank of Baroda</option>
+            <option value="KOTAK">Kotak Mahindra Bank</option>
+            <option value="YES">Yes Bank</option>
+          </select>
+        </div>
+        <div class="netbanking-info">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>You will be redirected to your bank's secure payment page</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button
+        class="btn btn-secondary"
+        (click)="close()"
+        [disabled]="processing"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="processPayment()"
+        [disabled]="processing"
+      >
+        <span *ngIf="!processing">Pay ₹{{ amount | number: "1.2-2" }}</span>
+        <span *ngIf="processing" class="processing">
+          <span class="spinner"></span>
+          Processing...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
