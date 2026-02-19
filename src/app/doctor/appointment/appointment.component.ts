@@ -338,10 +338,8 @@ export class AppointmentComponent implements OnInit, OnDestroy {
       // Set current date
       this.completionData.date = new Date().toISOString().split('T')[0];
 
-      this.addingDiagnosis = false;
-      this.addingVitals = false;
-      this.addingMedications = false;
-      this.addingBilling = false;
+      // Automatically open Diagnosis section by default
+      this.openSection('diagnosis');
     }
   }
 
@@ -505,10 +503,42 @@ export class AppointmentComponent implements OnInit, OnDestroy {
 
     this.showCompletionModal = false;
     this.selectedAppointment = null;
+    
+    // Clear the date filter to show all appointments
+    this.appointmentFilterDate = '';
+    
+    // Reload appointments to reflect the status change
+    this.loadAppointmentsFromAPI();
   }
 
   cancelAppointment(id: number) {
-    this.doctorService.cancelAppointment(id);
+    if (confirm('Are you sure you want to cancel this appointment?')) {
+      // Find the appointment to get the real API ID (UUID)
+      const appointment = this.appointments.find(a => a.id === id);
+      if (!appointment || !(appointment as any).apiData) {
+        alert('Error: Could not find appointment details.');
+        return;
+      }
+
+      const realAppointmentId = (appointment as any).apiData.id; // Get the UUID from apiData
+      console.log('Cancelling appointment with UUID:', realAppointmentId);
+
+      // Call the API to update the appointment status in the database
+      this.doctorService.cancelAppointmentInDB(realAppointmentId).subscribe({
+        next: () => {
+          console.log('Appointment cancelled successfully');
+          alert('Appointment cancelled successfully ❌');
+          // Update local state
+          this.doctorService.cancelAppointment(id);
+          // Reload appointments to reflect changes
+          this.loadAppointmentsFromAPI();
+        },
+        error: (err: any) => {
+          console.error('Error cancelling appointment:', err);
+          alert('Failed to cancel appointment. Please try again.');
+        }
+      });
+    }
   }
 
   private openSection(section: string) {
@@ -565,8 +595,41 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   }
 
   saveDiagnosis() {
-    this.addingDiagnosis = false;
-    this.openNextSection('diagnosis');
+    // Check if appointment is selected and diagnosis is provided
+    if (!this.selectedAppointment) {
+      console.error('No appointment selected for diagnosis submission');
+      return;
+    }
+
+    const diagnosisData = this.completionData.diagnosis;
+
+    // Validate diagnosis is provided
+    if (!diagnosisData || !diagnosisData.trim()) {
+      console.warn('No diagnosis data provided');
+      alert('Please enter a diagnosis before saving.');
+      return;
+    }
+
+    // Call API to save diagnosis
+    console.log('Saving diagnosis for appointment:', this.selectedAppointment);
+
+    this.doctorService
+      .completeAppointmentWithDiagnosis(this.selectedAppointment, diagnosisData)
+      .subscribe({
+        next: (response) => {
+          console.log('Diagnosis saved successfully:', response);
+          this.addingDiagnosis = false;
+          this.openNextSection('diagnosis');
+          // Show success message
+          alert('Diagnosis saved successfully!');
+        },
+        error: (error) => {
+          console.error('Error saving diagnosis:', error);
+          // Show error message
+          alert('Failed to save diagnosis. Please try again.');
+          // Don't close the diagnosis section on error to allow retry
+        },
+      });
   }
 
   saveVitals() {
@@ -749,127 +812,202 @@ export class AppointmentComponent implements OnInit, OnDestroy {
     if (!this.selectedAppointment) return;
 
     const doc = new jsPDF();
-
     const pageWidth = doc.internal.pageSize.getWidth();
-    doc.setFillColor(10, 91, 143);
-    doc.rect(0, 0, pageWidth, 28, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let yPos = 20;
+
+    // Document Title
+    doc.setTextColor(8, 71, 113);
     doc.setFont('helvetica', 'bold');
-    doc.text('Appointment Completion Report', 20, 18);
+    doc.setFontSize(18);
+    doc.text('Medical Appointment Record', pageWidth / 2, yPos, { align: 'center' });
+    
+    // Horizontal divider
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPos + 4, pageWidth - 20, yPos + 4);
 
-    doc.setTextColor(30, 41, 59);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
+    yPos = 32;
+    doc.setTextColor(0, 0, 0);
 
-    doc.text(`Patient: `, 20, 40);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${this.selectedAppointment.patientName}`, 60, 40);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Date: `, 20, 50);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${this.selectedAppointment.date}`, 60, 50);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Diagnosis: `, 20, 60);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${this.completionData.diagnosis || 'Not provided'}`, 60, 60);
-
-    let yPos = 78;
-
-    const drawSectionTitle = (title: string, y: number) => {
-      doc.setTextColor(10, 91, 143);
+    // Helper function to draw section headers
+    const drawSectionHeader = (title: string, y: number) => {
+      doc.setFillColor(240, 248, 255); // Light blue background
+      doc.rect(20, y - 5, pageWidth - 40, 8, 'F');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
-      doc.text(title, 20, y);
-      doc.setDrawColor(214, 230, 245);
-      doc.line(20, y + 2, pageWidth - 20, y + 2);
-      doc.setTextColor(30, 41, 59);
-      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(8, 71, 113);
+      doc.text(title, 25, y);
+      doc.setTextColor(0, 0, 0);
+      return y + 10;
     };
 
+    // Helper function to draw field with label
+    const drawField = (label: string, value: string, x: number, y: number) => {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(label + ':', x, y);
+      doc.setFont('helvetica', 'normal');
+      const labelWidth = doc.getTextWidth(label + ': ') + 2; // Add 2pt spacing
+      doc.text(value, x + labelWidth, y);
+    };
+
+    // Patient Demographics Section
+    yPos = drawSectionHeader('Patient Information', yPos);
+    
+    const appointmentDate = new Date(this.selectedAppointment.date);
+    
+    drawField('Patient Name', this.selectedAppointment.patientName, 25, yPos);
+    yPos += 7;
+    drawField('Appointment Date', appointmentDate.toLocaleDateString('en-US', { 
+      year: 'numeric', month: 'long', day: 'numeric' 
+    }), 25, yPos);
+    yPos += 7;
+    drawField('Appointment Time', this.selectedAppointment.time, 25, yPos);
+    
+    yPos += 12;
+
+    // Clinical Assessment Section
+    yPos = drawSectionHeader('CLINICAL ASSESSMENT', yPos);
+    
+    if (this.completionData.diagnosis) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('Primary Diagnosis:', 25, yPos);
+      doc.setFont('helvetica', 'normal');
+      const diagnosisLines = doc.splitTextToSize(this.completionData.diagnosis, pageWidth - 50);
+      doc.text(diagnosisLines, 25, yPos + 8);
+      yPos += 8 + (diagnosisLines.length * 5) + 6;
+    } else {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(10);
+      doc.text('No diagnosis recorded', 25, yPos);
+      yPos += 12;
+    }
+
+    // Vital Signs Section
     if (
       this.completionData.vitals.bloodPressure ||
       this.completionData.vitals.heartRate ||
       this.completionData.vitals.temperature ||
       this.completionData.vitals.spO2
     ) {
-      drawSectionTitle('Vitals', yPos);
-      doc.setFont('helvetica', 'normal');
-      if (this.completionData.vitals.bloodPressure)
-        doc.text(
-          `Blood Pressure: ${this.completionData.vitals.bloodPressure}`,
-          30,
-          yPos + 10,
-        );
-      if (this.completionData.vitals.heartRate)
-        doc.text(
-          `Heart Rate: ${this.completionData.vitals.heartRate}`,
-          30,
-          yPos + 20,
-        );
-      if (this.completionData.vitals.temperature)
-        doc.text(
-          `Temperature: ${this.completionData.vitals.temperature}`,
-          30,
-          yPos + 30,
-        );
-      if (this.completionData.vitals.spO2)
-        doc.text(`SpO2: ${this.completionData.vitals.spO2}`, 30, yPos + 40);
-      yPos += 62;
+      yPos = drawSectionHeader('Vital Signs', yPos);
+      
+      doc.setFontSize(9);
+      
+      // Blood Pressure
+      if (this.completionData.vitals.bloodPressure) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('BP:', 25, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${this.completionData.vitals.bloodPressure} mmHg`, 35, yPos);
+      }
+      
+      // Heart Rate
+      if (this.completionData.vitals.heartRate) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('HR:', 95, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${this.completionData.vitals.heartRate} bpm`, 105, yPos);
+      }
+      yPos += 5;
+      
+      // Temperature
+      if (this.completionData.vitals.temperature) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Temp:', 25, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${this.completionData.vitals.temperature}°F`, 40, yPos);
+      }
+      
+      // SpO2
+      if (this.completionData.vitals.spO2) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('SpO2:', 95, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${this.completionData.vitals.spO2}%`, 110, yPos);
+      }
+      
+      yPos += 8;
+      doc.setFontSize(10);
     }
 
+    // Medications Prescribed Section
     if (
       this.completionData.medications.length > 0 &&
       this.completionData.medications.some((m) => m.drug)
     ) {
-      drawSectionTitle('Medications', yPos);
-      doc.setFont('helvetica', 'normal');
+      yPos = drawSectionHeader('Medications Prescribed', yPos);
+      
       this.completionData.medications
         .filter((m) => m.drug)
         .forEach((med, i) => {
-          doc.text(
-            `- ${med.drug} (${med.dose}, ${med.route}, ${med.frequency}, ${med.activity})`,
-            30,
-            yPos + 10 + i * 10,
-          );
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${i + 1}. ${med.drug}`, 25, yPos + (i * 20));
+          
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.text(`Dosage: ${med.dose}`, 30, yPos + (i * 20) + 6);
+          doc.text(`Route: ${med.route} | Frequency: ${med.frequency}`, 30, yPos + (i * 20) + 11);
+          doc.text(`Instructions: ${med.activity}`, 30, yPos + (i * 20) + 16);
+          doc.setFontSize(10);
         });
-      yPos +=
-        20 + this.completionData.medications.filter((m) => m.drug).length * 10;
+      
+      yPos += this.completionData.medications.filter((m) => m.drug).length * 20 + 6;
     }
 
+    // Billing Information Section
     if (
       this.completionData.billing.consultationFee ||
       this.completionData.billing.labFee ||
       this.completionData.billing.medicineFee
     ) {
-      drawSectionTitle('Billing', yPos);
+      yPos = drawSectionHeader('Billing Summary', yPos);
+      
+      drawField('Consultation Type', this.completionData.billing.consultationType || 'N/A', 25, yPos);
+      yPos += 10;
+      
+      // Billing table
+      const billingY = yPos;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Service', 25, billingY);
+      doc.text('Amount', 150, billingY);
+      
+      doc.setLineWidth(0.3);
+      doc.line(25, billingY + 2, pageWidth - 25, billingY + 2);
+      
       doc.setFont('helvetica', 'normal');
-      doc.text(
-        `Type: ${this.completionData.billing.consultationType || 'N/A'}`,
-        30,
-        yPos + 10,
-      );
-      doc.text(
-        `Consultation Fee: $${this.completionData.billing.consultationFee}`,
-        30,
-        yPos + 20,
-      );
-      doc.text(
-        `Lab Fee: $${this.completionData.billing.labFee}`,
-        30,
-        yPos + 30,
-      );
-      doc.text(
-        `Medicine Fee: $${this.completionData.billing.medicineFee}`,
-        30,
-        yPos + 40,
-      );
-      doc.text(`Total: $${this.completionData.billing.total}`, 30, yPos + 50);
+      doc.text('Consultation Fee', 25, billingY + 10);
+      doc.text(`${(parseFloat(this.completionData.billing.consultationFee) || 0).toFixed(2)}`, 150, billingY + 10);
+      
+      doc.text('Laboratory Fee', 25, billingY + 18);
+      doc.text(`${(parseFloat(this.completionData.billing.labFee) || 0).toFixed(2)}`, 150, billingY + 18);
+      
+      doc.text('Medicine Fee', 25, billingY + 26);
+      doc.text(`${(parseFloat(this.completionData.billing.medicineFee) || 0).toFixed(2)}`, 150, billingY + 26);
+      
+      doc.setLineWidth(0.5);
+      doc.line(25, billingY + 30, pageWidth - 25, billingY + 30);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Total Amount', 25, billingY + 38);
+      doc.text(`${(parseFloat(this.completionData.billing.total) || 0).toFixed(2)}`, 150, billingY + 38);
+      
+      yPos = billingY + 50;
     }
 
-    doc.save(`${this.selectedAppointment.patientName}_Appointment_Report.pdf`);
+    // Footer
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100, 100, 100);
+    doc.text('This is a computer-generated medical record and does not require a signature.', pageWidth / 2, pageHeight - 20, { align: 'center' });
+    doc.text(`Generated on: ${new Date().toLocaleString('en-US')}`, pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text('Page 1 of 1', pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+    // Save with professional filename
+    const fileName = `${this.selectedAppointment.patientName.replace(/\s+/g, '_')}_Medical_Record_${appointmentDate.toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
   }
 
   downloadEMRReport() {

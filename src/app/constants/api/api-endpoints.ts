@@ -24,6 +24,7 @@ export const DOCTOR_API_ENDPOINTS = {
   addMedications: `${API_BASE_URL}/Doctor/appointments/medications`,
   addInvoice: `${API_BASE_URL}/Doctor/appointments/invoice`,
   completeAppointment: `${API_BASE_URL}/Doctor/appointments/complete`,
+  cancelAppointment: `${API_BASE_URL}/Doctor/appointments/cancel`,
 };
 
 export const USER_API_ENDPOINTS = {

@@ -613,6 +613,16 @@ export class DoctorDataService {
     return this.updateAppointmentStatus(appointmentId, 'COMPLETED');
   }
 
+  // 🔹 Cancel appointment in database
+  cancelAppointmentInDB(appointmentId: string): Observable<any> {
+    console.log('Cancelling appointment in DB:', appointmentId);
+    console.log('API URL:', `${DOCTOR_API_ENDPOINTS.cancelAppointment}/${appointmentId}`);
+    return this.http.put(
+      `${DOCTOR_API_ENDPOINTS.cancelAppointment}/${appointmentId}`,
+      {} // Empty body - endpoint doesn't need data
+    );
+  }
+
   // 🔹 Load appointments from API and update local state
   public loadAppointmentsFromApi(doctorId: string): void {
     console.log('Loading appointments for doctor:', doctorId);
@@ -630,9 +640,9 @@ export class DoctorDataService {
             2: 'CANCELLED' as const
           };
           
-          // Format date and time
-          const appointmentDate = new Date(apiAppointment.appointmentDate);
-          const formattedDate = appointmentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+          // Format date and time - extract date directly to avoid timezone issues
+          // appointmentDate is in format "2026-02-23T00:00:00"
+          const formattedDate = apiAppointment.appointmentDate.split('T')[0]; // YYYY-MM-DD
           const formattedTime = `${apiAppointment.startTime.substring(0, 5)}-${apiAppointment.endTime.substring(0, 5)}`;
           
           // Use the real patient name from API response

@@ -136,7 +136,18 @@
   font-size: 1.8rem;
   margin: 0;
   font-weight: 700;
-  color: #0a5b8f;
+  background: linear-gradient(135deg, #0a5b8f 0%, #3ddc97 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Stat Numbers - No Gradient */
+.stat-number {
+  font-size: 1.8rem;
+  margin: 0;
+  font-weight: 700;
+  color: #0a5b8f !important;
 }
 
 /* Summary Cards Specific */
@@ -156,16 +167,25 @@
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
 }
 
+.row.text-center .card:nth-child(1) .card-body h3 {
+  background: linear-gradient(135deg, #0a5b8f 0%, #1976d2 100%);
+}
 
 .row.text-center .card:nth-child(2) .card-body {
   background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
 }
 
+.row.text-center .card:nth-child(2) .card-body h3 {
+  background: linear-gradient(135deg, #1b5e20 0%, #388e3c 100%);
+}
 
 .row.text-center .card:nth-child(3) .card-body {
   background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
 }
 
+.row.text-center .card:nth-child(3) .card-body h3 {
+  background: linear-gradient(135deg, #e65100 0%, #f57c00 100%);
+}
 
 /* Chart */
 .card .card-body canvas {
@@ -214,25 +234,6 @@
 }
 
 /* Patient Details */
-.card.patient-details {
-  border: 1px solid #e6eff6;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
-}
-
-.card.patient-details .card-header {
-  background: linear-gradient(135deg, rgba(10, 91, 143, 0.1), rgba(61, 220, 151, 0.15));
-  border-bottom: 1px solid #e1ecf5;
-  font-weight: 700;
-  color: #0a5b8f;
-}
-
-.card.patient-details .card-body {
-  padding: 1.25rem;
-}
-
 .card.patient-details p {
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
@@ -573,9 +574,7 @@
 }
 
 .patient-info-row {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 0.75rem;
+  display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
@@ -593,13 +592,13 @@
 .patient-info-row strong {
   color: #0a5b8f;
   font-weight: 600;
-  min-width: 90px;
+  min-width: 80px;
 }
 
 .patient-info-row span {
   color: #374151;
   font-weight: 500;
-  text-align: left;
+  text-align: right;
   flex: 1;
 }
 
@@ -621,6 +620,23 @@
   box-shadow: 0 5px 16px rgba(10, 91, 143, 0.35), 0 10px 24px rgba(61, 220, 151, 0.25);
 }
 
+.slot-badge {
+  background: linear-gradient(135deg, #3ddc97 0%, #0a5b8f 100%);
+  color: white;
+  padding: 0.5rem 1rem !important;
+  border-radius: 22px;
+  font-weight: 700;
+  font-size: 0.9rem !important;
+  box-shadow: 0 3px 10px rgba(61, 220, 151, 0.25), 0 6px 16px rgba(10, 91, 143, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.4px;
+  display: inline-block;
+}
+
+.slot-badge:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 5px 16px rgba(61, 220, 151, 0.35), 0 10px 24px rgba(10, 91, 143, 0.25);
+}
 
 .time-slot-badge {
   display: inline-block;

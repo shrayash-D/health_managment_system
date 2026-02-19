@@ -381,9 +381,10 @@ export class DoctorDashboardComponent implements OnInit {
           return;
         }
         
-        // Get total count of all appointments
-        this.totalAppointments = response.totalAppointments || response.appointments.length || 0;
+        // Get total count - use appointments array length as it's more reliable
+        this.totalAppointments = response.appointments.length || 0;
         console.log('Total appointments loaded:', this.totalAppointments);
+        console.log('Appointments array:', response.appointments);
         this.isLoadingTotalAppointments = false;
       },
       error: (error) => {

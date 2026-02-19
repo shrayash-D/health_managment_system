@@ -224,108 +224,199 @@ export class PatientListComponent implements OnInit {
     if (!this.selectedPatient) return;
     const patient = this.selectedPatient;
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     let yPosition = 20;
 
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Patient Medical History Report', 20, yPosition);
-    yPosition += 15;
+    // Helper functions
+    const drawSectionHeader = (title: string, y: number) => {
+      doc.setFillColor(240, 248, 255);
+      doc.rect(20, y - 5, pageWidth - 40, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(8, 71, 113);
+      doc.text(title, 25, y);
+      doc.setTextColor(0, 0, 0);
+      return y + 10;
+    };
 
-    // Patient Details
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
+    const drawField = (label: string, value: string, x: number, y: number, maxWidth?: number) => {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(label + ':', x, y);
+      doc.setFont('helvetica', 'normal');
+      const labelWidth = doc.getTextWidth(label + ': ') + 2; // Add 2pt spacing
+      
+      if (maxWidth) {
+        const lines = doc.splitTextToSize(value, maxWidth);
+        doc.text(lines, x + labelWidth, y);
+        return lines.length * 5;
+      } else {
+        doc.text(value, x + labelWidth, y);
+        return 0;
+      }
+    };
+
+    const addPageFooter = (pageNum: number, totalPages: number) => {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 100, 100);
+      doc.text('Confidential Medical Record - For Authorized Use Only', pageWidth / 2, pageHeight - 20, { align: 'center' });
+      doc.text(`Generated on: ${new Date().toLocaleString('en-US')}`, pageWidth / 2, pageHeight - 15, { align: 'center' });
+      doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+    };
+
+    // Document Title
+    doc.setTextColor(8, 71, 113);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Patient Medical History', pageWidth / 2, yPosition, { align: 'center' });
     
-    doc.text(`Patient: `, 20, yPosition);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${patient.user?.name || 'N/A'}`, 60, yPosition);
-    yPosition += 8;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPosition + 4, pageWidth - 20, yPosition + 4);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Date of Birth: `, 20, yPosition);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${patient.user?.dob || 'N/A'}`, 60, yPosition);
-    yPosition += 8;
+    yPosition = 32;
+    doc.setTextColor(0, 0, 0);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Contact: `, 20, yPosition);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${this.formatContact(patient.user?.phoneNumber || '')}`, 60, yPosition);
-    yPosition += 8;
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Blood Group: `, 20, yPosition);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${patient.bloodGroup || 'Not specified'}`, 60, yPosition);
+    // Patient Demographics
+    yPosition = drawSectionHeader('Patient Demographics', yPosition);
+    
+    const patientName = patient.user?.name || 'N/A';
+    
+    drawField('Patient Name', patientName, 25, yPosition);
+    yPosition += 7;
+    
+    drawField('Date of Birth', patient.user?.dob || 'N/A', 25, yPosition);
+    yPosition += 7;
+    
+    drawField('Blood Group', patient.bloodGroup || 'Not specified', 25, yPosition);
+    yPosition += 7;
+    
+    drawField('Contact Number', this.formatContact(patient.user?.phoneNumber || ''), 25, yPosition);
     yPosition += 12;
 
-    // Appointments Section
+    // Appointments and Medical Records
     if (patient.appointments && patient.appointments.length > 0) {
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Appointments and Medical Details:', 20, yPosition);
-      yPosition += 10;
-
+      yPosition = drawSectionHeader('Medical Consultation Records', yPosition);
+      
       patient.appointments.forEach((appointment, index) => {
-        if (yPosition > 250) {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 70) {
+          addPageFooter(1, 1);
           doc.addPage();
           yPosition = 20;
         }
 
-        doc.setFontSize(11);
+        // Appointment header
+        doc.setFillColor(250, 250, 250);
+        doc.rect(20, yPosition - 2, pageWidth - 40, 7, 'F');
         doc.setFont('helvetica', 'bold');
-        doc.text(`Appointment ${index + 1}:`, 20, yPosition);
-        yPosition += 6;
+        doc.setFontSize(11);
+        doc.setTextColor(8, 71, 113);
+        doc.text(`Appointment ${index + 1}`, 25, yPosition + 3);
+        doc.setTextColor(0, 0, 0);
+        yPosition += 12;
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Date: ${appointment.appointmentDate}`, 25, yPosition);
-        yPosition += 5;
-        doc.text(`Time: ${appointment.startTime} - ${appointment.endTime}`, 25, yPosition);
-        yPosition += 5;
-        doc.text(`Reason: ${appointment.reason}`, 25, yPosition);
+        
+        drawField('Date', new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'long', day: 'numeric'
+        }), 25, yPosition);
         yPosition += 7;
+        
+        drawField('Time', `${appointment.startTime} - ${appointment.endTime}`, 25, yPosition);
+        yPosition += 7;
+        
+        const reasonExtra = drawField('Reason for Visit', appointment.reason, 25, yPosition, pageWidth - 55);
+        yPosition += 7 + reasonExtra;
 
         // Diagnosis
         if (appointment.diagnosis) {
           doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
           doc.text('Diagnosis:', 25, yPosition);
-          yPosition += 5;
+          yPosition += 6;
           doc.setFont('helvetica', 'normal');
-          doc.text(`${appointment.diagnosis.diagnosisDetails}`, 30, yPosition);
-          yPosition += 7;
+          const diagnosisLines = doc.splitTextToSize(appointment.diagnosis.diagnosisDetails, pageWidth - 55);
+          doc.text(diagnosisLines, 30, yPosition);
+          yPosition += diagnosisLines.length * 5 + 6;
         }
 
         // Vitals
         if (appointment.vitals) {
           doc.setFont('helvetica', 'bold');
-          doc.text('Vitals:', 25, yPosition);
+          doc.setFontSize(10);
+          doc.text('Vital Signs:', 25, yPosition);
           yPosition += 5;
           doc.setFont('helvetica', 'normal');
-          doc.text(`Blood Pressure: ${appointment.vitals.bloodPressure}`, 30, yPosition);
+          doc.setFontSize(9);
+          
+          // Blood Pressure
+          doc.setFont('helvetica', 'bold');
+          doc.text('BP:', 30, yPosition);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${appointment.vitals.bloodPressure} mmHg`, 40, yPosition);
+          
+          // Heart Rate
+          doc.setFont('helvetica', 'bold');
+          doc.text('HR:', 95, yPosition);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${appointment.vitals.heartRate} bpm`, 105, yPosition);
           yPosition += 4;
-          doc.text(`Heart Rate: ${appointment.vitals.heartRate} bpm`, 30, yPosition);
-          yPosition += 4;
-          doc.text(`Temperature: ${appointment.vitals.temperature}°F`, 30, yPosition);
-          yPosition += 4;
-          doc.text(`SpO2: ${appointment.vitals.spO2}%`, 30, yPosition);
-          yPosition += 7;
+          
+          // Temperature
+          doc.setFont('helvetica', 'bold');
+          doc.text('Temp:', 30, yPosition);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${appointment.vitals.temperature}°F`, 45, yPosition);
+          
+          // SpO2
+          doc.setFont('helvetica', 'bold');
+          doc.text('SpO2:', 95, yPosition);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${appointment.vitals.spO2}%`, 110, yPosition);
+          yPosition += 6;
+          doc.setFontSize(10);
         }
 
         // Medications
         if (appointment.medications && appointment.medications.length > 0) {
           doc.setFont('helvetica', 'bold');
-          doc.text('Medications:', 25, yPosition);
-          yPosition += 5;
+          doc.setFontSize(10);
+          doc.text('Medications Prescribed:', 25, yPosition);
+          yPosition += 6;
           doc.setFont('helvetica', 'normal');
-          appointment.medications.forEach(med => {
-            doc.text(`- ${med.drug} ${med.dose} ${med.route} ${med.frequency}`, 30, yPosition);
-            yPosition += 4;
+          doc.setFontSize(9);
+          appointment.medications.forEach((med, index) => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${index + 1}. ${med.drug}`, 30, yPosition);
+            yPosition += 4.5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`   Dosage: ${med.dose}  |  Route: ${med.route}  |  Frequency: ${med.frequency}`, 30, yPosition);
+            yPosition += 5.5;
           });
           yPosition += 3;
+          doc.setFontSize(10);
         }
+
+        // Separator line
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.3);
+        doc.line(25, yPosition + 3, pageWidth - 25, yPosition + 3);
+        yPosition += 10;
       });
+    } else {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(10);
+      doc.text('No appointment records found for this patient.', 25, yPosition);
     }
 
-    doc.save(`${patient.user?.name?.replace(/\s+/g, '_') || 'patient'}_medical_history.pdf`);
+    // Add footer to last page
+    addPageFooter(1, 1);
+
+    const fileName = `${patientName.replace(/\s+/g, '_')}_Medical_History_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
   }
 }

@@ -46,9 +46,9 @@
               <td data-label="Reason">
                 {{ appointment.apiData?.reason || "General Consultation" }}
               </td>
-              <td data-label="Date">{{ appointment.date }}</td>
+              <td data-label="Date">{{ appointment.apiData?.appointmentDate | date:'MMM dd, yyyy' }}</td>
               <td data-label="Time">
-                <span class="slot-badge">{{ appointment.time }}</span>
+                <span class="time-slot-badge">{{ appointment.apiData?.startTime | slice:0:5 }}-{{ appointment.apiData?.endTime | slice:0:5 }}</span>
               </td>
               <td data-label="Status">
                 <span [ngClass]="['status', appointment.status]">
