@@ -1,6 +1,8 @@
 <div class="d-flex">
   <div class="container-fluid p-2">
     <div class="page">
+      
+
       <main class="container">
         <!-- Filters -->
         <section class="card">
@@ -12,11 +14,7 @@
               <option [value]="PaymentStatus.Pending">PENDING</option>
               <option [value]="PaymentStatus.Overdue">OVERDUE</option>
             </select>
-            <input
-              type="date"
-              [(ngModel)]="dateFilter"
-              placeholder="Filter by date"
-            />
+            <input type="date" [(ngModel)]="dateFilter" placeholder="Filter by date" />
           </div>
         </section>
 
@@ -25,14 +23,11 @@
           <div class="table-scroll">
             <!-- Loading State -->
             <div *ngIf="isLoadingInvoices" class="text-center p-4">
-              <app-loading></app-loading>
+              <p class="text-muted">Loading invoices...</p>
             </div>
 
             <!-- No Invoices State -->
-            <div
-              *ngIf="!isLoadingInvoices && invoices.length === 0"
-              class="text-center p-4"
-            >
+            <div *ngIf="!isLoadingInvoices && invoices.length === 0" class="text-center p-4">
               <p class="text-muted">No invoices found</p>
             </div>
 
@@ -51,29 +46,24 @@
               <tbody>
                 <tr *ngFor="let invoice of filteredInvoices">
                   <td>{{ invoice.invoiceHandle }}</td>
-                  <td>{{ invoice.patientName || "N/A" }}</td>
-                  <td>{{ invoice.total | currency: "INR" }}</td>
+                  <td>{{ invoice.patientName || 'N/A' }}</td>
+                  <td>{{ invoice.total | currency:'INR'}}</td>
                   <td>
                     <span
                       class="chip"
                       [ngClass]="{
                         paid: invoice.status === 1,
-                        unpaid: invoice.status === 0,
+                        unpaid: invoice.status === 0
                       }"
                     >
-                      {{ invoice.status === 0 ? "UNPAID" : "PAID" }}
+                      {{ invoice.status === 0 ? 'UNPAID' : 'PAID' }}
                     </span>
                   </td>
                   <td>
-                    {{ invoice.issuedDate | date: "MMM dd, yyyy" }}
+                    {{ invoice.issuedDate | date: 'MMM dd, yyyy' }}
                   </td>
                   <td>
-                    <button
-                      class="btn btn-primary"
-                      (click)="viewDetails(invoice)"
-                    >
-                      View Details
-                    </button>
+                    <button class="btn btn-primary" (click)="viewDetails(invoice)">View Details</button>
                   </td>
                 </tr>
               </tbody>
@@ -86,11 +76,7 @@
 </div>
 
 <!-- Invoice Detail Modal -->
-<div
-  *ngIf="showInvoiceModal"
-  class="modal-overlay"
-  (click)="closeInvoiceModal()"
->
+<div *ngIf="showInvoiceModal" class="modal-overlay" (click)="closeInvoiceModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <h3><i class="fas fa-file-invoice"></i> Invoice Details</h3>
     <div *ngIf="selectedInvoice">
@@ -102,21 +88,21 @@
         </div>
         <div class="form-group">
           <label>Patient Name:</label>
-          <p>{{ selectedInvoice.patientName || "N/A" }}</p>
+          <p>{{ selectedInvoice.patientName || 'N/A' }}</p>
         </div>
         <div class="form-group">
           <label>Total Amount:</label>
-          <p>{{ selectedInvoice.total | currency: "INR" }}</p>
+          <p>{{ selectedInvoice.total | currency:'INR'}}</p>
         </div>
         <div class="form-group">
           <label>Status:</label>
-          <p>{{ selectedInvoice.status === 0 ? "UNPAID" : "PAID" }}</p>
+          <p>{{ selectedInvoice.status === 0 ? 'UNPAID' : 'PAID' }}</p>
         </div>
 
         <!-- Dates -->
         <div class="form-group">
           <label>Issue Date:</label>
-          <p>{{ selectedInvoice.issuedDate | date: "MMM dd, yyyy HH:mm" }}</p>
+          <p>{{ selectedInvoice.issuedDate | date: 'MMM dd, yyyy HH:mm' }}</p>
         </div>
 
         <!-- Consultation -->
@@ -129,40 +115,31 @@
         <div class="form-group">
           <label>Charges Breakdown:</label>
           <ul>
-            <li>
-              Consultation Fee:
-              {{ selectedInvoice.consulationFee | currency: "INR" }}
-            </li>
-            <li>Lab Tests: {{ selectedInvoice.labFee | currency: "INR" }}</li>
-            <li>
-              Medicines: {{ selectedInvoice.medicineFee | currency: "INR" }}
-            </li>
+            <li>Consultation Fee: {{ selectedInvoice.consulationFee | currency:'INR'}}</li>
+            <li>Lab Tests: {{ selectedInvoice.labFee | currency:'INR'}}</li>
+            <li>Medicines: {{ selectedInvoice.medicineFee | currency:'INR'}}</li>
           </ul>
         </div>
 
         <!-- Total -->
         <div class="form-group">
           <label><strong>Total:</strong></label>
-          <p>
-            <strong>{{ selectedInvoice.total | currency: "INR" }}</strong>
-          </p>
+          <p><strong>{{ selectedInvoice.total | currency:'INR'}}</strong></p>
         </div>
 
         <div class="form-group" *ngIf="selectedInvoice.outstanding !== null">
           <label>Outstanding Amount:</label>
-          <p>{{ selectedInvoice.outstanding | currency: "INR" }}</p>
+          <p>{{ selectedInvoice.outstanding | currency:'INR'}}</p>
         </div>
       </div>
 
       <!-- Actions -->
       <div class="modal-actions">
-        <button class="btn btn-primary" (click)="downloadInvoicePDF()">
-          Download PDF
-        </button>
-        <button class="btn btn-secondary" (click)="closeInvoiceModal()">
-          Close
-        </button>
+        <button class="btn btn-primary" (click)="downloadInvoicePDF()">Download PDF</button>
+        <button class="btn btn-secondary" (click)="closeInvoiceModal()">Close</button>
       </div>
     </div>
   </div>
 </div>
+
+

@@ -7,7 +7,6 @@ import { Patient } from '../../models/patient.interface';
 import { Observable } from 'rxjs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { LoadingComponent } from '../../shared/loading/loading.component';
 
 // Interface for appointment details from API
 export interface AppointmentDetail {
@@ -71,7 +70,7 @@ export interface PatientWithAppointments {
 @Component({
   selector: 'app-patient-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './patient-list.component.html',
   styleUrls: ['./patient-list.component.css'],
 })
@@ -81,6 +80,7 @@ export class PatientListComponent implements OnInit {
   showHistoryModal: boolean = false;
   selectedPatient: PatientWithAppointments | null = null;
   isLoading: boolean = true;
+  currentDoctorId: string | null = null;
 
   constructor(
     private patientService: PatientService,
@@ -88,25 +88,115 @@ export class PatientListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadPatients();
+    // Get current doctor ID from localStorage
+    const storedUser = localStorage.getItem('currentUser');
+    console.log('Patient List Component - currentUser from localStorage:', storedUser);
+    
+    if (storedUser) {
+      try {
+        const currentUser = JSON.parse(storedUser);
+        console.log('Parsed currentUser:', currentUser);
+        
+        if (currentUser && currentUser.id) {
+          // Fetch doctor profile to get the real doctor ID
+          this.doctorDataService.getDoctorById(currentUser.id).subscribe({
+            next: (doctorProfile) => {
+              this.currentDoctorId = doctorProfile.id;
+              console.log('Patient List - Current Doctor ID set to:', this.currentDoctorId);
+              // Now load patients with appointments
+              this.loadPatients();
+            },
+            error: (error) => {
+              console.error('Error fetching doctor profile:', error);
+              // Load patients anyway without appointments
+              this.loadPatients();
+            }
+          });
+        } else {
+          console.warn('No user ID in currentUser object');
+          this.loadPatients();
+        }
+      } catch (error) {
+        console.error('Error parsing currentUser from localStorage:', error);
+        this.loadPatients();
+      }
+    } else {
+      console.warn('No currentUser found in localStorage');
+      this.loadPatients();
+    }
   }
 
   loadPatients(): void {
     this.isLoading = true;
-    this.doctorDataService.getPatientsByDoctor().subscribe({
-      next: (response: any) => {
-        this.patientsWithAppointments = response.patients || [];
-        console.log(
-          'Patients loaded with appointments:',
-          this.patientsWithAppointments,
-        );
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading patients:', error);
-        this.isLoading = false;
-      },
-    });
+    
+    console.log('loadPatients() called - currentDoctorId:', this.currentDoctorId);
+    
+    if (this.currentDoctorId) {
+      console.log('Fetching patients and appointments for doctor:', this.currentDoctorId);
+      
+      // First, get the list of patients for this doctor
+      this.doctorDataService.getPatientsByDoctorId(this.currentDoctorId).subscribe({
+        next: (patientResponse: any) => {
+          console.log('Patients loaded:', patientResponse);
+          const patients = patientResponse.patients || [];
+          
+          // Then, get ALL appointments with full history for this doctor
+          this.doctorDataService.getAllAppointmentsByDoctorId(this.currentDoctorId!).subscribe({
+            next: (appointmentResponse: any) => {
+              console.log('Appointments with full history loaded:', appointmentResponse);
+              
+              console.log('=== MAPPING APPOINTMENTS TO PATIENTS ===');
+              console.log('Total patients:', patients.length);
+              console.log('Total appointments from API:', appointmentResponse.appointments?.length || 0);
+              
+              // Map appointments to their respective patients
+              this.patientsWithAppointments = patients.map((patient: PatientWithAppointments) => {
+                // Find all appointments for this patient from the doctor's appointments
+                const patientAppointments = appointmentResponse.appointments?.filter(
+                  (apt: AppointmentDetail) => apt.patientId === patient.id
+                ) || [];
+                
+                console.log(`Patient: ${patient.user?.name}, ID: ${patient.id}`);
+                console.log(`  -> Appointments found: ${patientAppointments.length}`);
+                
+                if (patientAppointments.length > 0) {
+                  const counts = {
+                    scheduled: patientAppointments.filter((a: AppointmentDetail) => a.status === 0).length,
+                    completed: patientAppointments.filter((a: AppointmentDetail) => a.status === 1).length,
+                    cancelled: patientAppointments.filter((a: AppointmentDetail) => a.status === 2).length
+                  };
+                  console.log(`  -> Scheduled: ${counts.scheduled}, Completed: ${counts.completed}, Cancelled: ${counts.cancelled}`);
+                }
+                
+                return {
+                  ...patient,
+                  appointments: patientAppointments
+                };
+              });
+              
+              console.log('==============================================');
+              console.log('Final patients with mapped appointments:', this.patientsWithAppointments);
+              this.isLoading = false;
+            },
+            error: (error) => {
+              console.error('Error loading appointments:', error);
+              // If appointments fail to load, still show patients but without appointment history
+              this.patientsWithAppointments = patients;
+              this.isLoading = false;
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error loading patients:', error);
+          this.patientsWithAppointments = [];
+          this.isLoading = false;
+        }
+      });
+    } else {
+      console.warn('No doctor ID available, cannot load patients');
+      this.patientsWithAppointments = [];
+      this.isLoading = false;
+    }
   }
 
   openHistoryModal(patient: PatientWithAppointments): void {
@@ -119,16 +209,14 @@ export class PatientListComponent implements OnInit {
     this.selectedPatient = null;
   }
 
-  getFilteredPatients(
-    patients: PatientWithAppointments[],
-  ): PatientWithAppointments[] {
+  getFilteredPatients(patients: PatientWithAppointments[]): PatientWithAppointments[] {
     if (!this.searchTerm) return patients;
     const term = this.searchTerm.toLowerCase();
     return patients.filter(
       (p) =>
         p.user?.name?.toLowerCase().includes(term) ||
         p.user?.phoneNumber?.toLowerCase().includes(term) ||
-        (p.bloodGroup && p.bloodGroup.toLowerCase().includes(term)),
+        (p.bloodGroup && p.bloodGroup.toLowerCase().includes(term))
     );
   }
 
@@ -206,14 +294,14 @@ export class PatientListComponent implements OnInit {
     const counts = {
       scheduled: 0,
       completed: 0,
-      cancelled: 0,
+      cancelled: 0
     };
 
     if (!appointments || appointments.length === 0) {
       return counts;
     }
 
-    appointments.forEach((apt) => {
+    appointments.forEach(apt => {
       if (apt.status === 0) {
         counts.scheduled++;
       } else if (apt.status === 1) {
@@ -246,19 +334,13 @@ export class PatientListComponent implements OnInit {
       return y + 10;
     };
 
-    const drawField = (
-      label: string,
-      value: string,
-      x: number,
-      y: number,
-      maxWidth?: number,
-    ) => {
+    const drawField = (label: string, value: string, x: number, y: number, maxWidth?: number) => {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.text(label + ':', x, y);
       doc.setFont('helvetica', 'normal');
       const labelWidth = doc.getTextWidth(label + ': ') + 2; // Add 2pt spacing
-
+      
       if (maxWidth) {
         const lines = doc.splitTextToSize(value, maxWidth);
         doc.text(lines, x + labelWidth, y);
@@ -273,34 +355,17 @@ export class PatientListComponent implements OnInit {
       doc.setFontSize(8);
       doc.setFont('helvetica', 'italic');
       doc.setTextColor(100, 100, 100);
-      doc.text(
-        'Confidential Medical Record - For Authorized Use Only',
-        pageWidth / 2,
-        pageHeight - 20,
-        { align: 'center' },
-      );
-      doc.text(
-        `Generated on: ${new Date().toLocaleString('en-US')}`,
-        pageWidth / 2,
-        pageHeight - 15,
-        { align: 'center' },
-      );
-      doc.text(
-        `Page ${pageNum} of ${totalPages}`,
-        pageWidth / 2,
-        pageHeight - 10,
-        { align: 'center' },
-      );
+      doc.text('Confidential Medical Record - For Authorized Use Only', pageWidth / 2, pageHeight - 20, { align: 'center' });
+      doc.text(`Generated on: ${new Date().toLocaleString('en-US')}`, pageWidth / 2, pageHeight - 15, { align: 'center' });
+      doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
     };
 
     // Document Title
     doc.setTextColor(8, 71, 113);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('Patient Medical History', pageWidth / 2, yPosition, {
-      align: 'center',
-    });
-
+    doc.text('Patient Medical History', pageWidth / 2, yPosition, { align: 'center' });
+    
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.5);
     doc.line(20, yPosition + 4, pageWidth - 20, yPosition + 4);
@@ -310,35 +375,25 @@ export class PatientListComponent implements OnInit {
 
     // Patient Demographics
     yPosition = drawSectionHeader('Patient Demographics', yPosition);
-
+    
     const patientName = patient.user?.name || 'N/A';
-
+    
     drawField('Patient Name', patientName, 25, yPosition);
     yPosition += 7;
-
+    
     drawField('Date of Birth', patient.user?.dob || 'N/A', 25, yPosition);
     yPosition += 7;
-
-    drawField(
-      'Blood Group',
-      patient.bloodGroup || 'Not specified',
-      25,
-      yPosition,
-    );
+    
+    drawField('Blood Group', patient.bloodGroup || 'Not specified', 25, yPosition);
     yPosition += 7;
-
-    drawField(
-      'Contact Number',
-      this.formatContact(patient.user?.phoneNumber || ''),
-      25,
-      yPosition,
-    );
+    
+    drawField('Contact Number', this.formatContact(patient.user?.phoneNumber || ''), 25, yPosition);
     yPosition += 12;
 
     // Appointments and Medical Records
     if (patient.appointments && patient.appointments.length > 0) {
       yPosition = drawSectionHeader('Medical Consultation Records', yPosition);
-
+      
       patient.appointments.forEach((appointment, index) => {
         // Check if we need a new page
         if (yPosition > pageHeight - 70) {
@@ -359,34 +414,16 @@ export class PatientListComponent implements OnInit {
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-
-        drawField(
-          'Date',
-          new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          }),
-          25,
-          yPosition,
-        );
+        
+        drawField('Date', new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'long', day: 'numeric'
+        }), 25, yPosition);
         yPosition += 7;
-
-        drawField(
-          'Time',
-          `${appointment.startTime} - ${appointment.endTime}`,
-          25,
-          yPosition,
-        );
+        
+        drawField('Time', `${appointment.startTime} - ${appointment.endTime}`, 25, yPosition);
         yPosition += 7;
-
-        const reasonExtra = drawField(
-          'Reason for Visit',
-          appointment.reason,
-          25,
-          yPosition,
-          pageWidth - 55,
-        );
+        
+        const reasonExtra = drawField('Reason for Visit', appointment.reason, 25, yPosition, pageWidth - 55);
         yPosition += 7 + reasonExtra;
 
         // Diagnosis
@@ -396,10 +433,7 @@ export class PatientListComponent implements OnInit {
           doc.text('Diagnosis:', 25, yPosition);
           yPosition += 6;
           doc.setFont('helvetica', 'normal');
-          const diagnosisLines = doc.splitTextToSize(
-            appointment.diagnosis.diagnosisDetails,
-            pageWidth - 55,
-          );
+          const diagnosisLines = doc.splitTextToSize(appointment.diagnosis.diagnosisDetails, pageWidth - 55);
           doc.text(diagnosisLines, 30, yPosition);
           yPosition += diagnosisLines.length * 5 + 6;
         }
@@ -412,26 +446,26 @@ export class PatientListComponent implements OnInit {
           yPosition += 5;
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(9);
-
+          
           // Blood Pressure
           doc.setFont('helvetica', 'bold');
           doc.text('BP:', 30, yPosition);
           doc.setFont('helvetica', 'normal');
           doc.text(`${appointment.vitals.bloodPressure} mmHg`, 40, yPosition);
-
+          
           // Heart Rate
           doc.setFont('helvetica', 'bold');
           doc.text('HR:', 95, yPosition);
           doc.setFont('helvetica', 'normal');
           doc.text(`${appointment.vitals.heartRate} bpm`, 105, yPosition);
           yPosition += 4;
-
+          
           // Temperature
           doc.setFont('helvetica', 'bold');
           doc.text('Temp:', 30, yPosition);
           doc.setFont('helvetica', 'normal');
           doc.text(`${appointment.vitals.temperature}°F`, 45, yPosition);
-
+          
           // SpO2
           doc.setFont('helvetica', 'bold');
           doc.text('SpO2:', 95, yPosition);
@@ -454,11 +488,7 @@ export class PatientListComponent implements OnInit {
             doc.text(`${index + 1}. ${med.drug}`, 30, yPosition);
             yPosition += 4.5;
             doc.setFont('helvetica', 'normal');
-            doc.text(
-              `   Dosage: ${med.dose}  |  Route: ${med.route}  |  Frequency: ${med.frequency}`,
-              30,
-              yPosition,
-            );
+            doc.text(`   Dosage: ${med.dose}  |  Route: ${med.route}  |  Frequency: ${med.frequency}`, 30, yPosition);
             yPosition += 5.5;
           });
           yPosition += 3;

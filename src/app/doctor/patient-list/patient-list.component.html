@@ -1,4 +1,6 @@
 <div class="patient-management">
+  
+
   <!-- Search Bar -->
   <div class="search-bar">
     <div class="search-input-wrapper">
@@ -14,29 +16,23 @@
 
   <!-- Patients Grid -->
   <div class="patients-grid" *ngIf="!isLoading; else loading">
-    <div
-      class="card shadow-sm"
-      *ngFor="let patient of getFilteredPatients(patientsWithAppointments)"
-      (click)="openHistoryModal(patient)"
-    >
+    <div class="card shadow-sm" *ngFor="let patient of getFilteredPatients(patientsWithAppointments)" (click)="openHistoryModal(patient)">
       <div class="card-header">
         <div class="patient-avatar">
           <i class="fas fa-user-circle"></i>
         </div>
         <div class="patient-info">
-          <h3>{{ patient.user?.name || "Unknown" }}</h3>
+          <h3>{{ patient.user?.name || 'Unknown' }}</h3>
         </div>
       </div>
       <div class="card-body">
         <div class="info-row">
           <i class="fas fa-phone"></i>
-          <span
-            >Contact: {{ formatContact(patient.user?.phoneNumber || "") }}</span
-          >
+          <span>Contact: {{ formatContact(patient.user?.phoneNumber || '') }}</span>
         </div>
         <div class="info-row">
           <i class="fas fa-birthday-cake"></i>
-          <span>DOB: {{ formatDate(patient.user?.dob || "") }}</span>
+          <span>DOB: {{ formatDate(patient.user?.dob || '') }}</span>
         </div>
         <div class="info-row" *ngIf="patient.bloodGroup">
           <i class="fas fa-tint"></i>
@@ -45,40 +41,26 @@
         <div class="info-row">
           <i class="fas fa-calendar-check"></i>
           <span class="appointments-section">
-            <span class="appointments-status"
-              >Appointment:
-              <span
-                class="status-item scheduled"
-                *ngIf="getAppointmentCounts(patient.appointments).scheduled > 0"
-              >
-                Scheduled:
-                {{ getAppointmentCounts(patient.appointments).scheduled }}
+            <span class="appointments-status">Appointment:
+              <span class="status-item scheduled" *ngIf="getAppointmentCounts(patient.appointments).scheduled > 0">
+                Scheduled: {{ getAppointmentCounts(patient.appointments).scheduled }}
               </span>
-              <span
-                class="status-item completed"
-                *ngIf="getAppointmentCounts(patient.appointments).completed > 0"
-              >
-                Completed:
-                {{ getAppointmentCounts(patient.appointments).completed }}
+              <span class="status-item completed" *ngIf="getAppointmentCounts(patient.appointments).completed > 0">
+                Completed: {{ getAppointmentCounts(patient.appointments).completed }}
               </span>
-              <span
-                class="status-item cancelled"
-                *ngIf="getAppointmentCounts(patient.appointments).cancelled > 0"
-              >
-                Cancelled:
-                {{ getAppointmentCounts(patient.appointments).cancelled }}
+              <span class="status-item cancelled" *ngIf="getAppointmentCounts(patient.appointments).cancelled > 0">
+                Cancelled: {{ getAppointmentCounts(patient.appointments).cancelled }}
               </span>
+              
             </span>
+            
           </span>
         </div>
       </div>
     </div>
 
     <!-- Empty State -->
-    <div
-      class="empty-state"
-      *ngIf="getFilteredPatients(patientsWithAppointments).length === 0"
-    >
+    <div class="empty-state" *ngIf="getFilteredPatients(patientsWithAppointments).length === 0">
       <i class="fas fa-search"></i>
       <h3>No patients found</h3>
       <p>Try adjusting your search criteria.</p>
@@ -88,16 +70,13 @@
   <!-- Loading State -->
   <ng-template #loading>
     <div class="loading-state">
-      <app-loading></app-loading>
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading patients...</p>
     </div>
   </ng-template>
 
   <!-- Medical History Modal -->
-  <div
-    class="modal-overlay"
-    *ngIf="showHistoryModal"
-    (click)="closeHistoryModal()"
-  >
+  <div class="modal-overlay" *ngIf="showHistoryModal" (click)="closeHistoryModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3><i class="fas fa-file-medical"></i> Medical History</h3>
@@ -110,59 +89,40 @@
             <i class="fas fa-user"></i>
             <div>
               <label>Patient</label>
-              <p>{{ selectedPatient.user?.name || "Unknown" }}</p>
+              <p>{{ selectedPatient.user?.name || 'Unknown' }}</p>
             </div>
           </div>
           <div class="detail-item">
             <i class="fas fa-birthday-cake"></i>
             <div>
               <label>Date of Birth</label>
-              <p>{{ formatDate(selectedPatient.user?.dob || "") }}</p>
+              <p>{{ formatDate(selectedPatient.user?.dob || '') }}</p>
             </div>
           </div>
           <div class="detail-item">
             <i class="fas fa-phone"></i>
             <div>
               <label>Contact</label>
-              <p>
-                {{ formatContact(selectedPatient.user?.phoneNumber || "") }}
-              </p>
+              <p>{{ formatContact(selectedPatient.user?.phoneNumber || '') }}</p>
             </div>
           </div>
           <div class="detail-item">
             <i class="fas fa-tint"></i>
             <div>
               <label>Blood Group</label>
-              <p>{{ selectedPatient.bloodGroup || "Not specified" }}</p>
+              <p>{{ selectedPatient.bloodGroup || 'Not specified' }}</p>
             </div>
           </div>
         </div>
 
         <!-- Appointments Section -->
-        <div
-          class="appointments-section"
-          *ngIf="
-            selectedPatient.appointments &&
-            selectedPatient.appointments.length > 0
-          "
-        >
+        <div class="appointments-section" *ngIf="selectedPatient.appointments && selectedPatient.appointments.length > 0">
           <h4><i class="fas fa-calendar-check"></i> Appointments History</h4>
-
-          <div
-            class="appointment-card"
-            *ngFor="
-              let appointment of selectedPatient.appointments;
-              let i = index
-            "
-          >
+          
+          <div class="appointment-card" *ngFor="let appointment of selectedPatient.appointments; let i = index">
             <div class="appointment-header">
-              <span class="appointment-date">{{
-                formatDate(appointment.appointmentDate)
-              }}</span>
-              <span
-                class="appointment-status"
-                [ngClass]="getStatusClass(appointment.status)"
-              >
+              <span class="appointment-date">{{ formatDate(appointment.appointmentDate) }}</span>
+              <span class="appointment-status" [ngClass]="getStatusClass(appointment.status)">
                 {{ getAppointmentStatus(appointment.status) }}
               </span>
             </div>
@@ -170,9 +130,7 @@
             <div class="appointment-info">
               <div class="info-row">
                 <label>Time:</label>
-                <span
-                  >{{ appointment.startTime }} - {{ appointment.endTime }}</span
-                >
+                <span>{{ appointment.startTime }} - {{ appointment.endTime }}</span>
               </div>
               <div class="info-row">
                 <label>Reason:</label>
@@ -210,21 +168,12 @@
             </div>
 
             <!-- Medications -->
-            <div
-              class="detail-section"
-              *ngIf="
-                appointment.medications && appointment.medications.length > 0
-              "
-            >
+            <div class="detail-section" *ngIf="appointment.medications && appointment.medications.length > 0">
               <h6><i class="fas fa-pills"></i> Medications</h6>
               <div class="medication-list">
-                <div
-                  class="medication-item"
-                  *ngFor="let med of appointment.medications"
-                >
+                <div class="medication-item" *ngFor="let med of appointment.medications">
                   <p>
-                    <strong>{{ med.drug }}</strong> - {{ med.dose }}
-                    {{ med.route }} {{ med.frequency }}
+                    <strong>{{ med.drug }}</strong> - {{ med.dose }} {{ med.route }} {{ med.frequency }}
                   </p>
                 </div>
               </div>
@@ -234,21 +183,10 @@
             <div class="detail-section" *ngIf="appointment.invoice">
               <h6><i class="fas fa-receipt"></i> Invoice</h6>
               <div class="invoice-details">
-                <p>
-                  <strong>Consultation Type:</strong>
-                  {{ appointment.invoice.consultationType }}
-                </p>
-                <p>
-                  <strong>Consultation Fee:</strong>
-                  {{ appointment.invoice.consultationFee }}
-                </p>
-                <p>
-                  <strong>Lab Fee:</strong> {{ appointment.invoice.labFee }}
-                </p>
-                <p>
-                  <strong>Medicine Fee:</strong>
-                  {{ appointment.invoice.medicineFee }}
-                </p>
+                <p><strong>Consultation Type:</strong> {{ appointment.invoice.consultationType }}</p>
+                <p><strong>Consultation Fee:</strong> {{ appointment.invoice.consultationFee }}</p>
+                <p><strong>Lab Fee:</strong> {{ appointment.invoice.labFee }}</p>
+                <p><strong>Medicine Fee:</strong> {{ appointment.invoice.medicineFee }}</p>
                 <p><strong>Total:</strong> {{ appointment.invoice.total }}</p>
               </div>
             </div>
@@ -256,17 +194,8 @@
         </div>
 
         <!-- No Appointments -->
-        <div
-          class="no-appointments"
-          *ngIf="
-            !selectedPatient.appointments ||
-            selectedPatient.appointments.length === 0
-          "
-        >
-          <p>
-            <i class="fas fa-info-circle"></i> No appointments found for this
-            patient.
-          </p>
+        <div class="no-appointments" *ngIf="!selectedPatient.appointments || selectedPatient.appointments.length === 0">
+          <p><i class="fas fa-info-circle"></i> No appointments found for this patient.</p>
         </div>
       </div>
       <div class="modal-footer">
