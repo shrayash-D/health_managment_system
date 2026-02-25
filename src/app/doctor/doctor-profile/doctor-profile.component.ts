@@ -1,16 +1,22 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DoctorDataService } from '../../services/doctor-data.service';
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { LoadingComponent } from '../../shared/loading/loading.component';
 
 @Component({
   selector: 'app-doctor-profile',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, LoadingComponent],
   templateUrl: './doctor-profile.component.html',
-  styleUrls: ['./doctor-profile.component.css']
+  styleUrls: ['./doctor-profile.component.css'],
 })
 export class DoctorProfileComponent implements OnInit, OnDestroy {
   profileForm!: FormGroup;
@@ -28,7 +34,7 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
   isSavingProfile = false;
   profileSaveSuccess = false;
   profileSaveError = '';
-  
+
   private doctorSubscription?: Subscription;
 
   countryCodes = [
@@ -38,10 +44,13 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
     { code: '+61', country: 'Australia' },
     { code: '+81', country: 'Japan' },
     { code: '+49', country: 'Germany' },
-    { code: '+33', country: 'France' }
+    { code: '+33', country: 'France' },
   ];
 
-  constructor(private fb: FormBuilder, private doctorService: DoctorDataService) {
+  constructor(
+    private fb: FormBuilder,
+    private doctorService: DoctorDataService,
+  ) {
     // Initialize with current doctor data (could be mock initially)
     this.doctor = this.doctorService.getDoctor();
     this.initializeForms();
@@ -63,7 +72,7 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
         console.error('Error loading doctor data:', error);
         this.isLoadingDoctor = false;
         this.doctorLoadError = 'Failed to load doctor profile';
-      }
+      },
     });
   }
 
@@ -79,20 +88,28 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
       fullName: [this.doctor.fullName, Validators.required],
       email: [this.doctor.email, [Validators.required, Validators.email]],
       countryCode: [this.doctor.countryCode, Validators.required],
-      phone: [this.doctor.phone, [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
+      phone: [
+        this.doctor.phone,
+        [Validators.required, Validators.pattern(/^\d{10,15}$/)],
+      ],
       specialization: [this.doctor.specialization, Validators.required],
       experience: [this.doctor.experience, Validators.required],
-      bio: [this.doctor.bio]
+      bio: [this.doctor.bio],
     });
-    
+
     this.initializePasswordForm();
   }
 
   private updateFormWithDoctorData(): void {
     if (this.profileForm && this.doctor) {
       console.log('Updating form with doctor data:', this.doctor);
-      console.log('Doctor phone details - Country Code:', this.doctor.countryCode, 'Phone:', this.doctor.phone);
-      
+      console.log(
+        'Doctor phone details - Country Code:',
+        this.doctor.countryCode,
+        'Phone:',
+        this.doctor.phone,
+      );
+
       const formData = {
         fullName: this.doctor.fullName || '',
         email: this.doctor.email || '',
@@ -100,20 +117,20 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
         phone: this.doctor.phone || '',
         specialization: this.doctor.specialization || '',
         experience: this.doctor.experience || '',
-        bio: this.doctor.bio || ''
+        bio: this.doctor.bio || '',
       };
-      
+
       console.log('Form data to update:', formData);
-      
+
       this.profileForm.patchValue(formData);
-      
+
       // Force change detection
       this.profileForm.markAsPristine();
       this.profileForm.updateValueAndValidity();
     } else {
       console.warn('Cannot update form - form or doctor data missing', {
         hasForm: !!this.profileForm,
-        hasDoctorData: !!this.doctor
+        hasDoctorData: !!this.doctor,
       });
     }
   }
@@ -142,7 +159,7 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
       console.log('Form data to save:', formData);
 
       const updateResult = this.doctorService.updateDoctor(formData);
-      
+
       // Handle API response
       if (updateResult && typeof updateResult.subscribe === 'function') {
         updateResult.subscribe({
@@ -152,13 +169,14 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
             this.profileSaveError = '';
             this.isSavingProfile = false;
             this.isEditing = false;
-            
+
             // Reload doctor data to get updated information
-            const currentUser = this.doctorService.authService?.currentUserValue;
+            const currentUser =
+              this.doctorService.authService?.currentUserValue;
             if (currentUser?.id) {
               this.doctorService.loadDoctorFromApi(currentUser.id);
             }
-            
+
             // Hide success message after 3 seconds
             setTimeout(() => {
               this.profileSaveSuccess = false;
@@ -168,21 +186,21 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
             console.error('Profile update failed:', error);
             this.isSavingProfile = false;
             this.profileSaveSuccess = false;
-            
+
             let errorMessage = 'Failed to update profile. Please try again.';
             if (error.status === 401) {
               errorMessage = 'Authentication required. Please log in again.';
             } else if (error.error?.message) {
               errorMessage = error.error.message;
             }
-            
+
             this.profileSaveError = errorMessage;
-            
+
             // Hide error message after 5 seconds
             setTimeout(() => {
               this.profileSaveError = '';
             }, 5000);
-          }
+          },
         });
       } else {
         // Handle photo-only updates (no API call)
@@ -199,20 +217,26 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      
+
       // Validate file size (5MB max, matching backend validation)
       if (file.size > 5 * 1024 * 1024) {
         this.showMessage('File size must be less than 5MB');
         return;
       }
-      
+
       // Validate file type (matching backend validation)
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp'];
+      const allowedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+      ];
       if (!allowedTypes.includes(file.type)) {
         this.showMessage('Only JPG, JPEG, PNG, GIF, and BMP files are allowed');
         return;
       }
-      
+
       // Preview the image
       const reader = new FileReader();
       reader.onload = () => {
@@ -220,25 +244,35 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
         this.showSavePhotoBtn = true;
       };
       reader.readAsDataURL(file);
-      
+
       // Store the file for uploading
       (input as any).selectedFile = file;
     }
   }
 
   savePhoto() {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     const file = (fileInput as any)?.selectedFile;
-    
+
     if (!file) {
       this.showMessage('No file selected');
       return;
     }
 
-    console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+    console.log(
+      'Uploading file:',
+      file.name,
+      'Size:',
+      file.size,
+      'Type:',
+      file.type,
+    );
     this.isUploadingPhoto = true;
-    
-    this.doctorService.uploadProfilePhoto(file, 'Doctor profile photo')
+
+    this.doctorService
+      .uploadProfilePhoto(file, 'Doctor profile photo')
       .subscribe({
         next: (response) => {
           console.log('Upload successful:', response);
@@ -257,22 +291,25 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
           this.tempPhotoUrl = null;
           this.showSavePhotoBtn = false;
           this.isUploadingPhoto = false;
-          
+
           // Show specific error message from backend if available
           let errorMessage = 'Failed to update photo. Please try again.';
-          
+
           if (error.status === 401) {
             errorMessage = 'Authentication required. Please log in again.';
           } else if (error.status === 400) {
-            errorMessage = error.error?.message || 'Invalid file. Please check file size and type.';
+            errorMessage =
+              error.error?.message ||
+              'Invalid file. Please check file size and type.';
           } else if (error.status === 0) {
-            errorMessage = 'Cannot connect to server. Please check your connection.';
+            errorMessage =
+              'Cannot connect to server. Please check your connection.';
           } else if (error.error?.message) {
             errorMessage = error.error.message;
           }
-          
+
           this.showMessage(errorMessage);
-        }
+        },
       });
   }
 
@@ -280,9 +317,11 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
     this.tempPhotoUrl = null;
     this.showSavePhotoBtn = false;
     this.isUploadingPhoto = false;
-    
+
     // Clear the file input
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
       (fileInput as any).selectedFile = null;
@@ -297,7 +336,7 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
         newPassword: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', Validators.required],
       },
-      { validators: this.passwordMatchValidator }
+      { validators: this.passwordMatchValidator },
     );
   }
 
@@ -334,7 +373,7 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
         this.passwordUpdateSuccess = true;
         this.passwordUpdateError = '';
         this.passwordForm.reset();
-        
+
         // Hide success message after 3 seconds
         setTimeout(() => {
           this.passwordUpdateSuccess = false;
@@ -345,7 +384,7 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
         this.passwordUpdateSuccess = false;
         this.passwordUpdateError =
           error.error?.message || 'Failed to update password';
-          
+
         // Hide error message after 5 seconds
         setTimeout(() => {
           this.passwordUpdateError = '';
