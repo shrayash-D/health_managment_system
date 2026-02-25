@@ -51,7 +51,9 @@
   border-radius: 12px;
   padding: 2.5rem;
   color: white;
-  box-shadow: 0 2px 8px rgba(10, 91, 143, 0.1), 0 8px 24px rgba(10, 91, 143, 0.15);
+  box-shadow:
+    0 2px 8px rgba(10, 91, 143, 0.1),
+    0 8px 24px rgba(10, 91, 143, 0.15);
   margin-bottom: 2rem;
   display: flex;
   align-items: center;
@@ -81,7 +83,9 @@
 /* Cards */
 .card {
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(10, 91, 143, 0.08), 0 8px 24px rgba(10, 91, 143, 0.12);
+  box-shadow:
+    0 2px 8px rgba(10, 91, 143, 0.08),
+    0 8px 24px rgba(10, 91, 143, 0.12);
   border: 1px solid #e6eff6;
   background: #fff;
   height: auto;
@@ -136,14 +140,18 @@
   font-size: 1.8rem;
   margin: 0;
   font-weight: 700;
-  background: linear-gradient(135deg, #0a5b8f 0%, #3ddc97 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0a5b8f !important;
 }
 
 /* Stat Numbers - No Gradient */
 .stat-number {
+  font-size: 1.8rem;
+  margin: 0;
+  font-weight: 700;
+  color: #0a5b8f !important;
+}
+
+.text {
   font-size: 1.8rem;
   margin: 0;
   font-weight: 700;
@@ -167,24 +175,12 @@
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
 }
 
-.row.text-center .card:nth-child(1) .card-body h3 {
-  background: linear-gradient(135deg, #0a5b8f 0%, #1976d2 100%);
-}
-
 .row.text-center .card:nth-child(2) .card-body {
   background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
 }
 
-.row.text-center .card:nth-child(2) .card-body h3 {
-  background: linear-gradient(135deg, #1b5e20 0%, #388e3c 100%);
-}
-
 .row.text-center .card:nth-child(3) .card-body {
   background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-}
-
-.row.text-center .card:nth-child(3) .card-body h3 {
-  background: linear-gradient(135deg, #e65100 0%, #f57c00 100%);
 }
 
 /* Chart */
@@ -223,14 +219,18 @@
   background: linear-gradient(90deg, #0a5b8f 0%, #3ddc97 100%) !important;
   color: white;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(10, 91, 143, 0.25), 0 4px 12px rgba(61, 220, 151, 0.15);
+  box-shadow:
+    0 2px 8px rgba(10, 91, 143, 0.25),
+    0 4px 12px rgba(61, 220, 151, 0.15);
   transition: all 0.3s ease;
   letter-spacing: 0.3px;
 }
 
 .list-group-item .badge:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(10, 91, 143, 0.35), 0 8px 20px rgba(61, 220, 151, 0.2);
+  box-shadow:
+    0 4px 12px rgba(10, 91, 143, 0.35),
+    0 8px 20px rgba(61, 220, 151, 0.2);
 }
 
 /* Patient Details */
@@ -337,7 +337,11 @@
 }
 
 .patient-header .badge {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.2)
+  ) !important;
   color: white !important;
   font-weight: 700;
   padding: 7px 14px;
@@ -392,14 +396,18 @@
   border-radius: 22px;
   display: inline-block;
   margin-top: 0.5rem;
-  box-shadow: 0 3px 10px rgba(10, 91, 143, 0.25), 0 6px 16px rgba(61, 220, 151, 0.15);
+  box-shadow:
+    0 3px 10px rgba(10, 91, 143, 0.25),
+    0 6px 16px rgba(61, 220, 151, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.35px;
 }
 
 .card.patient-details .badge:hover {
   transform: translateY(-3px) scale(1.06);
-  box-shadow: 0 5px 16px rgba(10, 91, 143, 0.35), 0 10px 24px rgba(61, 220, 151, 0.25);
+  box-shadow:
+    0 5px 16px rgba(10, 91, 143, 0.35),
+    0 10px 24px rgba(61, 220, 151, 0.25);
 }
 
 /* Enhanced Calendar Styling */
@@ -609,7 +617,9 @@
   border-radius: 22px;
   font-weight: 700;
   font-size: 0.9rem !important;
-  box-shadow: 0 3px 10px rgba(10, 91, 143, 0.25), 0 6px 16px rgba(61, 220, 151, 0.15);
+  box-shadow:
+    0 3px 10px rgba(10, 91, 143, 0.25),
+    0 6px 16px rgba(61, 220, 151, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.4px;
   display: inline-block;
@@ -617,7 +627,9 @@
 
 .time-badge:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 5px 16px rgba(10, 91, 143, 0.35), 0 10px 24px rgba(61, 220, 151, 0.25);
+  box-shadow:
+    0 5px 16px rgba(10, 91, 143, 0.35),
+    0 10px 24px rgba(61, 220, 151, 0.25);
 }
 
 .slot-badge {
@@ -627,7 +639,9 @@
   border-radius: 22px;
   font-weight: 700;
   font-size: 0.9rem !important;
-  box-shadow: 0 3px 10px rgba(61, 220, 151, 0.25), 0 6px 16px rgba(10, 91, 143, 0.15);
+  box-shadow:
+    0 3px 10px rgba(61, 220, 151, 0.25),
+    0 6px 16px rgba(10, 91, 143, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.4px;
   display: inline-block;
@@ -635,7 +649,9 @@
 
 .slot-badge:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 5px 16px rgba(61, 220, 151, 0.35), 0 10px 24px rgba(10, 91, 143, 0.25);
+  box-shadow:
+    0 5px 16px rgba(61, 220, 151, 0.35),
+    0 10px 24px rgba(10, 91, 143, 0.25);
 }
 
 .time-slot-badge {
@@ -647,14 +663,18 @@
   font-weight: 700;
   font-size: 0.85rem;
   white-space: nowrap;
-  box-shadow: 0 3px 9px rgba(10, 91, 143, 0.25), 0 5px 14px rgba(61, 220, 151, 0.15);
+  box-shadow:
+    0 3px 9px rgba(10, 91, 143, 0.25),
+    0 5px 14px rgba(61, 220, 151, 0.15);
   letter-spacing: 0.35px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .time-slot-badge:hover {
   transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 4px 12px rgba(10, 91, 143, 0.3), 0 8px 18px rgba(61, 220, 151, 0.2);
+  box-shadow:
+    0 4px 12px rgba(10, 91, 143, 0.3),
+    0 8px 18px rgba(61, 220, 151, 0.2);
 }
 
 /* Today Appointments Styling */
