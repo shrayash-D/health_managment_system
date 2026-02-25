@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { Patient } from '../../models/patient.interface';
 import { Observable } from 'rxjs';
-import { LoadingComponent } from '../shared/loading/loading.component';
+import { LoadingComponent } from '../../shared/loading/loading.component';
 import { finalize } from 'rxjs/operators';
 
 @Component({

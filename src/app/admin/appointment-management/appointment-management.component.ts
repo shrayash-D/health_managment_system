@@ -9,7 +9,7 @@ import {
 import { Doctor } from '../../models/doctor.interface';
 import { Patient } from '../../models/patient.interface';
 import { Observable, combineLatest, map } from 'rxjs';
-import { LoadingComponent } from '../shared/loading/loading.component';
+import { LoadingComponent } from '../../shared/loading/loading.component';
 import { finalize } from 'rxjs/operators';
 
 @Component({

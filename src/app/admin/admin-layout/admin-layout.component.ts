@@ -4,7 +4,6 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { NotificationComponent } from '../../shared/notifications/notifications.component';
 
 type LayoutKey = 'admin' | 'doctor' | 'patient' | 'public';
 
@@ -18,7 +17,7 @@ interface NavItem {
   selector: 'app-admin-layout',
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.css'],
-  imports: [RouterLink, RouterOutlet, CommonModule, NotificationComponent],
+  imports: [RouterLink, RouterOutlet, CommonModule],
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {
   layout: LayoutKey = 'public';
@@ -26,13 +25,12 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   badgeLabel = '';
   menu: NavItem[] = [];
 
-  // keep simple notification placeholders (existing template expects these)
-  unreadCount = 0;
-  showNotifications = false;
-
   private sub = new Subscription();
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     // set initial layout based on current url
@@ -44,7 +42,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         if (ev instanceof NavigationEnd) {
           this.updateLayoutFromUrl(ev.urlAfterRedirects);
         }
-      })
+      }),
     );
   }
 
@@ -97,20 +95,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         this.badgeLabel = '';
         this.menu = [];
     }
-  }
-
-  toggleNotifications(): void {
-    this.showNotifications = !this.showNotifications;
-  }
-  markAllAsRead(): void {
-    this.unreadCount = 0;
-  }
-  markAsRead(_notification: any): void {
-    /* placeholder */
-  }
-  deleteNotification(_id: number, _event?: Event): void {
-    _event?.stopPropagation();
-    /* placeholder */
   }
 
   ngOnDestroy(): void {

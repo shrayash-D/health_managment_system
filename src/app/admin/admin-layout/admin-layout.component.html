@@ -41,16 +41,6 @@
       </div>
       <div class="header-right">
         <div class="header-actions">
-          <app-notifications
-            [unreadCount]="unreadCount"
-            [show]="showNotifications"
-            [notifications]="[]"
-            (toggle)="toggleNotifications()"
-            (markAll)="markAllAsRead()"
-            (markRead)="markAsRead($event)"
-            (delete)="deleteNotification($event)"
-          ></app-notifications>
-
           <div class="user-menu">
             <div class="user-avatar">A</div>
             <span class="user-name">{{ badgeLabel || "User" }}</span>

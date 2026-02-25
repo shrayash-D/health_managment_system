@@ -5,7 +5,7 @@ import { AdminService } from '../../services/admin.service';
 import { Invoice, PaymentStatus } from '../../models/invoice.interface';
 import { Patient } from '../../models/patient.interface';
 import { Observable, combineLatest, map, take } from 'rxjs';
-import { LoadingComponent } from '../shared/loading/loading.component';
+import { LoadingComponent } from '../../shared/loading/loading.component';
 import { finalize } from 'rxjs/operators';
 
 @Component({

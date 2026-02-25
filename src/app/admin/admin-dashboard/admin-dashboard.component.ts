@@ -11,7 +11,7 @@ import { AdminService } from '../../services/admin.service';
 import { DashboardMetrics } from '../../models/dashboard-metrics.interface';
 import { Observable } from 'rxjs';
 import { Chart, registerables } from 'chart.js';
-import { LoadingComponent } from '../shared/loading/loading.component';
+import { LoadingComponent } from '../../shared/loading/loading.component';
 import { finalize } from 'rxjs/operators';
 
 Chart.register(...registerables);
